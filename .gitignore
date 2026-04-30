@@ -1,0 +1,129 @@
+# ===========================
+# Build and Runtime Artifacts
+# ===========================
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+*.class
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# ===========================
+# Application Output
+# ===========================
+output/
+logs/
+*.log
+
+# ===========================
+# IDE Files
+# ===========================
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+.factorypath
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# ===========================
+# OS Files
+# ===========================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+
+# ===========================
+# AI Tool Files
+# ===========================
+
+# Cursor IDE
+.cursor/
+.cursorignore
+.cursorrules
+
+# GitHub Copilot
+copilot-instructions.md
+
+# Codeium / Windsurf
+.codeium/
+.windsurf/
+
+# Continue.dev
+.continue/
+
+# Tabnine
+.tabnine
+
+# ===========================
+# Secrets and Local Config
+# ===========================
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+*.pfx
+application-local.yml
+application-local.properties
+
+# ===========================
+# Frontend
+# ===========================
+node_modules/
+src/main/frontend/node_modules/
+src/main/frontend/.vite/
+src/main/frontend/dist/
+
+# ===========================
+# Misc
+# ===========================
+*.bak
+*.swp
+*.swo
+.mvn/wrapper/maven-wrapper.jar

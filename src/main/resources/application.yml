@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: fixed-length-converters
+  datasource:
+    url: jdbc:h2:mem:bankingdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    database-platform: org.hibernate.dialect.H2Dialect
+    open-in-view: false
+  batch:
+    job:
+      enabled: false
+    jdbc:
+      initialize-schema: always
+  h2:
+    console:
+      enabled: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+  info:
+    env:
+      enabled: true
+    build:
+      enabled: true
+    git:
+      enabled: false
+
+info:
+  app:
+    name: ${spring.application.name}
+    description: "Banking Fixed-Length File Generator & Parser Validation Platform"
+    version: "@project.version@"
+    author: "Wallace Espindola"
+    contact: "wallace.espindola@gmail.com"
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+springdoc:
+  swagger-ui:
+    enabled: false
+  api-docs:
+    enabled: false
+
+logging:
+  level:
+    com.wtechitsolutions: INFO
+    org.springframework.batch: WARN
