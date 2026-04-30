@@ -1,0 +1,65 @@
+@startuml database-diagram
+!theme plain
+title H2 In-Memory Database Schema
+
+entity accounts {
+  * id : BIGINT <<PK, generated>>
+  --
+  accountNumber : VARCHAR
+  iban : VARCHAR
+  bankCode : VARCHAR(3)
+  currency : VARCHAR(3)
+  balance : NUMERIC(38,2)
+  holderName : VARCHAR
+  createdAt : TIMESTAMP
+}
+
+entity transactions {
+  * id : BIGINT <<PK, generated>>
+  --
+  accountId : BIGINT <<FK>>
+  reference : VARCHAR
+  amount : NUMERIC(38,2)
+  type : VARCHAR (CREDIT|DEBIT)
+  description : VARCHAR
+  valueDate : DATE
+  entryDate : DATE
+  createdAt : TIMESTAMP
+}
+
+entity banking_statements {
+  * id : BIGINT <<PK, generated>>
+  --
+  accountId : BIGINT <<FK>>
+  openingBalance : NUMERIC(38,2)
+  closingBalance : NUMERIC(38,2)
+  statementDate : DATE
+  sequenceNumber : INTEGER
+  createdAt : TIMESTAMP
+}
+
+entity benchmark_metrics {
+  * id : BIGINT <<PK, generated>>
+  --
+  jobExecutionId : BIGINT
+  library : VARCHAR (BEANIO|FIXEDFORMAT4J|FIXEDLENGTH|BINDY)
+  fileType : VARCHAR (CODA|SWIFT)
+  throughputRps : DOUBLE
+  generationDurationMs : BIGINT
+  parseDurationMs : BIGINT
+  memoryUsedBytes : BIGINT
+  batchDurationMs : BIGINT
+  chunkDurationMs : BIGINT
+  cpuUsagePct : DOUBLE
+  successRate : DOUBLE
+  failedCount : BIGINT
+  symmetryRate : DOUBLE
+  recordsProcessed : BIGINT
+  timestamp : TIMESTAMP
+}
+
+note "Spring Batch also creates its own\nschema (BATCH_JOB_INSTANCE,\nBATCH_JOB_EXECUTION, etc.)\nmanaged by spring.batch.jdbc\n.initialize-schema=always" as N1
+
+accounts ||--o{ transactions : "accountId"
+accounts ||--o{ banking_statements : "accountId"
+@enduml
