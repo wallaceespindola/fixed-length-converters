@@ -4,136 +4,149 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Banking Fixed-Length File Generator & Parser Validation Platform** — an enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using multiple Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
+**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 4 Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
 
-PRDs: `PRD-1.md` (v1.3), `PRD-2.md` (v1.4, authoritative).
+**PRD:** `PRD.md` (v3.0, authoritative) | **Design spec:** `docs/superpowers/specs/2026-04-30-banking-platform-design.md`
+
+## Implementation Status: COMPLETE
+
+All 62 tests pass. Application starts and runs end-to-end.
 
 ## Technical Stack
 
 | Area | Technology |
 |---|---|
-| Language | Java 25 |
-| Backend | Spring Boot 3.4.x |
-| Batch | Spring Batch |
+| Language | Java 21 (target: 25) |
+| Backend | Spring Boot 3.4.5 |
+| Batch | Spring Batch 5.x |
 | Monitoring | Spring Actuator |
 | Database | H2 In-Memory |
-| API Docs | OpenAPI V3 + Swagger (dev only) |
-| Build | Maven |
-| Testing | JUnit 5 + JMH for benchmarks |
-| CI/CD | GitHub Actions |
+| API Docs | OpenAPI V3 + Swagger (dev profile only) |
+| Build | Maven 3.9.x |
+| Testing | JUnit 5 + Mockito, 62 tests |
+| Libraries | BeanIO 2.1.0, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0 |
+| CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands
 
-Once `pom.xml` and source exist, standard commands:
-
 ```bash
-mvn clean install          # build + test
-mvn spring-boot:run        # run application
-mvn test                   # all tests
-mvn test -Dtest=ClassName  # single test class
-mvn test -pl . -Dtest=ClassName#methodName  # single test method
-mvn verify                 # integration tests
-make build / make run / make test / make benchmark / make clean / make docs
+# Quick build (no tests, no frontend)
+mvn clean package -DskipTests -Pskip-frontend
+
+# Run in dev mode (Swagger UI enabled at /swagger-ui.html)
+mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
+
+# All tests
+mvn test -Pskip-frontend
+
+# Integration tests with coverage
+mvn verify -Pskip-frontend
+
+# Run single test class
+mvn test -Pskip-frontend -Dtest=StrategyResolverTest
+
+# JMH benchmarks
+mvn test -Pskip-frontend -Pbenchmark
+
+# Makefile shortcuts
+make build | make run | make test | make benchmark | make clean
 ```
 
 ## Architecture
 
-### Layered Structure
+### Package Structure
 
 ```
 src/main/java/com/wtechitsolutions/
-├── batch/          # Spring Batch jobs, readers, processors, writers
-├── strategy/       # Strategy Pattern implementations per library+format
-├── domain/         # Banking domain entities (Account, Transaction, Statement)
-├── parser/         # Parser/formatter library wrappers
-├── api/            # REST controllers
-└── config/         # Spring configuration
+├── api/               REST controllers (DomainController, BatchController, BenchmarkController)
+│   └── dto/           Java Record DTOs (BatchJobRequest/Response, GenerateDomainResponse, etc.)
+├── batch/             Spring Batch: DomainEntityItemReader, FileGenerationItemProcessor,
+│                       FileOutputItemWriter, BatchMetricsListener, ChunkTimingListener, BatchJobService
+├── benchmark/         BenchmarkService (CSV/JSON/Markdown export)
+├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig
+├── domain/            JPA entities (Account, Transaction, BankingStatement, BenchmarkMetrics)
+│                       Repositories, DomainDataGenerator, enums (FileType, Library, TransactionType)
+├── parser/            4 formatter wrappers (all annotation-based, no XML):
+│   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter
+│   └── model/         Annotated model classes per library:
+│                       CodaRecord (shared model with toFixedWidth/fromFixedWidth)
+│                       BeanIoCodaRecord, Ff4jCodaRecord, VlCodaRecord, BindyCodaRecord
+│                       SwiftMtRecord, BeanIoSwiftRecord
+└── strategy/          FileGenerationStrategy interface, StrategyResolver, 8 implementations:
+                        AbstractCodaStrategy, AbstractSwiftStrategy (base classes)
+                        CodaBeanIOStrategy, CodaFixedFormat4JStrategy, CodaFixedLengthStrategy, CodaBindyStrategy
+                        SwiftBeanIOStrategy, SwiftFixedFormat4JStrategy, SwiftFixedLengthStrategy, SwiftBindyStrategy
 ```
 
 ### Core Flow
 
-1. **REST** → `POST /api/domain/generate` seeds H2 with accounts/transactions
-2. **REST** → `POST /api/batch/generate` triggers a Spring Batch job
-3. **Spring Batch**: `ItemReader` (H2) → `ItemProcessor` (Strategy resolution) → `ItemWriter` (file to `/output/`)
-4. **Strategy** selects the formatter library at runtime; generated file content is returned to the frontend
+1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2 (20 accounts, 200 transactions, 10 statements)
+2. `POST /api/batch/generate` → `BatchJobService.launch(fileType, library)` → Spring Batch job
+3. Spring Batch: `DomainEntityItemReader` (H2) → `FileGenerationItemProcessor` (StrategyResolver) → `FileOutputItemWriter` (writes to `/output/`)
+4. `BatchMetricsListener.afterJob()` → saves `BenchmarkMetrics` row
 
 ### Strategy Pattern
 
-Each combination of file format × library gets its own strategy class:
+`StrategyResolver` maps all `FileGenerationStrategy` beans by `strategyKey()` = `"FILETYPE_LIBRARY"`. Resolution is O(1) map lookup, no if/switch chains.
+
+### CODA Format Notes
+
+- Each record: **exactly 128 characters** per Febelfin spec
+- Record types: 0=header, 1=movement, 2=detail, 8=trailer, 9=end
+- Amounts: **plain integer** (no decimal places) stored as left-zero-padded 16-char string
+- `padAmount()` uses `setScale(0, ROUND_HALF_UP)` to strip decimal scale from H2 BigDecimal values
+- BeanIO uses `FieldBuilder.at()` with **0-based** character positions (NOT 1-based)
+
+### SWIFT Format Notes
+
+- BeanIO strategy: serialises as CSV (structured, parseable)
+- Other strategies: serialise as MT940 tag format (`:20:`, `:25:`, etc.) with record delimiters
+
+## REST API Endpoints
 
 ```
-CodaBeanIOStrategy, CodaFixedFormat4JStrategy, CodaFixedLengthStrategy, CodaBindyStrategy
-SwiftBeanIOStrategy, SwiftFixedFormat4JStrategy, SwiftFixedLengthStrategy, SwiftBindyStrategy
+POST /api/domain/generate        → generate + persist 20 accounts, 200 transactions
+POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
+GET  /api/batch/history          → last 50 job executions
+GET  /api/benchmark/results      → all benchmark metrics
+GET  /api/benchmark/export/csv   → CSV export
+GET  /api/benchmark/export/markdown → Markdown export
+GET  /api/benchmark/export/json  → JSON export
+GET  /actuator/health            → H2 + disk + ping health
+GET  /actuator/info              → app name, version, description
 ```
 
-All implement a common `FileGenerationStrategy` interface resolved by the `ItemProcessor`.
+## Key Constraints
 
-### Supported Formatter Libraries
+- **NO `@EnableBatchProcessing`** — Spring Boot 3.x auto-configures; adding it disables auto-config
+- **Swagger enabled in `dev` profile only** — default profile has springdoc disabled
+- **All parser formatters are annotation-based** — NO XML mapping files anywhere
+- **BeanIO FieldBuilder.at() is 0-based** — confirmed from library source; annotation @Field(at=X) may differ
+- **Output files** written to `/output/` directory (gitignored)
+- **Generated files are reproducible**: same domain data + params → same output
+- **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 
-| Library | Maven Group | Notes |
+## Testing Strategy
+
+| Category | Test Class | What it tests |
 |---|---|---|
-| BeanIO | `org.beanio` | Best grammar support for CODA; XML/annotation mapping |
-| fixedformat4j | `com.ancientprogramming.fixedformat4j` | Best annotation quality; pure annotation-driven |
-| fixedlength | (lightweight lib) | Simple, medium risk |
-| Apache Camel Bindy | `org.apache.camel` | Use only if Camel ecosystem already present |
+| Unit | `DomainDataGeneratorTest` | Mock repos, counts |
+| Unit | `CodaRecordTest` | toFixedWidth/fromFixedWidth, 128-char lines |
+| Integration | `StrategyResolverTest` | All 8 strategies resolve by key |
+| Integration | `CodaStrategyTest` | Each CODA library: 128-char lines, header/trailer |
+| Integration | `SwiftStrategyTest` | Each SWIFT library: non-empty output |
+| Integration | `SymmetryTest` | Round-trip: generate→parse preserves amount+type |
+| Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate |
+| Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
+| Integration | `ActuatorTest` | TestRestTemplate: /actuator/health, /actuator/info |
+| Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |
 
-### REST API Endpoints
-
-```
-POST /api/domain/generate    → generate and persist banking data
-POST /api/batch/generate     → trigger batch job (params: fileType, library)
-GET  /api/batch/history      → batch execution history
-GET  /api/benchmark/results  → benchmark metrics
-GET  /actuator/health
-GET  /actuator/info
-```
+Run specific test: `mvn test -Pskip-frontend -Dtest=SymmetryTest`
 
 ## Java Package Convention
 
 All packages: `com.wtechitsolutions.*`
 
-```java
-com.wtechitsolutions.batch
-com.wtechitsolutions.strategy
-com.wtechitsolutions.domain
-com.wtechitsolutions.parser
-com.wtechitsolutions.api
-```
+## Repository Structure
 
-## Testing Strategy
-
-- **Unit tests**: strategy classes, parsers, domain generation
-- **Integration tests**: Spring Batch job execution, H2 persistence
-- **Symmetry tests**: `Domain Object → generate file → parse file → rebuild → assertEquals`
-- **Benchmark tests**: JMH micro-benchmarks per library for throughput/latency
-- **API tests**: REST endpoint correctness, Actuator health/info, Swagger availability
-- **Golden file tests**: compare output against known-good reference files in `docs/examples/`
-
-## Repository Structure (Target)
-
-```
-root/
-├── pom.xml
-├── Makefile
-├── src/main/java/com/wtechitsolutions/
-├── src/test/java/com/wtechitsolutions/
-├── docs/
-│   ├── examples/coda/         # valid, malformed, edge-case, benchmark files
-│   ├── examples/swift-mt/
-│   ├── diagrams/              # .puml and .mmd files
-│   └── slides/
-├── tools/python/              # benchmark aggregation, report/markdown generation
-├── output/                    # generated banking files (gitignored)
-└── .github/
-    ├── workflows/             # build.yml, test.yml, benchmark.yml, codeql.yml, release.yml
-    └── dependabot.yml
-```
-
-## Key Constraints
-
-- **Swagger** enabled in `dev` profile only
-- **Spring Batch jobs** must be restartable
-- **Output files** written to `/output/` directory (gitignored)
-- **Benchmark datasets**: support 100,000+ transactions; small datasets must complete under 5 seconds
-- Benchmark metrics exportable to CSV/JSON/Markdown
-- All generated files must be reproducible
+See `PRD.md` §18 and `docs/superpowers/specs/2026-04-30-banking-platform-design.md` for full specs.
