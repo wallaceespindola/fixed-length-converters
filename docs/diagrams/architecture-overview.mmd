@@ -1,0 +1,51 @@
+graph TB
+    subgraph Frontend["React SPA (MUI + Recharts)"]
+        UI[Dashboard / Batch Runner / History / Benchmark]
+    end
+
+    subgraph API["REST API Layer"]
+        DC[DomainController<br/>POST /api/domain/generate]
+        BC[BatchController<br/>POST /api/batch/generate<br/>GET /api/batch/history]
+        BNC[BenchmarkController<br/>GET /api/benchmark/results]
+        ACT[Spring Actuator<br/>/health /info]
+    end
+
+    subgraph Batch["Spring Batch Pipeline"]
+        JL[JobLauncher]
+        JOB[bankingFileGenerationJob]
+        STEP[fileGenerationStep<br/>chunk-size = 100]
+        READER[DomainEntityItemReader]
+        PROC[FileGenerationItemProcessor]
+        WRITER[FileOutputItemWriter]
+    end
+
+    subgraph Strategy["Strategy Pattern"]
+        SR[StrategyResolver]
+        CODA4[4 CODA Strategies]
+        SWIFT4[4 SWIFT Strategies]
+    end
+
+    subgraph Parsers["Parser Library Wrappers"]
+        BIO[BeanIOFormatter]
+        FF4J[FixedFormat4JFormatter]
+        VL[FixedLengthFormatter]
+        BINDY[BindyFormatter]
+    end
+
+    subgraph Data["Data Layer - H2 In-Memory"]
+        ACCT[(accounts)]
+        TXN[(transactions)]
+        STMT[(banking_statements)]
+        BENCH[(benchmark_metrics)]
+    end
+
+    OUTPUT[(output/\n*.txt files)]
+
+    UI --> API
+    DC --> Data
+    BC --> JL --> JOB --> STEP
+    STEP --> READER --> Data
+    STEP --> PROC --> SR --> CODA4 & SWIFT4
+    CODA4 & SWIFT4 --> Parsers
+    STEP --> WRITER --> OUTPUT
+    BNC --> Data

@@ -1,0 +1,37 @@
+sequenceDiagram
+    participant FE as Frontend
+    participant BC as BatchController
+    participant BJS as BatchJobService
+    participant JL as JobLauncher
+    participant JOB as bankingFileGenerationJob
+    participant IR as DomainEntityItemReader
+    participant IP as FileGenerationItemProcessor
+    participant SR as StrategyResolver
+    participant ST as FileGenerationStrategy
+    participant IW as FileOutputItemWriter
+    participant BML as BatchMetricsListener
+    participant DB as H2 Database
+    participant FS as output/ (filesystem)
+
+    FE->>BC: POST /api/batch/generate {fileType, library}
+    BC->>BJS: launch(fileType, library)
+    BJS->>JL: run(job, params)
+    JL->>JOB: execute()
+    JOB->>BML: beforeJob()
+    loop chunks of 100
+        JOB->>IR: read() → Transaction
+        IR->>DB: findAll transactions
+        JOB->>IP: process(transaction)
+        IP->>SR: resolve(fileType, library)
+        SR-->>IP: FileGenerationStrategy
+        IP->>ST: generate([transaction], accounts)
+        ST-->>IP: formatted string
+        JOB->>IW: write(chunk)
+    end
+    IW->>FS: write output file
+    IW->>JOB: afterStep() → COMPLETED
+    JOB->>BML: afterJob()
+    BML->>DB: save BenchmarkMetrics
+    JOB-->>BJS: JobExecution
+    BJS-->>BC: BatchJobResult
+    BC-->>FE: BatchJobResponse {fileContent, fileName, status}

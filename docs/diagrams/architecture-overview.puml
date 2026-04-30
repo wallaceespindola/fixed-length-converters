@@ -1,0 +1,67 @@
+@startuml architecture-overview
+!theme plain
+title Banking Fixed-Length File Generator — Architecture Overview
+
+package "React SPA" {
+    [Dashboard]
+    [Batch Runner]
+    [Benchmark Dashboard]
+    [Batch History]
+}
+
+package "REST API" {
+    [DomainController]
+    [BatchController]
+    [BenchmarkController]
+    [Actuator /health /info]
+}
+
+package "Spring Batch" {
+    [JobLauncher]
+    [bankingFileGenerationJob]
+    [DomainEntityItemReader]
+    [FileGenerationItemProcessor]
+    [FileOutputItemWriter]
+    [BatchMetricsListener]
+}
+
+package "Strategy Pattern" {
+    [StrategyResolver]
+    [CodaBeanIOStrategy]
+    [CodaFixedFormat4JStrategy]
+    [CodaFixedLengthStrategy]
+    [CodaBindyStrategy]
+    [SwiftBeanIOStrategy]
+    [SwiftFixedFormat4JStrategy]
+    [SwiftFixedLengthStrategy]
+    [SwiftBindyStrategy]
+}
+
+package "Parser Wrappers" {
+    [BeanIOFormatter]
+    [FixedFormat4JFormatter]
+    [FixedLengthFormatter]
+    [BindyFormatter]
+}
+
+database "H2 In-Memory" {
+    [accounts]
+    [transactions]
+    [banking_statements]
+    [benchmark_metrics]
+    [BATCH_JOB_EXECUTION]
+}
+
+[React SPA] --> [REST API]
+[DomainController] --> [H2 In-Memory]
+[BatchController] --> [JobLauncher]
+[JobLauncher] --> [bankingFileGenerationJob]
+[bankingFileGenerationJob] --> [DomainEntityItemReader]
+[bankingFileGenerationJob] --> [FileGenerationItemProcessor]
+[bankingFileGenerationJob] --> [FileOutputItemWriter]
+[FileGenerationItemProcessor] --> [StrategyResolver]
+[StrategyResolver] --> [Strategy Pattern]
+[Strategy Pattern] --> [Parser Wrappers]
+[BatchMetricsListener] --> [H2 In-Memory]
+[FileOutputItemWriter] --> [output/]
+@enduml

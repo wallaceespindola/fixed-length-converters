@@ -127,7 +127,7 @@ abstract class AbstractSwiftStrategy implements FileGenerationStrategy {
 
     protected static String formatAmount(BigDecimal amount) {
         if (amount == null) return "0,00";
-        return amount.abs().toPlainString().replace(".", ",");
+        return amount.abs().toBigInteger().toString();
     }
 
     protected static String truncate(String value, int maxLen) {

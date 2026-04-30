@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.beanio.BeanReader;
 import org.beanio.BeanWriter;
 import org.beanio.StreamFactory;
+import org.beanio.builder.Align;
+import org.beanio.builder.FieldBuilder;
 import org.beanio.builder.RecordBuilder;
 import org.beanio.builder.StreamBuilder;
 import org.springframework.stereotype.Component;
@@ -20,9 +22,9 @@ import java.util.List;
 
 /**
  * Formatter wrapping BeanIO (2.1.0) for CODA and SWIFT MT serialisation.
- * Uses annotation-based mapping via @Record and @Field — no XML files required.
- * CODA: fixed-length stream (128 chars per record).
- * SWIFT: CSV stream (one row per transaction entry).
+ * Uses programmatic FieldBuilder for CODA (fixed-length) with explicit 0-based positions.
+ * Uses annotation-based BeanIoSwiftRecord for SWIFT (CSV).
+ * No XML mapping files required — fully annotation/programmatic-based.
  */
 @Component
 @Slf4j
@@ -33,28 +35,48 @@ public class BeanIOFormatter {
     public BeanIOFormatter() {
         factory = StreamFactory.newInstance();
 
-        // CODA: annotation-driven fixed-length stream
+        // CODA: fixed-length stream — FieldBuilder.at() uses 0-based character positions
         factory.define(new StreamBuilder("coda")
                 .format("fixedlength")
                 .addRecord(new RecordBuilder("codaRecord")
                         .type(BeanIoCodaRecord.class)
-                        .minOccurs(0)
-                        .maxOccurs(-1)));
+                        .addField(new FieldBuilder("recordType").at(0).length(1).trim())
+                        .addField(new FieldBuilder("bankId").at(1).length(3).trim())
+                        .addField(new FieldBuilder("referenceNumber").at(4).length(10).trim())
+                        .addField(new FieldBuilder("accountNumber").at(14).length(37).trim())
+                        .addField(new FieldBuilder("currency").at(51).length(3).trim())
+                        .addField(new FieldBuilder("amountStr").at(54).length(16)
+                                .padding('0').align(Align.RIGHT).trim())
+                        .addField(new FieldBuilder("entryDate").at(70).length(6).trim())
+                        .addField(new FieldBuilder("valueDate").at(76).length(6).trim())
+                        .addField(new FieldBuilder("description").at(82).length(32).trim())
+                        .addField(new FieldBuilder("transactionCode").at(114).length(3).trim())
+                        .addField(new FieldBuilder("sequenceNumber").at(117).length(4)
+                                .align(Align.RIGHT).trim())
+                        .addField(new FieldBuilder("filler").at(121).length(7).trim())));
 
-        // SWIFT: annotation-driven CSV stream (tag-based content stored as CSV fields)
+        
+        // SWIFT: CSV stream with explicit FieldBuilder column indices (0-based)
         factory.define(new StreamBuilder("swift")
                 .format("csv")
                 .addRecord(new RecordBuilder("swiftRecord")
                         .type(BeanIoSwiftRecord.class)
-                        .minOccurs(0)
-                        .maxOccurs(-1)));
+                        .addField(new FieldBuilder("transactionReference").at(0))
+                        .addField(new FieldBuilder("accountIdentification").at(1))
+                        .addField(new FieldBuilder("statementNumber").at(2))
+                        .addField(new FieldBuilder("openingBalance").at(3))
+                        .addField(new FieldBuilder("valueDate").at(4))
+                        .addField(new FieldBuilder("entryDate").at(5))
+                        .addField(new FieldBuilder("debitCreditMark").at(6))
+                        .addField(new FieldBuilder("amount").at(7))
+                        .addField(new FieldBuilder("transactionType").at(8))
+                        .addField(new FieldBuilder("customerReference").at(9))
+                        .addField(new FieldBuilder("information").at(10))
+                        .addField(new FieldBuilder("closingBalance").at(11))));
 
-        log.debug("BeanIO StreamFactory defined with annotation-based coda and swift streams");
+        log.debug("BeanIO StreamFactory defined: coda(fixedlength/FieldBuilder) + swift(csv/annotations)");
     }
 
-    /**
-     * Serialises a list of CodaRecord objects to a fixed-length CODA string.
-     */
     public String formatCoda(List<CodaRecord> records) {
         StringWriter sw = new StringWriter();
         BeanWriter writer = factory.createWriter("coda", sw);
@@ -66,9 +88,6 @@ public class BeanIOFormatter {
         return ensureCodaLineLength(sw.toString());
     }
 
-    /**
-     * Parses a fixed-length CODA string back into a list of CodaRecord objects.
-     */
     public List<CodaRecord> parseCoda(String content) {
         List<CodaRecord> result = new ArrayList<>();
         String padded = ensureCodaLineLength(content);
@@ -88,9 +107,6 @@ public class BeanIOFormatter {
         return result;
     }
 
-    /**
-     * Serialises a list of SwiftMtRecord objects to CSV format for BeanIO.
-     */
     public String formatSwift(List<SwiftMtRecord> records) {
         StringWriter sw = new StringWriter();
         BeanWriter writer = factory.createWriter("swift", sw);
@@ -102,9 +118,6 @@ public class BeanIOFormatter {
         return sw.toString();
     }
 
-    /**
-     * Parses the BeanIO CSV-serialised SWIFT content back into SwiftMtRecord objects.
-     */
     public List<SwiftMtRecord> parseSwift(String content) {
         List<SwiftMtRecord> result = new ArrayList<>();
         BeanReader reader = factory.createReader("swift", new StringReader(content));
@@ -217,7 +230,8 @@ public class BeanIOFormatter {
 
     private static String padAmount(BigDecimal amount, int length) {
         if (amount == null) amount = BigDecimal.ZERO;
-        String s = amount.abs().toPlainString().replace(".", "");
+        // Strip decimal places before encoding — amounts stored as plain integers in CODA
+        String s = amount.abs().setScale(0, java.math.RoundingMode.HALF_UP).toPlainString();
         if (s.length() >= length) return s.substring(0, length);
         return "0".repeat(length - s.length()) + s;
     }

@@ -1,0 +1,89 @@
+classDiagram
+    class FileGenerationStrategy {
+        <<interface>>
+        +generate(transactions, accounts) String
+        +parse(fileContent) List~Transaction~
+        +getFileType() FileType
+        +getLibrary() Library
+        +strategyKey() String
+    }
+
+    class AbstractCodaStrategy {
+        <<abstract>>
+        +getFileType() FileType.CODA
+        +generate(transactions, accounts) String
+        +parse(fileContent) List~Transaction~
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+        #buildHeader(account) CodaRecord
+        #buildMovement(tx, account) CodaRecord
+        #buildTrailer(transactions) CodaRecord
+    }
+
+    class AbstractSwiftStrategy {
+        <<abstract>>
+        +getFileType() FileType.SWIFT
+        +generate(transactions, accounts) String
+        +parse(fileContent) List~Transaction~
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
+    }
+
+    class CodaBeanIOStrategy {
+        +getLibrary() Library.BEANIO
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class CodaFixedFormat4JStrategy {
+        +getLibrary() Library.FIXEDFORMAT4J
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class CodaFixedLengthStrategy {
+        +getLibrary() Library.FIXEDLENGTH
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class CodaBindyStrategy {
+        +getLibrary() Library.BINDY
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class SwiftBeanIOStrategy {
+        +getLibrary() Library.BEANIO
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
+    }
+
+    class SwiftFixedFormat4JStrategy {
+        +getLibrary() Library.FIXEDFORMAT4J
+    }
+
+    class SwiftFixedLengthStrategy {
+        +getLibrary() Library.FIXEDLENGTH
+    }
+
+    class SwiftBindyStrategy {
+        +getLibrary() Library.BINDY
+    }
+
+    class StrategyResolver {
+        -strategies Map~String, FileGenerationStrategy~
+        +resolve(fileType, library) FileGenerationStrategy
+    }
+
+    FileGenerationStrategy <|.. AbstractCodaStrategy
+    FileGenerationStrategy <|.. AbstractSwiftStrategy
+    AbstractCodaStrategy <|-- CodaBeanIOStrategy
+    AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy
+    AbstractCodaStrategy <|-- CodaFixedLengthStrategy
+    AbstractCodaStrategy <|-- CodaBindyStrategy
+    AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
+    AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
+    AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
+    AbstractSwiftStrategy <|-- SwiftBindyStrategy
+    StrategyResolver --> FileGenerationStrategy

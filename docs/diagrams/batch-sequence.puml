@@ -1,0 +1,48 @@
+@startuml batch-sequence
+!theme plain
+title Spring Batch File Generation — Execution Sequence
+
+actor Frontend
+participant BatchController
+participant BatchJobService
+participant JobLauncher
+participant "bankingFileGenerationJob" as Job
+participant DomainEntityItemReader as Reader
+participant FileGenerationItemProcessor as Processor
+participant StrategyResolver
+participant "FileGenerationStrategy\n(e.g. CodaBeanIOStrategy)" as Strategy
+participant FileOutputItemWriter as Writer
+participant BatchMetricsListener as Listener
+database "H2 Database" as DB
+collections "output/ (filesystem)" as FS
+
+Frontend -> BatchController : POST /api/batch/generate\n{fileType, library}
+BatchController -> BatchJobService : launch(fileType, library)
+BatchJobService -> JobLauncher : run(job, params)
+JobLauncher -> Job : execute()
+Job -> Listener : beforeJob()
+
+loop each chunk of 100 transactions
+    Job -> Reader : read() → Transaction
+    Reader -> DB : findAll()
+    DB --> Reader : List<Transaction>
+
+    Job -> Processor : process(transaction)
+    Processor -> StrategyResolver : resolve(fileType, library)
+    StrategyResolver --> Processor : FileGenerationStrategy
+    Processor -> Strategy : generate([transaction], accounts)
+    Strategy --> Processor : formatted string
+
+    Job -> Writer : write(Chunk<String>)
+end
+
+Writer -> FS : write output file
+Writer -> Job : @AfterStep → COMPLETED
+
+Job -> Listener : afterJob()
+Listener -> DB : save BenchmarkMetrics
+
+Job --> BatchJobService : JobExecution
+BatchJobService --> BatchController : BatchJobResult
+BatchController --> Frontend : BatchJobResponse\n{fileContent, fileName, status, timestamp}
+@enduml

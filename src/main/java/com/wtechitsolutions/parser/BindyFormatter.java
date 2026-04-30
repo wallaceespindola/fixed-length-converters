@@ -237,7 +237,7 @@ public class BindyFormatter {
 
     private static String padAmount(BigDecimal amount, int length) {
         if (amount == null) amount = BigDecimal.ZERO;
-        String s = amount.abs().toPlainString().replace(".", "");
+        String s = amount.abs().toBigInteger().toString();
         if (s.length() >= length) return s.substring(0, length);
         return "0".repeat(length - s.length()) + s;
     }
