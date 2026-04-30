@@ -1,6 +1,7 @@
 package com.wtechitsolutions.batch;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.annotation.AfterStep;
@@ -18,8 +19,9 @@ import java.util.List;
 
 @Component
 @StepScope
-@Slf4j
 public class FileOutputItemWriter implements ItemWriter<String> {
+
+    private static final Logger log = LoggerFactory.getLogger(FileOutputItemWriter.class);
 
     private final List<String> buffer = new ArrayList<>();
 

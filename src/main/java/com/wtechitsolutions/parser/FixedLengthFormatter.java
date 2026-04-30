@@ -3,8 +3,9 @@ package com.wtechitsolutions.parser;
 import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
 import com.wtechitsolutions.parser.model.VlCodaRecord;
-import lombok.extern.slf4j.Slf4j;
 import name.velikodniy.vitaliy.fixedlength.FixedLength;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -17,8 +18,9 @@ import java.util.stream.Collectors;
  * Uses annotation-driven mapping via @FixedLine and @FixedField on VlCodaRecord.
  */
 @Component
-@Slf4j
 public class FixedLengthFormatter {
+
+    private static final Logger log = LoggerFactory.getLogger(FixedLengthFormatter.class);
 
     private final FixedLength<VlCodaRecord> codaParser;
 

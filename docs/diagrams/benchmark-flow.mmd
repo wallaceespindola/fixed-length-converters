@@ -1,0 +1,15 @@
+flowchart TD
+    A[Batch Job Completes] --> B[BatchMetricsListener.afterJob]
+    B --> C[Save BenchmarkMetrics to H2]
+    C --> D{Client Request}
+    D -->|GET /api/benchmark/results| E[Return JSON list]
+    D -->|GET /api/benchmark/export/csv| F[BenchmarkService.exportAsCsv]
+    D -->|GET /api/benchmark/export/markdown| G[BenchmarkService.exportAsMarkdown]
+    D -->|GET /api/benchmark/export/json| H[BenchmarkService.exportAsJson]
+    F --> I[Download benchmark.csv]
+    G --> J[Download benchmark.md]
+    H --> K[Download benchmark.json]
+    L["Python tools/python/\nbenchmark_aggregator.py"] -->|reads| M[target/jmh-result.json]
+    L --> N[Print stats table to stdout]
+    O["Python tools/python/\nreport_generator.py"] -->|reads| M
+    O -->|writes| P[docs/benchmark-results.md]

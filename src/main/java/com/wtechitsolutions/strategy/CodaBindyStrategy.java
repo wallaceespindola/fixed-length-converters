@@ -3,16 +3,18 @@ package com.wtechitsolutions.strategy;
 import com.wtechitsolutions.domain.Library;
 import com.wtechitsolutions.parser.BindyFormatter;
 import com.wtechitsolutions.parser.model.CodaRecord;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class CodaBindyStrategy extends AbstractCodaStrategy {
 
     private final BindyFormatter formatter;
+
+    public CodaBindyStrategy(BindyFormatter formatter) {
+        this.formatter = formatter;
+    }
 
     @Override
     public Library getLibrary() { return Library.BINDY; }

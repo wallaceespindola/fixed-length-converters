@@ -1,0 +1,27 @@
+graph TB
+    subgraph Dev["Developer Machine"]
+        APP["Spring Boot App\nlocalhost:8080\nJava 21 / Maven 3.9"]
+        H2[("H2 In-Memory DB\nbankingdb")]
+        OUT["output/\n*.txt files"]
+        APP <--> H2
+        APP --> OUT
+    end
+
+    subgraph Browser["Web Browser"]
+        SPA["React SPA\nserved from JAR\n/static/index.html"]
+    end
+
+    SPA -->|HTTP REST /api/*| APP
+    SPA -->|HTTP /actuator/*| APP
+
+    subgraph CI["GitHub Actions (CI/CD)"]
+        BUILD["build.yml\nmvn package -DskipTests"]
+        TEST["test.yml\nmvn verify + JaCoCo"]
+        BENCH["benchmark.yml\nJMH → artifact upload"]
+        CQL["codeql.yml\nSecurity scan (weekly)"]
+        REL["release.yml\nGitHub Release + JAR\non tag v*"]
+    end
+
+    subgraph Deps["Dependency Automation"]
+        DBOT["Dependabot\nweekly Maven + Actions + npm PRs"]
+    end

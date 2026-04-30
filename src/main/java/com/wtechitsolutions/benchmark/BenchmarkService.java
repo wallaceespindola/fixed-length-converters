@@ -5,18 +5,22 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wtechitsolutions.domain.BenchmarkMetrics;
 import com.wtechitsolutions.domain.BenchmarkMetricsRepository;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class BenchmarkService {
 
+    private static final Logger log = LoggerFactory.getLogger(BenchmarkService.class);
+
     private final BenchmarkMetricsRepository repository;
+
+    public BenchmarkService(BenchmarkMetricsRepository repository) {
+        this.repository = repository;
+    }
 
     public List<BenchmarkMetrics> getAll() {
         return repository.findTop50ByOrderByTimestampDesc();
@@ -28,15 +32,9 @@ public class BenchmarkService {
                 "id,jobExecutionId,fileType,library,throughputRps,batchDurationMs,recordsProcessed,successRate,timestamp\n");
         for (BenchmarkMetrics m : metrics) {
             csv.append(String.join(",",
-                    str(m.getId()),
-                    str(m.getJobExecutionId()),
-                    str(m.getFileType()),
-                    str(m.getLibrary()),
-                    str(m.getThroughputRps()),
-                    str(m.getBatchDurationMs()),
-                    str(m.getRecordsProcessed()),
-                    str(m.getSuccessRate()),
-                    str(m.getTimestamp())
+                    str(m.getId()), str(m.getJobExecutionId()), str(m.getFileType()), str(m.getLibrary()),
+                    str(m.getThroughputRps()), str(m.getBatchDurationMs()),
+                    str(m.getRecordsProcessed()), str(m.getSuccessRate()), str(m.getTimestamp())
             )).append("\n");
         }
         return csv.toString();

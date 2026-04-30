@@ -5,12 +5,13 @@ import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.support.DefaultExchange;
 import org.apache.camel.dataformat.bindy.fixed.BindyFixedLengthDataFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
@@ -28,8 +29,9 @@ import java.util.stream.Collectors;
  * A minimal CamelContext is managed internally for standalone (non-Camel-Spring) use.
  */
 @Component
-@Slf4j
 public class BindyFormatter {
+
+    private static final Logger log = LoggerFactory.getLogger(BindyFormatter.class);
 
     private CamelContext camelContext;
     private BindyFixedLengthDataFormat codaFormat;

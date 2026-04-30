@@ -1,0 +1,77 @@
+@startuml component-diagram
+!theme plain
+title Banking Platform — Component Diagram
+
+package "REST API Layer" {
+    [DomainController]
+    [BatchController]
+    [BenchmarkController]
+    [Actuator /health /info]
+}
+
+package "Spring Batch" {
+    [BatchJobService]
+    [bankingFileGenerationJob]
+    [DomainEntityItemReader]
+    [FileGenerationItemProcessor]
+    [FileOutputItemWriter]
+    [BatchMetricsListener]
+}
+
+package "Strategy Layer" {
+    [StrategyResolver]
+    [CodaBeanIOStrategy]
+    [CodaFixedFormat4JStrategy]
+    [CodaFixedLengthStrategy]
+    [CodaBindyStrategy]
+    [SwiftBeanIOStrategy]
+    [SwiftFixedFormat4JStrategy]
+    [SwiftFixedLengthStrategy]
+    [SwiftBindyStrategy]
+}
+
+package "Parser Wrappers" {
+    [BeanIOFormatter]
+    [FixedFormat4JFormatter]
+    [FixedLengthFormatter]
+    [BindyFormatter]
+}
+
+package "Domain Layer" {
+    [DomainDataGenerator]
+    [AccountRepository]
+    [TransactionRepository]
+    [BenchmarkMetricsRepository]
+}
+
+package "Configuration" {
+    [BatchConfig]
+    [OpenApiConfig]
+    [WebConfig]
+}
+
+[DomainController] --> [DomainDataGenerator]
+[BatchController] --> [BatchJobService]
+[BatchJobService] --> [bankingFileGenerationJob]
+[bankingFileGenerationJob] --> [DomainEntityItemReader]
+[bankingFileGenerationJob] --> [FileGenerationItemProcessor]
+[bankingFileGenerationJob] --> [FileOutputItemWriter]
+[bankingFileGenerationJob] --> [BatchMetricsListener]
+[FileGenerationItemProcessor] --> [StrategyResolver]
+[StrategyResolver] --> [CodaBeanIOStrategy]
+[StrategyResolver] --> [CodaFixedFormat4JStrategy]
+[StrategyResolver] --> [CodaFixedLengthStrategy]
+[StrategyResolver] --> [CodaBindyStrategy]
+[StrategyResolver] --> [SwiftBeanIOStrategy]
+[StrategyResolver] --> [SwiftFixedFormat4JStrategy]
+[StrategyResolver] --> [SwiftFixedLengthStrategy]
+[StrategyResolver] --> [SwiftBindyStrategy]
+[CodaBeanIOStrategy] --> [BeanIOFormatter]
+[CodaFixedFormat4JStrategy] --> [FixedFormat4JFormatter]
+[CodaFixedLengthStrategy] --> [FixedLengthFormatter]
+[CodaBindyStrategy] --> [BindyFormatter]
+[DomainEntityItemReader] --> [TransactionRepository]
+[DomainDataGenerator] --> [AccountRepository]
+[DomainDataGenerator] --> [TransactionRepository]
+[BatchMetricsListener] --> [BenchmarkMetricsRepository]
+@enduml

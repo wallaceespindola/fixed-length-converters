@@ -3,16 +3,18 @@ package com.wtechitsolutions.strategy;
 import com.wtechitsolutions.domain.Library;
 import com.wtechitsolutions.parser.BindyFormatter;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SwiftBindyStrategy extends AbstractSwiftStrategy {
 
     private final BindyFormatter formatter;
+
+    public SwiftBindyStrategy(BindyFormatter formatter) {
+        this.formatter = formatter;
+    }
 
     @Override
     public Library getLibrary() { return Library.BINDY; }

@@ -1,0 +1,91 @@
+@startuml strategy-class-diagram
+!theme plain
+title Strategy Pattern — Class Hierarchy
+
+interface FileGenerationStrategy {
+  +generate(transactions : List<Transaction>, accounts : List<Account>) : String
+  +parse(fileContent : String) : List<Transaction>
+  +getFileType() : FileType
+  +getLibrary() : Library
+  +strategyKey() : String
+}
+
+abstract class AbstractCodaStrategy {
+  +getFileType() : FileType.CODA
+  +generate(transactions, accounts) : String
+  +parse(fileContent) : List<Transaction>
+  #formatRecords(records : List<CodaRecord>) : String
+  #parseRecords(content : String) : List<CodaRecord>
+  #buildHeader(account : Account) : CodaRecord
+  #buildMovement(tx : Transaction, account : Account) : CodaRecord
+  #buildTrailer(transactions : List<Transaction>) : CodaRecord
+  #toTransaction(r : CodaRecord) : Transaction
+}
+
+abstract class AbstractSwiftStrategy {
+  +getFileType() : FileType.SWIFT
+  +generate(transactions, accounts) : String
+  +parse(fileContent) : List<Transaction>
+  #formatRecords(records : List<SwiftMtRecord>) : String
+  #parseRecords(content : String) : List<SwiftMtRecord>
+  #toTransaction(r : SwiftMtRecord) : Transaction
+}
+
+class CodaBeanIOStrategy {
+  -formatter : BeanIOFormatter
+  +getLibrary() : Library.BEANIO
+}
+
+class CodaFixedFormat4JStrategy {
+  -formatter : FixedFormat4JFormatter
+  +getLibrary() : Library.FIXEDFORMAT4J
+}
+
+class CodaFixedLengthStrategy {
+  -formatter : FixedLengthFormatter
+  +getLibrary() : Library.FIXEDLENGTH
+}
+
+class CodaBindyStrategy {
+  -formatter : BindyFormatter
+  +getLibrary() : Library.BINDY
+}
+
+class SwiftBeanIOStrategy {
+  -formatter : BeanIOFormatter
+  +getLibrary() : Library.BEANIO
+}
+
+class SwiftFixedFormat4JStrategy {
+  -formatter : FixedFormat4JFormatter
+  +getLibrary() : Library.FIXEDFORMAT4J
+}
+
+class SwiftFixedLengthStrategy {
+  -formatter : FixedLengthFormatter
+  +getLibrary() : Library.FIXEDLENGTH
+}
+
+class SwiftBindyStrategy {
+  -formatter : BindyFormatter
+  +getLibrary() : Library.BINDY
+}
+
+class StrategyResolver {
+  -strategies : Map<String, FileGenerationStrategy>
+  +StrategyResolver(strategyList : List<FileGenerationStrategy>)
+  +resolve(fileType : FileType, library : Library) : FileGenerationStrategy
+}
+
+FileGenerationStrategy <|.. AbstractCodaStrategy
+FileGenerationStrategy <|.. AbstractSwiftStrategy
+AbstractCodaStrategy <|-- CodaBeanIOStrategy
+AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy
+AbstractCodaStrategy <|-- CodaFixedLengthStrategy
+AbstractCodaStrategy <|-- CodaBindyStrategy
+AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
+AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
+AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
+AbstractSwiftStrategy <|-- SwiftBindyStrategy
+StrategyResolver o--> FileGenerationStrategy : resolves
+@enduml

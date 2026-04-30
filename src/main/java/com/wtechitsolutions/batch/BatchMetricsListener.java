@@ -4,8 +4,8 @@ import com.wtechitsolutions.domain.BenchmarkMetrics;
 import com.wtechitsolutions.domain.BenchmarkMetricsRepository;
 import com.wtechitsolutions.domain.FileType;
 import com.wtechitsolutions.domain.Library;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -18,11 +18,15 @@ import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class BatchMetricsListener implements JobExecutionListener {
 
+    private static final Logger log = LoggerFactory.getLogger(BatchMetricsListener.class);
+
     private final BenchmarkMetricsRepository metricsRepository;
+
+    public BatchMetricsListener(BenchmarkMetricsRepository metricsRepository) {
+        this.metricsRepository = metricsRepository;
+    }
 
     @Override
     public void afterJob(JobExecution jobExecution) {
@@ -33,8 +37,7 @@ public class BatchMetricsListener implements JobExecutionListener {
 
             LocalDateTime start = jobExecution.getStartTime();
             LocalDateTime end = jobExecution.getEndTime();
-            long durationMs = (start != null && end != null)
-                    ? Duration.between(start, end).toMillis() : 0;
+            long durationMs = (start != null && end != null) ? Duration.between(start, end).toMillis() : 0;
 
             long records = jobExecution.getStepExecutions().stream()
                     .mapToLong(StepExecution::getWriteCount).sum();

@@ -1,0 +1,41 @@
+@startuml benchmark-flow
+!theme plain
+title Benchmark Data Collection and Reporting Flow
+
+start
+
+:Batch Job Completes;
+:BatchMetricsListener.afterJob();
+:Save BenchmarkMetrics row to H2\n(throughputRps, batchDurationMs, recordsProcessed,\nsuccessRate, symmetryRate, library, fileType, timestamp);
+
+split
+  :GET /api/benchmark/results;
+  :Return List<BenchmarkResultResponse> as JSON;
+split again
+  :GET /api/benchmark/export/csv;
+  :BenchmarkService.exportAsCsv();
+  :Stream benchmark.csv to client;
+split again
+  :GET /api/benchmark/export/markdown;
+  :BenchmarkService.exportAsMarkdown();
+  :Stream benchmark.md to client;
+split again
+  :GET /api/benchmark/export/json;
+  :BenchmarkService.exportAsJson();
+  :Stream benchmark.json to client;
+end split
+
+partition "Python Tooling (offline)" {
+  :mvn test -Pbenchmark;
+  :JMH writes target/jmh-result.json;
+  fork
+    :benchmark_aggregator.py reads jmh-result.json;
+    :Print stats table (mean, stdev, min) per benchmark;
+  fork again
+    :report_generator.py reads jmh-result.json;
+    :Generate docs/benchmark-results.md;
+  end fork
+}
+
+stop
+@enduml

@@ -5,7 +5,6 @@ import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.BenchmarkMetrics;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -17,11 +16,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/benchmark")
-@RequiredArgsConstructor
 @Tag(name = "Benchmark", description = "Benchmark metrics and export")
 public class BenchmarkController {
 
     private final BenchmarkService benchmarkService;
+
+    public BenchmarkController(BenchmarkService benchmarkService) {
+        this.benchmarkService = benchmarkService;
+    }
 
     @GetMapping("/results")
     @Operation(summary = "Retrieve the last 50 benchmark metric results")

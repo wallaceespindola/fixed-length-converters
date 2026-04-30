@@ -3,16 +3,18 @@ package com.wtechitsolutions.strategy;
 import com.wtechitsolutions.domain.Library;
 import com.wtechitsolutions.parser.FixedFormat4JFormatter;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SwiftFixedFormat4JStrategy extends AbstractSwiftStrategy {
 
     private final FixedFormat4JFormatter formatter;
+
+    public SwiftFixedFormat4JStrategy(FixedFormat4JFormatter formatter) {
+        this.formatter = formatter;
+    }
 
     @Override
     public Library getLibrary() { return Library.FIXEDFORMAT4J; }

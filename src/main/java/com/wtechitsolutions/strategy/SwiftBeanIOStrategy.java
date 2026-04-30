@@ -3,16 +3,18 @@ package com.wtechitsolutions.strategy;
 import com.wtechitsolutions.domain.Library;
 import com.wtechitsolutions.parser.BeanIOFormatter;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
-@RequiredArgsConstructor
 public class SwiftBeanIOStrategy extends AbstractSwiftStrategy {
 
     private final BeanIOFormatter formatter;
+
+    public SwiftBeanIOStrategy(BeanIOFormatter formatter) {
+        this.formatter = formatter;
+    }
 
     @Override
     public Library getLibrary() { return Library.BEANIO; }

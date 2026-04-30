@@ -47,7 +47,7 @@ fixed-length-converters/
 │   ├── examples/swift/           # valid, malformed, edge-case, benchmark SWIFT files
 │   ├── diagrams/                 # 7 diagram types × .puml + .mmd
 │   ├── slides/                   # banking-parser-comparison.md + .pptx
-│   └── superpowers/specs/        # design specs
+│   └── specs/                    # design specs
 ├── tools/python/                 # benchmark aggregation + report generation
 ├── output/                       # generated banking files (gitignored)
 └── .github/

@@ -1,0 +1,58 @@
+graph LR
+    subgraph API["REST API Layer"]
+        DC[DomainController]
+        BC[BatchController]
+        BNC[BenchmarkController]
+        ACT[Actuator]
+    end
+    subgraph Batch["Spring Batch"]
+        JS[BatchJobService]
+        JOB[bankingFileGenerationJob]
+        IR[DomainEntityItemReader]
+        IP[FileGenerationItemProcessor]
+        IW[FileOutputItemWriter]
+        BML[BatchMetricsListener]
+    end
+    subgraph Strategy["Strategy Layer"]
+        SR[StrategyResolver]
+        CS["4× CodaStrategy"]
+        SS["4× SwiftStrategy"]
+    end
+    subgraph Parser["Parser Library Wrappers"]
+        BIO[BeanIOFormatter]
+        FF4J[FixedFormat4JFormatter]
+        VL[FixedLengthFormatter]
+        BINDY[BindyFormatter]
+    end
+    subgraph Domain["Domain Layer"]
+        DDG[DomainDataGenerator]
+        AR[AccountRepository]
+        TR[TransactionRepository]
+    end
+    subgraph Config["Configuration"]
+        BCFG[BatchConfig]
+        OAC[OpenApiConfig]
+        WC[WebConfig]
+    end
+
+    DC --> DDG
+    BC --> JS
+    JS --> JOB
+    JOB --> IR
+    JOB --> IP
+    JOB --> IW
+    JOB --> BML
+    IP --> SR
+    SR --> CS
+    SR --> SS
+    CS --> BIO
+    CS --> FF4J
+    CS --> VL
+    CS --> BINDY
+    SS --> BIO
+    SS --> FF4J
+    SS --> VL
+    SS --> BINDY
+    IR --> TR
+    DDG --> AR
+    DDG --> TR

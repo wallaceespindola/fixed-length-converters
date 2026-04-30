@@ -1,0 +1,37 @@
+@startuml deployment-diagram
+!theme plain
+title Deployment Topology
+
+node "Developer Machine" {
+    node "JVM (Java 21)" {
+        artifact "fixed-length-converters.jar" as JAR
+        component "Spring Boot 3.4.5\nlocalhost:8080" as APP
+        component "H2 In-Memory DB\nbankingdb" as H2
+        component "React SPA\n/static/**" as SPA
+    }
+    folder "output/" as OUT
+}
+
+node "Web Browser" {
+    component "Browser" as BR
+}
+
+node "GitHub Actions" {
+    component "build.yml\nmvn package" as BUILD
+    component "test.yml\nmvn verify + JaCoCo" as TEST
+    component "benchmark.yml\nJMH benchmarks" as BENCH
+    component "codeql.yml\nSecurity scan" as CQL
+    component "release.yml\nGitHub Release" as REL
+}
+
+JAR --> APP
+APP <--> H2 : JDBC
+APP --> SPA : serve static
+APP --> OUT : write *.txt
+BR --> APP : HTTP REST /api/*\nHTTP /actuator/*
+APP --> SPA : fallback to index.html
+
+BUILD --> JAR : produces
+TEST --> JAR : tests
+REL --> JAR : attaches to release
+@enduml

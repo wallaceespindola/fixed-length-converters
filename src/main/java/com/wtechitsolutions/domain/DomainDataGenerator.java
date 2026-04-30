@@ -1,7 +1,7 @@
 package com.wtechitsolutions.domain;
 
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -13,15 +13,23 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.IntStream;
 
 @Service
-@RequiredArgsConstructor
-@Slf4j
 public class DomainDataGenerator {
+
+    private static final Logger log = LoggerFactory.getLogger(DomainDataGenerator.class);
 
     private final AccountRepository accountRepository;
     private final TransactionRepository transactionRepository;
     private final BankingStatementRepository statementRepository;
 
     private final AtomicLong operationIdCounter = new AtomicLong(1000);
+
+    public DomainDataGenerator(AccountRepository accountRepository,
+                                TransactionRepository transactionRepository,
+                                BankingStatementRepository statementRepository) {
+        this.accountRepository = accountRepository;
+        this.transactionRepository = transactionRepository;
+        this.statementRepository = statementRepository;
+    }
 
     @Transactional
     public GenerationResult generate() {
@@ -89,6 +97,5 @@ public class DomainDataGenerator {
                 .build();
     }
 
-    public record GenerationResult(long operationId, int accounts, int transactions, int statements) {
-    }
+    public record GenerationResult(long operationId, int accounts, int transactions, int statements) {}
 }

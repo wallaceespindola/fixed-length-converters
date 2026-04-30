@@ -5,7 +5,8 @@ import com.ancientprogramming.fixedformat4j.format.impl.FixedFormatManagerImpl;
 import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.Ff4jCodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -18,8 +19,9 @@ import java.util.List;
  * Uses annotation-driven mapping via @Record and @Field on Ff4jCodaRecord.
  */
 @Component
-@Slf4j
 public class FixedFormat4JFormatter {
+
+    private static final Logger log = LoggerFactory.getLogger(FixedFormat4JFormatter.class);
 
     private final FixedFormatManager manager = new FixedFormatManagerImpl();
 

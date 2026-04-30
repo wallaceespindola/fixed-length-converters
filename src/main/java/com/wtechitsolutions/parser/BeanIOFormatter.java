@@ -4,7 +4,6 @@ import com.wtechitsolutions.parser.model.BeanIoCodaRecord;
 import com.wtechitsolutions.parser.model.BeanIoSwiftRecord;
 import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
-import lombok.extern.slf4j.Slf4j;
 import org.beanio.BeanReader;
 import org.beanio.BeanWriter;
 import org.beanio.StreamFactory;
@@ -12,6 +11,8 @@ import org.beanio.builder.Align;
 import org.beanio.builder.FieldBuilder;
 import org.beanio.builder.RecordBuilder;
 import org.beanio.builder.StreamBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.io.StringReader;
@@ -27,8 +28,9 @@ import java.util.List;
  * No XML mapping files required — fully annotation/programmatic-based.
  */
 @Component
-@Slf4j
 public class BeanIOFormatter {
+
+    private static final Logger log = LoggerFactory.getLogger(BeanIOFormatter.class);
 
     private final StreamFactory factory;
 

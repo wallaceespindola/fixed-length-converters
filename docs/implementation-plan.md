@@ -1,6 +1,6 @@
 # Banking Fixed-Length File Generator & Parser Validation Platform — Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> Steps use checkbox (`- [ ]`) syntax for progress tracking.
 
 **Goal:** Build a complete enterprise-grade banking file experimentation platform generating, parsing, and benchmarking CODA and SWIFT MT files via 4 Java formatter libraries, Spring Batch, and a React frontend.
 
@@ -8,7 +8,7 @@
 
 **Tech Stack:** Java 25, Spring Boot 3.4.x, Spring Batch, Spring Data JPA, H2, Lombok, BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, JMH, React 18, TypeScript, Vite, MUI v5, Recharts, JUnit 5, Mockito, JaCoCo, GitHub Actions.
 
-**Spec reference:** `docs/superpowers/specs/2026-04-30-banking-platform-design.md`
+**Spec reference:** `docs/specs/design-spec.md`
 
 ---
 

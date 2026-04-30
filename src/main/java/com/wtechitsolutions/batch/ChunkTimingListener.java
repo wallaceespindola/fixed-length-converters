@@ -1,13 +1,15 @@
 package com.wtechitsolutions.batch;
 
-import lombok.extern.slf4j.Slf4j;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.ChunkListener;
 import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.stereotype.Component;
 
 @Component
-@Slf4j
 public class ChunkTimingListener implements ChunkListener {
+
+    private static final Logger log = LoggerFactory.getLogger(ChunkTimingListener.class);
 
     private long chunkStart;
 
