@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Implementation Status: COMPLETE
 
-All 62 tests pass. Application starts and runs end-to-end.
+All 75 tests pass. Application starts and runs end-to-end.
 
 ## Technical Stack
 
@@ -23,7 +23,7 @@ All 62 tests pass. Application starts and runs end-to-end.
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x |
-| Testing | JUnit 5 + Mockito, 62 tests |
+| Testing | JUnit 5 + Mockito, 75 tests |
 | Libraries | BeanIO 2.1.0, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0 |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
@@ -140,6 +140,9 @@ GET  /actuator/info              → app name, version, description
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
 | Integration | `ActuatorTest` | TestRestTemplate: /actuator/health, /actuator/info |
 | Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |
+
+| Integration | `GoldenFileTest` | 128-char CODA lines, required record types and MT940 tags |
+| Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 8 strategies (run with -Pbenchmark) |
 
 Run specific test: `mvn test -Pskip-frontend -Dtest=SymmetryTest`
 

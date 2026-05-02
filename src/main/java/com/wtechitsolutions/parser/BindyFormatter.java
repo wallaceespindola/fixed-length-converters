@@ -37,7 +37,7 @@ public class BindyFormatter {
     private BindyFixedLengthDataFormat codaFormat;
 
     @PostConstruct
-    void init() {
+    public void init() {
         try {
             camelContext = new DefaultCamelContext();
             codaFormat = new BindyFixedLengthDataFormat(BindyCodaRecord.class);
