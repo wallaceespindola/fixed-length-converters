@@ -1,0 +1,131 @@
+import { useQuery } from '@tanstack/react-query'
+import {
+  Box, Typography, CircularProgress, Alert, Button, Stack, Grid, Card, CardContent,
+} from '@mui/material'
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  LineChart, Line,
+} from 'recharts'
+import { getBenchmarkResults, BenchmarkResultResponse } from '../api/client'
+
+const LIBRARY_COLORS: Record<string, string> = {
+  BEANIO: '#1976d2',
+  FIXEDFORMAT4J: '#2e7d32',
+  FIXEDLENGTH: '#ed6c02',
+  BINDY: '#9c27b0',
+}
+
+function byLibrary(data: BenchmarkResultResponse[]) {
+  const map: Record<string, { throughput: number; duration: number; count: number }> = {}
+  data.forEach(d => {
+    if (!map[d.library]) map[d.library] = { throughput: 0, duration: 0, count: 0 }
+    map[d.library].throughput += d.throughputRps
+    map[d.library].duration += d.generationDurationMs
+    map[d.library].count++
+  })
+  return Object.entries(map).map(([lib, v]) => ({
+    library: lib,
+    avgThroughput: v.count ? +(v.throughput / v.count).toFixed(2) : 0,
+    avgDuration: v.count ? +(v.duration / v.count).toFixed(0) : 0,
+  }))
+}
+
+export default function BenchmarkDashboardView() {
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['benchmarkResults'],
+    queryFn: getBenchmarkResults,
+    refetchInterval: 30_000,
+  })
+
+  if (isLoading) return <CircularProgress sx={{ mt: 4 }} />
+  if (error) return <Alert severity="error">Failed to load benchmark results</Alert>
+
+  const results = data ?? []
+  const libraryData = byLibrary(results)
+  const timelineData = results.slice(0, 20).reverse().map((r, i) => ({
+    run: i + 1,
+    throughput: r.throughputRps,
+    library: r.library,
+  }))
+
+  const exportFile = (format: 'csv' | 'markdown' | 'json') => {
+    window.open(`/api/benchmark/export/${format}`, '_blank')
+  }
+
+  return (
+    <Box>
+      <Typography variant="h4" gutterBottom fontWeight={700}>Benchmark Dashboard</Typography>
+
+      <Stack direction="row" spacing={1} mb={3}>
+        <Button variant="outlined" size="small" onClick={() => exportFile('csv')}>Export CSV</Button>
+        <Button variant="outlined" size="small" onClick={() => exportFile('json')}>Export JSON</Button>
+        <Button variant="outlined" size="small" onClick={() => exportFile('markdown')}>Export Markdown</Button>
+      </Stack>
+
+      {results.length === 0 ? (
+        <Alert severity="info">
+          No benchmark data yet. Run some batch jobs to populate metrics.
+        </Alert>
+      ) : (
+        <Grid container spacing={3}>
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Throughput by Library (ops/s)</Typography>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={libraryData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="library" />
+                    <YAxis />
+                    <Tooltip />
+                    <Bar dataKey="avgThroughput" name="Avg Throughput"
+                      fill="#1976d2"
+                      label={{ position: 'top', fontSize: 11 }} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Throughput Over Runs</Typography>
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={timelineData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="run" label={{ value: 'Run #', position: 'insideBottom', offset: -2 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="throughput" name="Throughput (ops/s)"
+                      stroke={LIBRARY_COLORS['BEANIO']} dot={false} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Library Summary</Typography>
+                <Stack direction="row" spacing={4} flexWrap="wrap">
+                  {libraryData.map(d => (
+                    <Box key={d.library}>
+                      <Typography variant="subtitle2" sx={{ color: LIBRARY_COLORS[d.library] }}>
+                        {d.library}
+                      </Typography>
+                      <Typography variant="body2">Avg throughput: <b>{d.avgThroughput} ops/s</b></Typography>
+                      <Typography variant="body2">Avg duration: <b>{d.avgDuration} ms</b></Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+      )}
+    </Box>
+  )
+}

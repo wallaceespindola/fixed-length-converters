@@ -20,6 +20,13 @@ public class WebConfig implements WebMvcConfigurer {
                 .addResolver(new PathResourceResolver() {
                     @Override
                     protected Resource getResource(String resourcePath, Resource location) throws IOException {
+                        // Never intercept backend paths — let Spring MVC handle them as 404 if not found
+                        if (resourcePath.startsWith("api/")
+                                || resourcePath.startsWith("actuator/")
+                                || resourcePath.startsWith("v3/")
+                                || resourcePath.startsWith("swagger-ui")) {
+                            return null;
+                        }
                         Resource resource = location.createRelative(resourcePath);
                         if (resource.exists() && resource.isReadable()) {
                             return resource;
