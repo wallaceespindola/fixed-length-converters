@@ -20,7 +20,8 @@ class ActuatorTest {
     @Test
     @SuppressWarnings("unchecked")
     void health_endpoint_returns_up() {
-        ResponseEntity<Map> response = restTemplate.getForEntity("/actuator/health", Map.class);
+        ResponseEntity<Map<String, Object>> response =
+                restTemplate.getForEntity("/actuator/health", (Class<Map<String, Object>>) (Class<?>) Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
@@ -29,8 +30,10 @@ class ActuatorTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void info_endpoint_returns_200() {
-        ResponseEntity<Map> response = restTemplate.getForEntity("/actuator/info", Map.class);
+        ResponseEntity<Map<String, Object>> response =
+                restTemplate.getForEntity("/actuator/info", (Class<Map<String, Object>>) (Class<?>) Map.class);
 
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
         assertThat(response.getBody()).isNotNull();
