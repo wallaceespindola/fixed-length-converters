@@ -44,8 +44,9 @@ export interface BenchmarkResultResponse {
   library: Library
   throughputRps: number
   generationDurationMs: number
+  parseDurationMs: number
   batchDurationMs: number
-  recordsProcessed: number
+  memoryUsedBytes: number
   successRate: number
   symmetryRate: number
   timestamp: string

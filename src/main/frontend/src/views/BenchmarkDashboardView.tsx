@@ -16,17 +16,19 @@ const LIBRARY_COLORS: Record<string, string> = {
 }
 
 function byLibrary(data: BenchmarkResultResponse[]) {
-  const map: Record<string, { throughput: number; duration: number; count: number }> = {}
+  const map: Record<string, { throughput: number; genDuration: number; batchDuration: number; count: number }> = {}
   data.forEach(d => {
-    if (!map[d.library]) map[d.library] = { throughput: 0, duration: 0, count: 0 }
+    if (!map[d.library]) map[d.library] = { throughput: 0, genDuration: 0, batchDuration: 0, count: 0 }
     map[d.library].throughput += d.throughputRps
-    map[d.library].duration += d.generationDurationMs
+    map[d.library].genDuration += d.generationDurationMs
+    map[d.library].batchDuration += d.batchDurationMs
     map[d.library].count++
   })
   return Object.entries(map).map(([lib, v]) => ({
     library: lib,
     avgThroughput: v.count ? +(v.throughput / v.count).toFixed(2) : 0,
-    avgDuration: v.count ? +(v.duration / v.count).toFixed(0) : 0,
+    avgGenDuration: v.count ? +(v.genDuration / v.count).toFixed(0) : 0,
+    avgBatchDuration: v.count ? +(v.batchDuration / v.count).toFixed(0) : 0,
   }))
 }
 
@@ -45,6 +47,8 @@ export default function BenchmarkDashboardView() {
   const timelineData = results.slice(0, 20).reverse().map((r, i) => ({
     run: i + 1,
     throughput: r.throughputRps,
+    batchDuration: r.batchDurationMs,
+    genDuration: r.generationDurationMs,
     library: r.library,
   }))
 
@@ -68,17 +72,18 @@ export default function BenchmarkDashboardView() {
         </Alert>
       ) : (
         <Grid container spacing={3}>
+          {/* Row 1: throughput bar + duration bar */}
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
-                <Typography variant="h6" gutterBottom>Throughput by Library (ops/s)</Typography>
+                <Typography variant="h6" gutterBottom>Avg Throughput by Library (ops/s)</Typography>
                 <ResponsiveContainer width="100%" height={260}>
                   <BarChart data={libraryData}>
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="library" />
                     <YAxis />
                     <Tooltip />
-                    <Bar dataKey="avgThroughput" name="Avg Throughput"
+                    <Bar dataKey="avgThroughput" name="Avg Throughput (ops/s)"
                       fill="#1976d2"
                       label={{ position: 'top', fontSize: 11 }} />
                   </BarChart>
@@ -87,6 +92,30 @@ export default function BenchmarkDashboardView() {
             </Card>
           </Grid>
 
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Avg Duration by Library (ms)</Typography>
+                <ResponsiveContainer width="100%" height={260}>
+                  <BarChart data={libraryData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="library" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Bar dataKey="avgBatchDuration" name="Avg Batch Duration (ms)"
+                      fill="#ed6c02"
+                      label={{ position: 'top', fontSize: 11 }} />
+                    <Bar dataKey="avgGenDuration" name="Avg Generation Duration (ms)"
+                      fill="#9c27b0"
+                      label={{ position: 'top', fontSize: 11 }} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Row 2: throughput over runs + duration over runs */}
           <Grid item xs={12} md={6}>
             <Card>
               <CardContent>
@@ -106,6 +135,28 @@ export default function BenchmarkDashboardView() {
             </Card>
           </Grid>
 
+          <Grid item xs={12} md={6}>
+            <Card>
+              <CardContent>
+                <Typography variant="h6" gutterBottom>Avg Duration Over Runs (ms)</Typography>
+                <ResponsiveContainer width="100%" height={260}>
+                  <LineChart data={timelineData}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="run" label={{ value: 'Run #', position: 'insideBottom', offset: -2 }} />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="batchDuration" name="Batch Duration (ms)"
+                      stroke={LIBRARY_COLORS['FIXEDFORMAT4J']} dot={false} />
+                    <Line type="monotone" dataKey="genDuration" name="Generation Duration (ms)"
+                      stroke={LIBRARY_COLORS['BINDY']} dot={false} strokeDasharray="4 2" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Row 3: summary */}
           <Grid item xs={12}>
             <Card>
               <CardContent>
@@ -117,7 +168,8 @@ export default function BenchmarkDashboardView() {
                         {d.library}
                       </Typography>
                       <Typography variant="body2">Avg throughput: <b>{d.avgThroughput} ops/s</b></Typography>
-                      <Typography variant="body2">Avg duration: <b>{d.avgDuration} ms</b></Typography>
+                      <Typography variant="body2">Avg batch duration: <b>{d.avgBatchDuration} ms</b></Typography>
+                      <Typography variant="body2">Avg gen duration: <b>{d.avgGenDuration} ms</b></Typography>
                     </Box>
                   ))}
                 </Stack>

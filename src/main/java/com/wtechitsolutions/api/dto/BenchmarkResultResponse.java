@@ -13,6 +13,7 @@ public record BenchmarkResultResponse(
         double throughputRps,
         long generationDurationMs,
         long parseDurationMs,
+        long batchDurationMs,
         long memoryUsedBytes,
         double successRate,
         double symmetryRate,

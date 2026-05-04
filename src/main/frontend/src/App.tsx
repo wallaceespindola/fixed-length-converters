@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import {
   Box, CssBaseline, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
   AppBar, Toolbar, Typography, IconButton, Tooltip, createTheme, ThemeProvider,
+  Link, Divider,
 } from '@mui/material'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import StorageIcon from '@mui/icons-material/Storage'
@@ -76,14 +77,45 @@ export default function App() {
             </List>
           </Drawer>
 
-          <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-            <Routes>
-              <Route path="/"          element={<DashboardView />} />
-              <Route path="/generate"  element={<DataGeneratorView />} />
-              <Route path="/batch"     element={<BatchRunnerView />} />
-              <Route path="/history"   element={<BatchHistoryView />} />
-              <Route path="/benchmark" element={<BenchmarkDashboardView />} />
-            </Routes>
+          <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8, display: 'flex', flexDirection: 'column', minHeight: 'calc(100vh - 64px)' }}>
+            <Box sx={{ flexGrow: 1 }}>
+              <Routes>
+                <Route path="/"          element={<DashboardView />} />
+                <Route path="/generate"  element={<DataGeneratorView />} />
+                <Route path="/batch"     element={<BatchRunnerView />} />
+                <Route path="/history"   element={<BatchHistoryView />} />
+                <Route path="/benchmark" element={<BenchmarkDashboardView />} />
+              </Routes>
+            </Box>
+
+            <Box component="footer" sx={{ mt: 6 }}>
+              <Divider />
+              <Box sx={{
+                py: 2, px: 1, display: 'flex', alignItems: 'center',
+                justifyContent: 'space-between', flexWrap: 'wrap', gap: 1,
+              }}>
+                <Typography variant="caption" color="text.secondary">
+                  Banking Fixed-Length File Platform &nbsp;·&nbsp; v1.0.0-SNAPSHOT
+                </Typography>
+                <Box sx={{ display: 'flex', gap: 2 }}>
+                  <Typography variant="caption" color="text.secondary">
+                    By{' '}
+                    <Link href="https://www.linkedin.com/in/wallaceespindola/"
+                      target="_blank" rel="noopener" underline="hover">
+                      Wallace Espindola
+                    </Link>
+                  </Typography>
+                  <Link href="https://github.com/wallaceespindola/fixed-length-converters"
+                    target="_blank" rel="noopener" variant="caption" underline="hover">
+                    GitHub
+                  </Link>
+                  <Link href="https://www.linkedin.com/in/wallaceespindola/"
+                    target="_blank" rel="noopener" variant="caption" underline="hover">
+                    LinkedIn
+                  </Link>
+                </Box>
+              </Box>
+            </Box>
           </Box>
         </Box>
       </BrowserRouter>

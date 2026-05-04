@@ -67,6 +67,7 @@ public class BenchmarkController {
                 m.getThroughputRps() != null ? m.getThroughputRps() : 0.0,
                 m.getGenerationDurationMs() != null ? m.getGenerationDurationMs() : 0L,
                 m.getParseDurationMs() != null ? m.getParseDurationMs() : 0L,
+                m.getBatchDurationMs() != null ? m.getBatchDurationMs() : 0L,
                 m.getMemoryUsedBytes() != null ? m.getMemoryUsedBytes() : 0L,
                 m.getSuccessRate() != null ? m.getSuccessRate() : 0.0,
                 m.getSymmetryRate() != null ? m.getSymmetryRate() : 0.0,

@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Implementation Status: COMPLETE
 
-All 75 tests pass. Application starts and runs end-to-end.
+All 76 tests pass. Application starts and runs end-to-end.
 
 ## Technical Stack
 
@@ -49,7 +49,7 @@ mvn test -Pskip-frontend -Dtest=StrategyResolverTest
 mvn test -Pskip-frontend -Pbenchmark
 
 # Makefile shortcuts
-make build | make run | make test | make benchmark | make clean
+make build | make run | make test | make benchmark | make clean | make kill
 ```
 
 ## Architecture
@@ -99,8 +99,8 @@ src/main/java/com/wtechitsolutions/
 
 ### SWIFT Format Notes
 
-- BeanIO strategy: serialises as CSV (structured, parseable)
-- Other strategies: serialise as MT940 tag format (`:20:`, `:25:`, etc.) with record delimiters
+- All 4 strategies serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters
+- BeanIO previously used CSV format; fixed to be consistent with the other strategies
 
 ## REST API Endpoints
 
@@ -134,7 +134,7 @@ GET  /actuator/info              → app name, version, description
 | Unit | `CodaRecordTest` | toFixedWidth/fromFixedWidth, 128-char lines |
 | Integration | `StrategyResolverTest` | All 8 strategies resolve by key |
 | Integration | `CodaStrategyTest` | Each CODA library: 128-char lines, header/trailer |
-| Integration | `SwiftStrategyTest` | Each SWIFT library: non-empty output |
+| Integration | `SwiftStrategyTest` | All 4 SWIFT libraries: MT940 tag assertions (12 tests) |
 | Integration | `SymmetryTest` | Round-trip: generate→parse preserves amount+type |
 | Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate |
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |

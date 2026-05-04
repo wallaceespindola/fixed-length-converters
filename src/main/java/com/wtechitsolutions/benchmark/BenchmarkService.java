@@ -29,11 +29,12 @@ public class BenchmarkService {
     public String exportAsCsv() {
         List<BenchmarkMetrics> metrics = repository.findAll();
         StringBuilder csv = new StringBuilder(
-                "id,jobExecutionId,fileType,library,throughputRps,batchDurationMs,recordsProcessed,successRate,timestamp\n");
+                "id,jobExecutionId,fileType,library,throughputRps,batchDurationMs,generationDurationMs,parseDurationMs,recordsProcessed,successRate,timestamp\n");
         for (BenchmarkMetrics m : metrics) {
             csv.append(String.join(",",
                     str(m.getId()), str(m.getJobExecutionId()), str(m.getFileType()), str(m.getLibrary()),
                     str(m.getThroughputRps()), str(m.getBatchDurationMs()),
+                    str(m.getGenerationDurationMs()), str(m.getParseDurationMs()),
                     str(m.getRecordsProcessed()), str(m.getSuccessRate()), str(m.getTimestamp())
             )).append("\n");
         }
@@ -43,13 +44,14 @@ public class BenchmarkService {
     public String exportAsMarkdown() {
         List<BenchmarkMetrics> metrics = repository.findAll();
         StringBuilder md = new StringBuilder(
-                "| ID | FileType | Library | Throughput RPS | Duration Ms | Records | Success Rate | Timestamp |\n");
-        md.append("|---|---|---|---|---|---|---|---|\n");
+                "| ID | FileType | Library | Throughput (ops/s) | Batch Duration (ms) | Gen Duration (ms) | Records | Success Rate | Timestamp |\n");
+        md.append("|---|---|---|---|---|---|---|---|---|\n");
         for (BenchmarkMetrics m : metrics) {
-            md.append(String.format("| %s | %s | %s | %.2f | %s | %s | %.2f | %s |\n",
+            md.append(String.format("| %s | %s | %s | %.2f | %s | %s | %s | %.2f | %s |\n",
                     str(m.getId()), str(m.getFileType()), str(m.getLibrary()),
                     m.getThroughputRps() != null ? m.getThroughputRps() : 0.0,
-                    str(m.getBatchDurationMs()), str(m.getRecordsProcessed()),
+                    str(m.getBatchDurationMs()), str(m.getGenerationDurationMs()),
+                    str(m.getRecordsProcessed()),
                     m.getSuccessRate() != null ? m.getSuccessRate() : 0.0,
                     str(m.getTimestamp())));
         }
