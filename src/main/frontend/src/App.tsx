@@ -34,7 +34,9 @@ export default function App() {
   const stored = localStorage.getItem('colorMode') as 'light' | 'dark' | null
   const [mode, setMode] = useState<'light' | 'dark'>(stored ?? 'light')
   const { data: info } = useQuery({ queryKey: ['info'], queryFn: getInfo, staleTime: Infinity })
-  const appVersion = (info as any)?.app?.version ?? ''
+  // Prefer build.version (from Maven build-info goal) as it is always set by Maven;
+  // fall back to app.version (from @project.version@ resource filtering).
+  const appVersion = (info as any)?.build?.version ?? (info as any)?.app?.version ?? ''
 
   const theme = useMemo(() =>
     createTheme({ palette: { mode } }),
