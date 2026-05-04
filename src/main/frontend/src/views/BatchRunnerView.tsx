@@ -6,7 +6,7 @@ import {
 import { generateBatch, BatchJobResponse, FileType, Library } from '../api/client'
 
 const FILE_TYPES: FileType[] = ['CODA', 'SWIFT']
-const LIBRARIES: Library[] = ['BEANIO', 'FIXEDFORMAT4J', 'FIXEDLENGTH', 'BINDY']
+const LIBRARIES: Library[] = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY']
 
 export default function BatchRunnerView() {
   const [fileType, setFileType] = useState<FileType>('CODA')

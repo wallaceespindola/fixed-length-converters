@@ -10,7 +10,7 @@ import { getBenchmarkResults, BenchmarkResultResponse } from '../api/client'
 
 const LIBRARY_COLORS: Record<string, string> = {
   BEANIO: '#1976d2',
-  FIXEDFORMAT4J: '#2e7d32',
+  FIXFORMAT4J: '#2e7d32',
   FIXEDLENGTH: '#ed6c02',
   BINDY: '#9c27b0',
 }
@@ -147,7 +147,7 @@ export default function BenchmarkDashboardView() {
                     <Tooltip />
                     <Legend />
                     <Line type="monotone" dataKey="batchDuration" name="Batch Duration (ms)"
-                      stroke={LIBRARY_COLORS['FIXEDFORMAT4J']} dot={false} />
+                      stroke={LIBRARY_COLORS['FIXFORMAT4J']} dot={false} />
                     <Line type="monotone" dataKey="genDuration" name="Generation Duration (ms)"
                       stroke={LIBRARY_COLORS['BINDY']} dot={false} strokeDasharray="4 2" />
                   </LineChart>

@@ -17,7 +17,7 @@ public class SwiftFixedFormat4JStrategy extends AbstractSwiftStrategy {
     }
 
     @Override
-    public Library getLibrary() { return Library.FIXEDFORMAT4J; }
+    public Library getLibrary() { return Library.FIXFORMAT4J; }
 
     @Override
     protected String formatRecords(List<SwiftMtRecord> records) {

@@ -2,7 +2,7 @@ package com.wtechitsolutions.domain;
 
 public enum Library {
     BEANIO,
-    FIXEDFORMAT4J,
+    FIXFORMAT4J,
     FIXEDLENGTH,
     BINDY
 }

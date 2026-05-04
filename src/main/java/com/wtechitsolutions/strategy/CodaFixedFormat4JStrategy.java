@@ -17,7 +17,7 @@ public class CodaFixedFormat4JStrategy extends AbstractCodaStrategy {
     }
 
     @Override
-    public Library getLibrary() { return Library.FIXEDFORMAT4J; }
+    public Library getLibrary() { return Library.FIXFORMAT4J; }
 
     @Override
     protected String formatRecords(List<CodaRecord> records) {
