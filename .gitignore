@@ -130,3 +130,5 @@ src/main/frontend/package-lock.json
 *.swp
 *.swo
 .mvn/wrapper/maven-wrapper.jar
+package-lock.json
+src/main/resources/static/
