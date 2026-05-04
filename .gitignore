@@ -119,6 +119,9 @@ node_modules/
 src/main/frontend/node_modules/
 src/main/frontend/.vite/
 src/main/frontend/dist/
+# frontend-maven-plugin downloads Node.js here
+src/main/frontend/node/
+src/main/frontend/package-lock.json
 
 # ===========================
 # Misc
