@@ -21,6 +21,14 @@
     <description>Banking Fixed-Length File Generator &amp; Parser Validation Platform</description>
     <url>https://github.com/wallaceespindola/fixed-length-converters</url>
 
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
+            <distribution>repo</distribution>
+        </license>
+    </licenses>
+
     <developers>
         <developer>
             <name>Wallace Espindola</name>

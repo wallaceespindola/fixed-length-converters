@@ -5,7 +5,7 @@
 [![CodeQL](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/codeql.yml/badge.svg)](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/codeql.yml)
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen)](https://spring.io/projects/spring-boot)
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and **SWIFT MT940** fixed-length banking files using **4 Java formatter libraries**, all orchestrated through **Spring Batch** and the **Strategy Pattern**.
 
