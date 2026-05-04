@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route, NavLink } from 'react-router-dom'
 import {
   Box, CssBaseline, Drawer, List, ListItemButton, ListItemIcon, ListItemText,
   AppBar, Toolbar, Typography, IconButton, Tooltip, createTheme, ThemeProvider,
   Link, Divider,
 } from '@mui/material'
+import { getInfo } from './api/client'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import StorageIcon from '@mui/icons-material/Storage'
 import PlayArrowIcon from '@mui/icons-material/PlayArrow'
@@ -31,6 +33,8 @@ const NAV = [
 export default function App() {
   const stored = localStorage.getItem('colorMode') as 'light' | 'dark' | null
   const [mode, setMode] = useState<'light' | 'dark'>(stored ?? 'light')
+  const { data: info } = useQuery({ queryKey: ['info'], queryFn: getInfo, staleTime: Infinity })
+  const appVersion = (info as any)?.app?.version ?? ''
 
   const theme = useMemo(() =>
     createTheme({ palette: { mode } }),
@@ -95,7 +99,7 @@ export default function App() {
                 justifyContent: 'space-between', flexWrap: 'wrap', gap: 1,
               }}>
                 <Typography variant="caption" color="text.secondary">
-                  Banking Fixed-Length File Platform &nbsp;·&nbsp; v1.0.0-SNAPSHOT
+                  Banking Fixed-Length File Platform{appVersion && <>&nbsp;·&nbsp; v{appVersion}</>}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Typography variant="caption" color="text.secondary">
