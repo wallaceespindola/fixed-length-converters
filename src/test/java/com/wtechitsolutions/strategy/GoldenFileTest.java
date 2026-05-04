@@ -112,21 +112,10 @@ class GoldenFileTest {
                 accountRepository.findAll());
 
         assertThat(output).isNotBlank();
-        // BeanIO serialises SWIFT as CSV (structured), others as MT940 tags
-        if (library == Library.BEANIO) {
-            // BeanIO CSV format: verify non-empty structured output with transaction data
-            assertThat(output.split("\n").length).isGreaterThan(0);
-        } else {
-            // MT940 tag-based format: verify required tags
-            assertThat(output).as("SWIFT output must contain :20: tag (library=%s)", library)
-                    .contains(":20:");
-            assertThat(output).as("SWIFT output must contain :25: tag (library=%s)", library)
-                    .contains(":25:");
-            assertThat(output).as("SWIFT output must contain :60F: tag (library=%s)", library)
-                    .contains(":60F:");
-            assertThat(output).as("SWIFT output must contain :62F: tag (library=%s)", library)
-                    .contains(":62F:");
-        }
+        assertThat(output).as("SWIFT output must contain :20: tag (library=%s)", library).contains(":20:");
+        assertThat(output).as("SWIFT output must contain :25: tag (library=%s)", library).contains(":25:");
+        assertThat(output).as("SWIFT output must contain :60F: tag (library=%s)", library).contains(":60F:");
+        assertThat(output).as("SWIFT output must contain :62F: tag (library=%s)", library).contains(":62F:");
     }
 
     @Test

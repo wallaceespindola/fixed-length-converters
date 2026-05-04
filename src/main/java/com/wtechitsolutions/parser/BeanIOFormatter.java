@@ -1,7 +1,6 @@
 package com.wtechitsolutions.parser;
 
 import com.wtechitsolutions.parser.model.BeanIoCodaRecord;
-import com.wtechitsolutions.parser.model.BeanIoSwiftRecord;
 import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
 import org.beanio.BeanReader;
@@ -19,12 +18,13 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
  * Formatter wrapping BeanIO (2.1.0) for CODA and SWIFT MT serialisation.
  * Uses programmatic FieldBuilder for CODA (fixed-length) with explicit 0-based positions.
- * Uses annotation-based BeanIoSwiftRecord for SWIFT (CSV).
+ * SWIFT uses MT940 tag format (same as other strategies) via SwiftMtRecord.toSwiftFormat().
  * No XML mapping files required — fully annotation/programmatic-based.
  */
 @Component
@@ -57,26 +57,7 @@ public class BeanIOFormatter {
                                 .align(Align.RIGHT).trim())
                         .addField(new FieldBuilder("filler").at(121).length(7).trim())));
 
-        
-        // SWIFT: CSV stream with explicit FieldBuilder column indices (0-based)
-        factory.define(new StreamBuilder("swift")
-                .format("csv")
-                .addRecord(new RecordBuilder("swiftRecord")
-                        .type(BeanIoSwiftRecord.class)
-                        .addField(new FieldBuilder("transactionReference").at(0))
-                        .addField(new FieldBuilder("accountIdentification").at(1))
-                        .addField(new FieldBuilder("statementNumber").at(2))
-                        .addField(new FieldBuilder("openingBalance").at(3))
-                        .addField(new FieldBuilder("valueDate").at(4))
-                        .addField(new FieldBuilder("entryDate").at(5))
-                        .addField(new FieldBuilder("debitCreditMark").at(6))
-                        .addField(new FieldBuilder("amount").at(7))
-                        .addField(new FieldBuilder("transactionType").at(8))
-                        .addField(new FieldBuilder("customerReference").at(9))
-                        .addField(new FieldBuilder("information").at(10))
-                        .addField(new FieldBuilder("closingBalance").at(11))));
-
-        log.debug("BeanIO StreamFactory defined: coda(fixedlength/FieldBuilder) + swift(csv/annotations)");
+        log.debug("BeanIO StreamFactory defined: coda(fixedlength/FieldBuilder)");
     }
 
     public String formatCoda(List<CodaRecord> records) {
@@ -110,32 +91,47 @@ public class BeanIOFormatter {
     }
 
     public String formatSwift(List<SwiftMtRecord> records) {
-        StringWriter sw = new StringWriter();
-        BeanWriter writer = factory.createWriter("swift", sw);
+        StringBuilder sb = new StringBuilder();
         for (SwiftMtRecord record : records) {
-            writer.write("swiftRecord", toBeanIoSwift(record));
+            sb.append(record.toSwiftFormat());
+            sb.append("---\n");
         }
-        writer.flush();
-        writer.close();
-        return sw.toString();
+        return sb.toString();
     }
 
     public List<SwiftMtRecord> parseSwift(String content) {
         List<SwiftMtRecord> result = new ArrayList<>();
-        BeanReader reader = factory.createReader("swift", new StringReader(content));
-        try {
-            Object record;
-            while ((record = reader.read()) != null) {
-                if (record instanceof BeanIoSwiftRecord bsr) {
-                    result.add(fromBeanIoSwift(bsr));
-                }
-            }
-        } catch (Exception e) {
-            log.warn("BeanIO SWIFT parse warning: {}", e.getMessage());
-        } finally {
-            reader.close();
+        String[] sections = content.split("---\n");
+        for (String section : sections) {
+            if (section.isBlank()) continue;
+            result.add(parseSwiftSection(section));
         }
         return result;
+    }
+
+    private SwiftMtRecord parseSwiftSection(String section) {
+        SwiftMtRecord.SwiftMtRecordBuilder builder = SwiftMtRecord.builder();
+        Arrays.stream(section.split("\n")).forEach(line -> {
+            if (line.startsWith(":20:")) builder.transactionReference(line.substring(4).trim());
+            else if (line.startsWith(":25:")) builder.accountIdentification(line.substring(4).trim());
+            else if (line.startsWith(":28C:")) builder.statementNumber(line.substring(5).trim());
+            else if (line.startsWith(":60F:")) builder.openingBalance(line.substring(5).trim());
+            else if (line.startsWith(":61:")) {
+                String entry = line.substring(4);
+                if (entry.length() >= 10) {
+                    builder.valueDate(entry.substring(0, 6));
+                    builder.entryDate(entry.substring(6, 10));
+                    builder.debitCreditMark(entry.length() > 10 ? String.valueOf(entry.charAt(10)) : "C");
+                    int amtEnd = entry.indexOf("NMSC");
+                    builder.amount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
+                    builder.transactionType("NMSC");
+                    builder.customerReference(amtEnd >= 0 && entry.length() > amtEnd + 4
+                            ? entry.substring(amtEnd + 4).trim() : "NONREF");
+                }
+            } else if (line.startsWith(":86:")) builder.information(line.substring(4).trim());
+            else if (line.startsWith(":62F:")) builder.closingBalance(line.substring(5).trim());
+        });
+        return builder.build();
     }
 
     private BeanIoCodaRecord toBeanIo(CodaRecord r) {
@@ -169,40 +165,6 @@ public class BeanIOFormatter {
                 .transactionCode(trim(b.getTransactionCode()))
                 .sequenceNumber(trim(b.getSequenceNumber()))
                 .filler(trim(b.getFiller()))
-                .build();
-    }
-
-    private BeanIoSwiftRecord toBeanIoSwift(SwiftMtRecord r) {
-        BeanIoSwiftRecord b = new BeanIoSwiftRecord();
-        b.setTransactionReference(r.getTransactionReference());
-        b.setAccountIdentification(r.getAccountIdentification());
-        b.setStatementNumber(r.getStatementNumber());
-        b.setOpeningBalance(r.getOpeningBalance());
-        b.setValueDate(r.getValueDate());
-        b.setEntryDate(r.getEntryDate());
-        b.setDebitCreditMark(r.getDebitCreditMark());
-        b.setAmount(r.getAmount());
-        b.setTransactionType(r.getTransactionType());
-        b.setCustomerReference(r.getCustomerReference());
-        b.setInformation(r.getInformation());
-        b.setClosingBalance(r.getClosingBalance());
-        return b;
-    }
-
-    private SwiftMtRecord fromBeanIoSwift(BeanIoSwiftRecord b) {
-        return SwiftMtRecord.builder()
-                .transactionReference(b.getTransactionReference())
-                .accountIdentification(b.getAccountIdentification())
-                .statementNumber(b.getStatementNumber())
-                .openingBalance(b.getOpeningBalance())
-                .valueDate(b.getValueDate())
-                .entryDate(b.getEntryDate())
-                .debitCreditMark(b.getDebitCreditMark())
-                .amount(b.getAmount())
-                .transactionType(b.getTransactionType())
-                .customerReference(b.getCustomerReference())
-                .information(b.getInformation())
-                .closingBalance(b.getClosingBalance())
                 .build();
     }
 

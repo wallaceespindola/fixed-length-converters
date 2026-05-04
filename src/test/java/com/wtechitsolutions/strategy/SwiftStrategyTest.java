@@ -87,23 +87,16 @@ class SwiftStrategyTest {
     }
 
     @ParameterizedTest
-    @MethodSource("swiftMt940Libraries")
+    @MethodSource("swiftLibraries")
     void swift_mt940_output_contains_required_tags(Library library) {
         FileGenerationStrategy strategy = resolver.resolve(FileType.SWIFT, library);
         String output = strategy.generate(
                 transactionRepository.findAll(),
                 accountRepository.findAll());
-        // MT940 strategies (non-BeanIO) produce tag-based content
         assertThat(output).contains(":20:", ":25:", ":28C:", ":60F:", ":62F:");
     }
 
     static Stream<Arguments> swiftLibraries() {
         return Arrays.stream(Library.values()).map(Arguments::of);
-    }
-
-    static Stream<Arguments> swiftMt940Libraries() {
-        // BeanIO serialises as CSV; the others produce MT940 tags
-        return Stream.of(Library.FIXEDFORMAT4J, Library.FIXEDLENGTH, Library.BINDY)
-                .map(Arguments::of);
     }
 }

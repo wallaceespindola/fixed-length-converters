@@ -2,7 +2,7 @@
 SKIP_FRONTEND := -Pskip-frontend
 SKIP_TESTS := -DskipTests
 
-.PHONY: help build run test benchmark clean lint docs
+.PHONY: help build run test benchmark clean kill lint docs
 
 help: ## Display all available make commands with descriptions
 	@echo ""
@@ -35,6 +35,15 @@ test-integration: ## Run integration tests
 
 benchmark: ## Run the JMH benchmark suite
 	mvn test $(SKIP_FRONTEND) -Pbenchmark
+
+kill: ## Kill Java and npm/Node processes to free ports (8080, 5173, etc.)
+	@echo "Killing Java processes..."
+	@pkill -f 'java.*FixedLengthConvertersApplication' 2>/dev/null && echo "  Spring Boot stopped" || echo "  No Spring Boot process found"
+	@pkill -f 'java.*spring-boot:run' 2>/dev/null && echo "  Maven spring-boot:run stopped" || true
+	@echo "Killing Node/npm processes..."
+	@pkill -f 'node.*vite' 2>/dev/null && echo "  Vite dev server stopped" || echo "  No Vite process found"
+	@pkill -f 'npm.*dev' 2>/dev/null && echo "  npm dev stopped" || true
+	@echo "Done. Ports released."
 
 clean: ## Remove build artifacts and output files
 	mvn clean
