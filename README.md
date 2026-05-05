@@ -140,6 +140,18 @@ chains.
 - Maven 3.9+
 - Node.js 22+ (for frontend build)
 - Python 3.12+ _(optional — benchmark aggregation tools only)_
+- `make` _(optional — simplifies commands; see install instructions below)_
+
+#### Installing `make`
+
+| Platform | Command |
+|----------|---------|
+| **macOS** | `brew install make` _(already available via Xcode Command Line Tools: `xcode-select --install`)_ |
+| **Ubuntu / Debian** | `sudo apt-get install -y make` |
+| **Fedora / RHEL** | `sudo dnf install -y make` |
+| **Windows** | Install [Git for Windows](https://gitforwindows.org/) (includes `make` in Git Bash), or via [Chocolatey](https://chocolatey.org/): `choco install make`, or via [Scoop](https://scoop.sh/): `scoop install make` |
+
+Verify with: `make --version`
 
 ### Build and Run
 
