@@ -7,13 +7,16 @@
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
-Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and **SWIFT MT940** fixed-length banking files using **4 Java formatter libraries**, all orchestrated through **Spring Batch** and the **Strategy Pattern**.
+Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and
+**SWIFT MT940** fixed-length banking files using **4 Java formatter libraries**, all orchestrated through **Spring Batch
+** and the **Strategy Pattern**.
 
 ---
 
 ## Overview
 
-This platform is a technical laboratory for evaluating Java fixed-length parser frameworks across correctness, performance, and Spring Batch compatibility. Engineers can:
+This platform is a technical laboratory for evaluating Java fixed-length parser frameworks across correctness,
+performance, and Spring Batch compatibility. Engineers can:
 
 - Generate realistic banking transaction datasets (20 accounts, 200 transactions per call)
 - Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 4 libraries
@@ -64,53 +67,68 @@ graph TB
 ItemReader (H2) → ItemProcessor (StrategyResolver) → ItemWriter (output/)
 ```
 
-Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY). Jobs are **restartable** from the last checkpoint.
+Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (
+BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY). Jobs are **restartable** from the last checkpoint.
 
 ### Strategy Pattern
 
-8 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy` interface:
+8 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
+interface:
 
-| Class | Format | Library |
-|---|---|---|
-| `CodaBeanIOStrategy` | CODA | BeanIO |
-| `CodaFixedFormat4JStrategy` | CODA | fixedformat4j |
-| `CodaFixedLengthStrategy` | CODA | fixedlength |
-| `CodaBindyStrategy` | CODA | Apache Camel Bindy |
-| `SwiftBeanIOStrategy` | SWIFT MT940 | BeanIO |
-| `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j |
-| `SwiftFixedLengthStrategy` | SWIFT MT940 | fixedlength |
-| `SwiftBindyStrategy` | SWIFT MT940 | Apache Camel Bindy |
+| Class                        | Format      | Library            |
+|------------------------------|-------------|--------------------|
+| `CodaBeanIOStrategy`         | CODA        | BeanIO             |
+| `CodaFixedFormat4JStrategy`  | CODA        | fixedformat4j      |
+| `CodaFixedLengthStrategy`    | CODA        | fixedlength        |
+| `CodaBindyStrategy`          | CODA        | Apache Camel Bindy |
+| `SwiftBeanIOStrategy`        | SWIFT MT940 | BeanIO             |
+| `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j      |
+| `SwiftFixedLengthStrategy`   | SWIFT MT940 | fixedlength        |
+| `SwiftBindyStrategy`         | SWIFT MT940 | Apache Camel Bindy |
 
-`StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch` chains.
+`StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch`
+chains.
 
 ---
 
 ## Supported Banking Standards
 
-| Standard | Description | Authority |
-|---|---|---|
-| **CODA** | Belgian/European banking statement format — 128-character fixed-width records | Febelfin |
-| **SWIFT MT940** | International banking messaging format — tag-based (`field:value`) | SWIFT |
+| Standard        | Description                                                                   | Authority |
+|-----------------|-------------------------------------------------------------------------------|-----------|
+| **CODA**        | Belgian/European banking statement format — 128-character fixed-width records | Febelfin  |
+| **SWIFT MT940** | International banking messaging format — tag-based (`field:value`)            | SWIFT     |
 
 ---
 
 ## Formatter Library Comparison
 
-| Library | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk |
-|---|---|---|---|---|---|
-| **BeanIO** | 2.1.0 | Excellent | Good | Good | Low |
-| **fixedformat4j** | 1.7.0 | Limited | Excellent | Excellent | Low |
-| **fixedlength** | 0.15 | Limited | Good | Good | Medium |
-| **Apache Camel Bindy** | 4.20.0 | Limited | Good | Medium | Medium |
+| Library                | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
+|------------------------|---------|-----------------|--------------------|------------------|--------|
+| **BeanIO**             | 2.1.0   | Excellent       | Good               | Good             | Low    |
+| **fixedformat4j**      | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
+| **fixedlength**        | 0.15    | Limited         | Good               | Good             | Medium |
+| **Apache Camel Bindy** | 4.20.0  | Limited         | Good               | Medium           | Medium |
 
 ### Strategic Recommendations
 
-| Scenario | Recommended Library |
-|---|---|
-| Maximum CODA grammar correctness | BeanIO |
-| Simplicity and modern annotations | fixedformat4j |
-| Existing Apache Camel ecosystem | Apache Camel Bindy |
-| Lightweight experimentation | fixedlength |
+| Scenario                          | Recommended Library |
+|-----------------------------------|---------------------|
+| Maximum CODA grammar correctness  | BeanIO              |
+| Simplicity and modern annotations | fixedformat4j       |
+| Existing Apache Camel ecosystem   | Apache Camel Bindy  |
+| Lightweight experimentation       | fixedlength         |
+
+---
+
+## Some screenshots
+
+### Benchmark
+
+![Fixed lenght benchmark.png](resources/images/Fixed%20lenght%20benchmark.png)
+
+### History
+
+![Fixed lenght history.png](resources/images/Fixed%20lenght%20history.png)
 
 ---
 
@@ -157,17 +175,17 @@ mvn test -Pbenchmark -Pskip-frontend  # JMH benchmarks
 
 ## REST API
 
-| Method | Endpoint | Description |
-|---|---|---|
-| `POST` | `/api/domain/generate` | Generate 20 accounts + 200 transactions in H2 |
-| `POST` | `/api/batch/generate` | Trigger Spring Batch job `{fileType, library}` |
-| `GET` | `/api/batch/history` | Last 50 batch job executions |
-| `GET` | `/api/benchmark/results` | All benchmark metrics |
-| `GET` | `/api/benchmark/export/csv` | Export as CSV |
-| `GET` | `/api/benchmark/export/markdown` | Export as Markdown |
-| `GET` | `/api/benchmark/export/json` | Export as JSON |
-| `GET` | `/actuator/health` | Application health |
-| `GET` | `/actuator/info` | Application metadata |
+| Method | Endpoint                         | Description                                    |
+|--------|----------------------------------|------------------------------------------------|
+| `POST` | `/api/domain/generate`           | Generate 20 accounts + 200 transactions in H2  |
+| `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}` |
+| `GET`  | `/api/batch/history`             | Last 50 batch job executions                   |
+| `GET`  | `/api/benchmark/results`         | All benchmark metrics                          |
+| `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                  |
+| `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                             |
+| `GET`  | `/api/benchmark/export/json`     | Export as JSON                                 |
+| `GET`  | `/actuator/health`               | Application health                             |
+| `GET`  | `/actuator/info`                 | Application metadata                           |
 
 ### Example: Generate Data and Run Batch
 
@@ -216,16 +234,16 @@ curl http://localhost:8080/actuator/info
 
 ## Testing Strategy
 
-| Category | Test Class | Tools |
-|---|---|---|
-| Unit | `DomainDataGeneratorTest`, `CodaRecordTest` | JUnit 5 + Mockito |
-| Strategy resolution | `StrategyResolverTest` | `@SpringBootTest` |
-| CODA correctness | `CodaStrategyTest` | `@SpringBootTest` |
-| SWIFT correctness | `SwiftStrategyTest` | `@SpringBootTest` |
-| Round-trip symmetry | `SymmetryTest` | `@SpringBootTest` |
-| REST API | `DomainControllerTest`, `BatchControllerTest` | MockMvc |
-| Actuator | `ActuatorTest` | `TestRestTemplate` |
-| Swagger | `SwaggerAvailabilityTest` | `TestRestTemplate` |
+| Category            | Test Class                                    | Tools              |
+|---------------------|-----------------------------------------------|--------------------|
+| Unit                | `DomainDataGeneratorTest`, `CodaRecordTest`   | JUnit 5 + Mockito  |
+| Strategy resolution | `StrategyResolverTest`                        | `@SpringBootTest`  |
+| CODA correctness    | `CodaStrategyTest`                            | `@SpringBootTest`  |
+| SWIFT correctness   | `SwiftStrategyTest`                           | `@SpringBootTest`  |
+| Round-trip symmetry | `SymmetryTest`                                | `@SpringBootTest`  |
+| REST API            | `DomainControllerTest`, `BatchControllerTest` | MockMvc            |
+| Actuator            | `ActuatorTest`                                | `TestRestTemplate` |
+| Swagger             | `SwaggerAvailabilityTest`                     | `TestRestTemplate` |
 
 ```bash
 # Run specific test class
@@ -248,7 +266,8 @@ The React 18 + Vite + MUI frontend provides:
 - **Data Generator** — trigger domain data generation, display results
 - **Batch Runner** — select FileType + Library, submit, preview generated file
 - **Batch History** — sortable/filterable table of all job executions
-- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD export
+- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD
+  export
 
 Build the frontend: `mvn generate-resources` (handled by `frontend-maven-plugin`)
 
@@ -294,6 +313,7 @@ fixed-length-converters/
 ## Author
 
 **Wallace Espindola**
+
 - Email: [wallace.espindola@gmail.com](mailto:wallace.espindola@gmail.com)
 - LinkedIn: [linkedin.com/in/wallaceespindola](https://www.linkedin.com/in/wallaceespindola/)
 - GitHub: [github.com/wallaceespindola](https://github.com/wallaceespindola/)
