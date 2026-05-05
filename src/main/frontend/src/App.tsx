@@ -106,7 +106,7 @@ export default function App() {
                 <Box sx={{ display: 'flex', gap: 2 }}>
                   <Typography variant="caption" color="text.secondary">
                     By{' '}
-                    <Link href="https://www.linkedin.com/in/wallaceespindola/"
+                    <Link href="https://github.com/wallaceespindola"
                       target="_blank" rel="noopener" underline="hover">
                       Wallace Espindola
                     </Link>

@@ -43,12 +43,20 @@ public class BatchMetricsListener implements JobExecutionListener {
                     .mapToLong(StepExecution::getWriteCount).sum();
             double throughput = durationMs > 0 ? (records * 1000.0 / durationMs) : 0;
 
+            long generationDurationMs = jobExecution.getStepExecutions().stream()
+                    .mapToLong(step -> {
+                        LocalDateTime s = step.getStartTime();
+                        LocalDateTime e = step.getEndTime();
+                        return (s != null && e != null) ? Duration.between(s, e).toMillis() : 0;
+                    }).sum();
+
             BenchmarkMetrics metrics = BenchmarkMetrics.builder()
                     .jobExecutionId(jobExecution.getId())
                     .library(library)
                     .fileType(fileType)
                     .throughputRps(throughput)
                     .batchDurationMs(durationMs)
+                    .generationDurationMs(generationDurationMs)
                     .recordsProcessed(records)
                     .successRate(BatchStatus.COMPLETED.equals(jobExecution.getStatus()) ? 1.0 : 0.0)
                     .failedCount(jobExecution.getStepExecutions().stream()
