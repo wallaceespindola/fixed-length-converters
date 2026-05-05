@@ -143,55 +143,72 @@ chains.
 
 ### Build and Run
 
-Choose the style that fits your setup:
-
-#### With `make` (recommended)
+Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
-make build          # Compile and package (skips tests and frontend — fastest)
-make build-full     # Compile and package including frontend build
-make run            # Start in dev mode — Swagger UI enabled
-make run-prod       # Start without dev profile (no Swagger)
-make test           # Run all tests (unit + integration) with JaCoCo coverage
-make test-unit      # Run unit tests only
-make benchmark      # Run JMH benchmark suite
-make clean          # Remove build artifacts and generated output files
-make kill           # Kill any running Spring Boot / Vite processes
-make lint           # Run static analysis (compiler warnings)
-make docs           # Generate JaCoCo HTML coverage report
-make help           # List all available targets with descriptions
-```
-
-Application starts at **http://localhost:8080**  
-Swagger UI (dev profile): **http://localhost:8080/swagger-ui.html**
-
-#### Without `make` — direct Maven commands
-
-```bash
-# Build (skip tests, skip frontend)
+# Compile and package — fastest (skips tests and frontend)
+# with make
+make build
+# direct
 mvn clean package -DskipTests -Pskip-frontend
 
-# Build with frontend included
+# Compile and package including frontend build
+# with make
+make build-full
+# direct
 mvn clean package -DskipTests
 
-# Run in dev mode (Swagger UI enabled)
+# Start in dev mode — Swagger UI enabled at http://localhost:8080/swagger-ui.html
+# with make
+make run
+# direct
 mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
 
-# Run without dev profile
+# Start without dev profile (no Swagger)
+# with make
+make run-prod
+# direct
 mvn spring-boot:run -Pskip-frontend
 
-# Run all tests with JaCoCo coverage
+# Run all tests (unit + integration) with JaCoCo coverage
+# with make
+make test
+# direct
 mvn verify -Pskip-frontend
 
 # Run unit tests only
+# with make
+make test-unit
+# direct
 mvn test -Pskip-frontend
 
-# Run JMH benchmarks
+# Run JMH benchmark suite
+# with make
+make benchmark
+# direct
 mvn test -Pbenchmark -Pskip-frontend
 
-# Clean build artifacts
+# Remove build artifacts and generated output files
+# with make
+make clean
+# direct
 mvn clean
+
+# Kill any running Spring Boot / Vite processes (free ports 8080, 5173) — make only
+make kill
+
+# Run static analysis (compiler warnings) — make only
+make lint
+
+# Generate JaCoCo HTML coverage report → target/site/jacoco/index.html — make only
+make docs
+
+# List all available make targets with descriptions — make only
+make help
 ```
+
+Application starts at **http://localhost:8080**  
+Swagger UI (dev profile only): **http://localhost:8080/swagger-ui.html**
 
 ### Python Benchmark Tools _(optional)_
 
@@ -255,8 +272,10 @@ http://localhost:8080/v3/api-docs
 ```
 
 ```bash
-make run   # with make
-mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev   # direct
+# with make
+make run
+# direct
+mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
 ```
 
 ---
@@ -287,8 +306,10 @@ curl http://localhost:8080/actuator/info
 | Swagger             | `SwaggerAvailabilityTest`                     | `TestRestTemplate` |
 
 ```bash
-# All tests (with JaCoCo coverage)
+# All tests (unit + integration) with JaCoCo coverage
+# with make
 make test
+# direct
 mvn verify -Pskip-frontend
 
 # Run a specific test class
