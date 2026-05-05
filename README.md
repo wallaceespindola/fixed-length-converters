@@ -139,36 +139,74 @@ chains.
 - Java 21+ (tested with Amazon Corretto 21)
 - Maven 3.9+
 - Node.js 22+ (for frontend build)
+- Python 3.12+ _(optional — benchmark aggregation tools only)_
 
 ### Build and Run
 
+Choose the style that fits your setup:
+
+#### With `make` (recommended)
+
 ```bash
-# Build (skip frontend and tests — fastest)
-make build
-
-# Run in development mode (Swagger UI enabled)
-make run
-# Application starts at http://localhost:8080
-# Swagger UI at http://localhost:8080/swagger-ui.html
-
-# Run all tests
-make test
-
-# Run JMH benchmarks
-make benchmark
-
-# Clean build artifacts
-make clean
+make build          # Compile and package (skips tests and frontend — fastest)
+make build-full     # Compile and package including frontend build
+make run            # Start in dev mode — Swagger UI enabled
+make run-prod       # Start without dev profile (no Swagger)
+make test           # Run all tests (unit + integration) with JaCoCo coverage
+make test-unit      # Run unit tests only
+make benchmark      # Run JMH benchmark suite
+make clean          # Remove build artifacts and generated output files
+make kill           # Kill any running Spring Boot / Vite processes
+make lint           # Run static analysis (compiler warnings)
+make docs           # Generate JaCoCo HTML coverage report
+make help           # List all available targets with descriptions
 ```
 
-### Maven Commands
+Application starts at **http://localhost:8080**  
+Swagger UI (dev profile): **http://localhost:8080/swagger-ui.html**
+
+#### Without `make` — direct Maven commands
 
 ```bash
-mvn clean install -Pskip-frontend     # build + test, no frontend
-mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev  # run dev
-mvn test -Pskip-frontend              # all unit + integration tests
-mvn verify -Pskip-frontend            # with JaCoCo coverage
-mvn test -Pbenchmark -Pskip-frontend  # JMH benchmarks
+# Build (skip tests, skip frontend)
+mvn clean package -DskipTests -Pskip-frontend
+
+# Build with frontend included
+mvn clean package -DskipTests
+
+# Run in dev mode (Swagger UI enabled)
+mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
+
+# Run without dev profile
+mvn spring-boot:run -Pskip-frontend
+
+# Run all tests with JaCoCo coverage
+mvn verify -Pskip-frontend
+
+# Run unit tests only
+mvn test -Pskip-frontend
+
+# Run JMH benchmarks
+mvn test -Pbenchmark -Pskip-frontend
+
+# Clean build artifacts
+mvn clean
+```
+
+### Python Benchmark Tools _(optional)_
+
+After running benchmarks (`make benchmark` or `mvn test -Pbenchmark`), use the tools in `tools/python/` to analyse results:
+
+```bash
+# Aggregate JMH results and print statistics table (mean, stdev, min per benchmark)
+python tools/python/benchmark_aggregator.py
+# or with explicit path:
+python tools/python/benchmark_aggregator.py target/jmh-result.json
+
+# Generate a Markdown + HTML report from JMH results
+python tools/python/report_generator.py
+# or with explicit paths:
+python tools/python/report_generator.py target/jmh-result.json docs/benchmark-results.md
 ```
 
 ---
@@ -216,7 +254,10 @@ http://localhost:8080/swagger-ui.html
 http://localhost:8080/v3/api-docs
 ```
 
-Run with dev profile: `mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev`
+```bash
+make run   # with make
+mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev   # direct
+```
 
 ---
 
@@ -246,7 +287,11 @@ curl http://localhost:8080/actuator/info
 | Swagger             | `SwaggerAvailabilityTest`                     | `TestRestTemplate` |
 
 ```bash
-# Run specific test class
+# All tests (with JaCoCo coverage)
+make test
+mvn verify -Pskip-frontend
+
+# Run a specific test class
 mvn test -Pskip-frontend -Dtest=StrategyResolverTest
 
 # Run symmetry tests only
