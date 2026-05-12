@@ -57,13 +57,13 @@ public class FixedLengthFormatter {
     public String formatSwift(List<SwiftMtRecord> records) {
         StringBuilder sb = new StringBuilder();
         for (SwiftMtRecord record : records) {
-            sb.append(record.toSwiftFormat()).append("===\n");
+            sb.append(record.toSwiftFormat()).append("---\n");
         }
         return sb.toString();
     }
 
     public List<SwiftMtRecord> parseSwift(String content) {
-        return Arrays.stream(content.split("===\n"))
+        return Arrays.stream(content.split("---\n"))
                 .filter(s -> !s.isBlank())
                 .map(SwiftMtRecord::fromSwiftSection)
                 .toList();
