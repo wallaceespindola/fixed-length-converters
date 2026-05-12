@@ -56,7 +56,7 @@ public class VelocityFormatter {
         } catch (Exception e) {
             log.warn("Velocity CODA format failed: {}", e.getMessage());
             return records.stream().map(CodaRecord::toFixedWidth)
-                    .reduce("", (a, b) -> a + b + "\n");
+                    .collect(java.util.stream.Collectors.joining("\n")) + "\n";
         }
     }
 
