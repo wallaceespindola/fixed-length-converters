@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Benchmark Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; margin: 2rem; color: #2c3e50; }
+    h1 { border-bottom: 2px solid #3498db; padding-bottom: 0.5rem; }
+    .meta { color: #7f8c8d; font-size: 0.9em; margin-bottom: 1.5rem; }
+    table { border-collapse: collapse; width: 100%; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    thead th { background: #2c3e50; color: white; padding: 10px 12px; text-align: left; font-weight: 600; }
+    tbody td { padding: 8px 12px; border-bottom: 1px solid #ecf0f1; }
+    tbody tr:hover { background: #f8f9fa; }
+    .lib-BEANIO        { color: #2980b9; font-weight: 600; }
+    .lib-FIXFORMAT4J   { color: #27ae60; font-weight: 600; }
+    .lib-FIXEDLENGTH   { color: #d35400; font-weight: 600; }
+    .lib-BINDY         { color: #8e44ad; font-weight: 600; }
+    .lib-CAMEL_BEANIO  { color: #c0392b; font-weight: 600; }
+    .lib-VELOCITY      { color: #16a085; font-weight: 600; }
+    .lib-SPRING_BATCH  { color: #f39c12; font-weight: 600; }
+    .num { text-align: right; font-variant-numeric: tabular-nums; }
+  </style>
+</head>
+<body>
+  <h1>Benchmark Report</h1>
+  <p class="meta">Generated: $generatedAt &middot; Records: $count</p>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>File Type</th>
+        <th>Library</th>
+        <th class="num">Throughput (ops/s)</th>
+        <th class="num">Batch (ms)</th>
+        <th class="num">Gen (ms)</th>
+        <th class="num">Parse (ms)</th>
+        <th class="num">Records</th>
+        <th class="num">Success Rate</th>
+        <th>Timestamp</th>
+      </tr>
+    </thead>
+    <tbody>
+#foreach($m in $metrics)
+      <tr>
+        <td>${m.id}</td>
+        <td>${m.fileType}</td>
+        <td class="lib-${m.library}">${m.library}</td>
+        <td class="num">${m.throughputRps}</td>
+        <td class="num">${m.batchDurationMs}</td>
+        <td class="num">${m.generationDurationMs}</td>
+        <td class="num">${m.parseDurationMs}</td>
+        <td class="num">${m.recordsProcessed}</td>
+        <td class="num">${m.successRate}</td>
+        <td>${m.timestamp}</td>
+      </tr>
+#end
+    </tbody>
+  </table>
+</body>
+</html>

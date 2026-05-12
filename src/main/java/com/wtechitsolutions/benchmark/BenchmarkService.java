@@ -5,21 +5,39 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.wtechitsolutions.domain.BenchmarkMetrics;
 import com.wtechitsolutions.domain.BenchmarkMetricsRepository;
+import jakarta.annotation.PostConstruct;
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.VelocityEngine;
+import org.apache.velocity.runtime.RuntimeConstants;
+import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import java.io.StringWriter;
+import java.time.Instant;
 import java.util.List;
 
 @Service
 public class BenchmarkService {
 
     private static final Logger log = LoggerFactory.getLogger(BenchmarkService.class);
+    private static final String HTML_TEMPLATE = "velocity/benchmark-report.vm";
 
     private final BenchmarkMetricsRepository repository;
+    private VelocityEngine velocityEngine;
 
     public BenchmarkService(BenchmarkMetricsRepository repository) {
         this.repository = repository;
+    }
+
+    @PostConstruct
+    void initVelocity() {
+        velocityEngine = new VelocityEngine();
+        velocityEngine.setProperty(RuntimeConstants.RESOURCE_LOADERS, "classpath");
+        velocityEngine.setProperty("resource.loader.classpath.class",
+                ClasspathResourceLoader.class.getName());
+        velocityEngine.init();
     }
 
     public List<BenchmarkMetrics> getAll() {
@@ -67,6 +85,23 @@ public class BenchmarkService {
         } catch (Exception e) {
             log.error("Failed to serialize benchmark metrics as JSON", e);
             return "[]";
+        }
+    }
+
+    public String exportAsHtml() {
+        try {
+            List<BenchmarkMetrics> metrics = repository.findAll();
+            VelocityContext context = new VelocityContext();
+            context.put("metrics", metrics);
+            context.put("count", metrics.size());
+            context.put("generatedAt", Instant.now().toString());
+            StringWriter sw = new StringWriter();
+            velocityEngine.getTemplate(HTML_TEMPLATE).merge(context, sw);
+            return sw.toString();
+        } catch (Exception e) {
+            log.error("Failed to render benchmark HTML report", e);
+            return "<html><body><h1>Benchmark Report</h1><p>Rendering failed: "
+                    + e.getMessage() + "</p></body></html>";
         }
     }
 

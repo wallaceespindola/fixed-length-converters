@@ -58,6 +58,15 @@ public class BenchmarkController {
                 .body(benchmarkService.exportAsJson());
     }
 
+    @GetMapping("/export/html")
+    @Operation(summary = "Export all benchmark results as a styled HTML report (Velocity)")
+    public ResponseEntity<String> exportHtml() {
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_TYPE, "text/html; charset=UTF-8")
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"benchmark.html\"")
+                .body(benchmarkService.exportAsHtml());
+    }
+
     private BenchmarkResultResponse toResponse(BenchmarkMetrics m) {
         return new BenchmarkResultResponse(
                 m.getId(),
