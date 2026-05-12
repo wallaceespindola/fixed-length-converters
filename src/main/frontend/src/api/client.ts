@@ -3,7 +3,7 @@ import axios from 'axios'
 const api = axios.create({ baseURL: '' })
 
 export type FileType = 'CODA' | 'SWIFT'
-export type Library = 'BEANIO' | 'FIXFORMAT4J' | 'FIXEDLENGTH' | 'BINDY'
+export type Library = 'BEANIO' | 'FIXFORMAT4J' | 'FIXEDLENGTH' | 'BINDY' | 'CAMEL_BEANIO' | 'VELOCITY' | 'SPRING_BATCH'
 
 export interface GenerateDomainResponse {
   operationId: number
