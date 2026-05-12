@@ -6,5 +6,6 @@ public enum Library {
     FIXEDLENGTH,
     BINDY,
     CAMEL_BEANIO,
-    VELOCITY
+    VELOCITY,
+    SPRING_BATCH
 }
