@@ -1,0 +1,9 @@
+#foreach($r in $records):20:${r.transactionReference}
+:25:${r.accountIdentification}
+:28C:${r.statementNumber}
+:60F:${r.openingBalance}
+:61:${r.valueDate}${r.entryDate}${r.debitCreditMark}${r.amount}${r.transactionType}${r.customerReference}
+:86:${r.information}
+:62F:${r.closingBalance}
+---
+#end

@@ -1,0 +1,2 @@
+#foreach($r in $records)${r.recordType}${r.bankId}${r.referenceNumber}${r.accountNumber}${r.currency}${r.amountStr}${r.entryDate}${r.valueDate}${r.description}${r.transactionCode}${r.sequenceNumber}${r.filler}
+#end

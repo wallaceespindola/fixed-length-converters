@@ -5,5 +5,6 @@ public enum Library {
     FIXFORMAT4J,
     FIXEDLENGTH,
     BINDY,
-    CAMEL_BEANIO
+    CAMEL_BEANIO,
+    VELOCITY
 }
