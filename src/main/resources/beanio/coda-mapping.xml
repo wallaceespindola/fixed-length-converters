@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    BeanIO fixed-length mapping for CODA records.
+    Used by CamelBeanIOFormatter via Apache Camel BeanIO data format (4.20.0).
+    Total record length: 128 characters per Febelfin CODA specification.
+
+    Field lengths (positions are 0-based in BeanIO fixed-length):
+      recordType      : pos  0, len  1
+      bankId          : pos  1, len  3
+      referenceNumber : pos  4, len 10
+      accountNumber   : pos 14, len 37
+      currency        : pos 51, len  3
+      amountStr       : pos 54, len 16  (zero-padded, right-justified)
+      entryDate       : pos 70, len  6
+      valueDate       : pos 76, len  6
+      description     : pos 82, len 32
+      transactionCode : pos 114, len  3
+      sequenceNumber  : pos 117, len  4  (right-justified)
+      filler          : pos 121, len  7
+                              total = 128
+-->
+<beanio xmlns="http://www.beanio.org/2012/03">
+    <stream name="coda" format="fixedlength">
+        <record name="codaRecord" class="com.wtechitsolutions.parser.model.BeanIoCodaRecord">
+            <field name="recordType"      length="1"/>
+            <field name="bankId"          length="3"/>
+            <field name="referenceNumber" length="10"/>
+            <field name="accountNumber"   length="37"/>
+            <field name="currency"        length="3"/>
+            <field name="amountStr"       length="16" padding="0" justify="right"/>
+            <field name="entryDate"       length="6"/>
+            <field name="valueDate"       length="6"/>
+            <field name="description"     length="32"/>
+            <field name="transactionCode" length="3"/>
+            <field name="sequenceNumber"  length="4" justify="right"/>
+            <field name="filler"          length="7"/>
+        </record>
+    </stream>
+</beanio>
