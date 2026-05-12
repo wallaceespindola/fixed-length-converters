@@ -1,5 +1,7 @@
 sequenceDiagram
     participant FE as Frontend
+    participant DC as DomainController
+    participant DG as DomainDataGenerator
     participant BC as BatchController
     participant BJS as BatchJobService
     participant JL as JobLauncher
@@ -13,6 +15,14 @@ sequenceDiagram
     participant DB as H2 Database
     participant FS as output/ (filesystem)
 
+    Note over FE,DG: Step 1 — seed sample data (LOW or HIGH load profile)
+    FE->>DC: POST /api/domain/generate?loadProfile=LOW|HIGH
+    DC->>DG: generate(LoadProfile)
+    DG->>DB: save accounts + transactions + statements
+    DG-->>DC: GenerationResult
+    DC-->>FE: GenerateDomainResponse
+
+    Note over FE,FS: Step 2 — trigger a Spring Batch job per (fileType × library)
     FE->>BC: POST /api/batch/generate {fileType, library}
     BC->>BJS: launch(fileType, library)
     BJS->>JL: run(job, params)

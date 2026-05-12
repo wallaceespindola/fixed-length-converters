@@ -23,6 +23,10 @@ split again
   :GET /api/benchmark/export/json;
   :BenchmarkService.exportAsJson();
   :Stream benchmark.json to client;
+split again
+  :GET /api/benchmark/export/html;
+  :BenchmarkService.exportAsHtml()\n(Velocity template);
+  :Render benchmark.html in browser;
 end split
 
 partition "Python Tooling (offline)" {

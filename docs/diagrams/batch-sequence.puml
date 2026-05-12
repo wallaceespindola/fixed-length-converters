@@ -3,6 +3,8 @@
 title Spring Batch File Generation — Execution Sequence
 
 actor Frontend
+participant DomainController
+participant DomainDataGenerator
 participant BatchController
 participant BatchJobService
 participant JobLauncher
@@ -16,6 +18,14 @@ participant BatchMetricsListener as Listener
 database "H2 Database" as DB
 collections "output/ (filesystem)" as FS
 
+== Step 1: seed sample data (LOW or HIGH load profile) ==
+Frontend -> DomainController : POST /api/domain/generate\n?loadProfile=LOW|HIGH
+DomainController -> DomainDataGenerator : generate(LoadProfile)
+DomainDataGenerator -> DB : save accounts + transactions + statements
+DomainDataGenerator --> DomainController : GenerationResult
+DomainController --> Frontend : GenerateDomainResponse
+
+== Step 2: trigger a Spring Batch job per (fileType × library) ==
 Frontend -> BatchController : POST /api/batch/generate\n{fileType, library}
 BatchController -> BatchJobService : launch(fileType, library)
 BatchJobService -> JobLauncher : run(job, params)

@@ -30,75 +30,101 @@ classDiagram
     }
 
     class CodaBeanIOStrategy {
+        -formatter BeanIOFormatter
         +getLibrary() Library.BEANIO
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaFixedFormat4JStrategy {
+        -formatter FixedFormat4JFormatter
         +getLibrary() Library.FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaFixedLengthStrategy {
+        -formatter FixedLengthFormatter
         +getLibrary() Library.FIXEDLENGTH
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaBindyStrategy {
+        -formatter BindyFormatter
         +getLibrary() Library.BINDY
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaCamelBeanIOStrategy {
+        -formatter CamelBeanIOFormatter
         +getLibrary() Library.CAMEL_BEANIO
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaVelocityStrategy {
+        -formatter VelocityFormatter
         +getLibrary() Library.VELOCITY
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class CodaSpringBatchStrategy {
+        -formatter SpringBatchFormatter
         +getLibrary() Library.SPRING_BATCH
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
 
     class SwiftBeanIOStrategy {
+        -formatter BeanIOFormatter
         +getLibrary() Library.BEANIO
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftFixedFormat4JStrategy {
+        -formatter FixedFormat4JFormatter
         +getLibrary() Library.FIXFORMAT4J
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftFixedLengthStrategy {
+        -formatter FixedLengthFormatter
         +getLibrary() Library.FIXEDLENGTH
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftBindyStrategy {
+        -formatter BindyFormatter
         +getLibrary() Library.BINDY
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftCamelBeanIOStrategy {
+        -formatter CamelBeanIOFormatter
         +getLibrary() Library.CAMEL_BEANIO
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftVelocityStrategy {
+        -formatter VelocityFormatter
         +getLibrary() Library.VELOCITY
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class SwiftSpringBatchStrategy {
+        -formatter SpringBatchFormatter
         +getLibrary() Library.SPRING_BATCH
+        #formatRecords(records) String
+        #parseRecords(content) List~SwiftMtRecord~
     }
 
     class StrategyResolver {

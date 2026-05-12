@@ -6,9 +6,11 @@ flowchart TD
     D -->|GET /api/benchmark/export/csv| F[BenchmarkService.exportAsCsv]
     D -->|GET /api/benchmark/export/markdown| G[BenchmarkService.exportAsMarkdown]
     D -->|GET /api/benchmark/export/json| H[BenchmarkService.exportAsJson]
+    D -->|GET /api/benchmark/export/html| Q["BenchmarkService.exportAsHtml<br/>(Velocity template)"]
     F --> I[Download benchmark.csv]
     G --> J[Download benchmark.md]
     H --> K[Download benchmark.json]
+    Q --> R[Render benchmark.html]
     L["Python tools/python/\nbenchmark_aggregator.py"] -->|reads| M[target/jmh-result.json]
     L --> N[Print stats table to stdout]
     O["Python tools/python/\nreport_generator.py"] -->|reads| M
