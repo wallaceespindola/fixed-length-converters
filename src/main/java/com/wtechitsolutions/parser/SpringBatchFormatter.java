@@ -4,40 +4,32 @@ import com.wtechitsolutions.parser.model.CodaRecord;
 import com.wtechitsolutions.parser.model.SwiftMtRecord;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.item.Chunk;
-import org.springframework.batch.item.ExecutionContext;
-import org.springframework.batch.item.file.FlatFileItemReader;
-import org.springframework.batch.item.file.FlatFileItemWriter;
-import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
-import org.springframework.batch.item.file.builder.FlatFileItemWriterBuilder;
 import org.springframework.batch.item.file.mapping.FieldSetMapper;
 import org.springframework.batch.item.file.transform.FieldExtractor;
 import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
 import org.springframework.batch.item.file.transform.FormatterLineAggregator;
 import org.springframework.batch.item.file.transform.LineAggregator;
 import org.springframework.batch.item.file.transform.Range;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.math.BigDecimal;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Formatter using Spring Batch's native flat-file infrastructure:
+ * Formatter using Spring Batch's native flat-file aggregator + tokenizer components in-process:
  * <ul>
- *   <li>Write path: {@link FlatFileItemWriter} + {@link FormatterLineAggregator} (printf-style format string)</li>
- *   <li>Read path: {@link FlatFileItemReader} + {@link FixedLengthTokenizer} + {@link FieldSetMapper}</li>
+ *   <li>Write path: {@link FormatterLineAggregator} (printf-style format string) joined into a single string</li>
+ *   <li>Read path: {@link FixedLengthTokenizer} + {@link FieldSetMapper} applied line-by-line</li>
  * </ul>
  *
- * <p>Uses temp files because Spring Batch I/O is designed around {@code WritableResource}.
- * The file I/O overhead is an intentional part of the benchmark — it reflects the real cost
- * of using Spring Batch's native components unmodified.</p>
+ * <p>Uses the aggregator and tokenizer directly rather than wrapping them in
+ * {@code FlatFileItemWriter}/{@code FlatFileItemReader}. The reader/writer wrappers buffer
+ * output for transactional, file-based chunk steps; using them inside an outer chunk's
+ * per-item processor leads to flush/visibility issues when transactional and to temp-file
+ * overhead with no benefit when not. The aggregator and tokenizer carry all the actual
+ * Spring Batch formatting/parsing logic — they are the load-bearing components here.</p>
  *
  * <p>SWIFT delegates to {@link SwiftMtRecord#toSwiftFormat()} / {@link SwiftMtRecord#fromSwiftSection}
  * consistently with every other SWIFT strategy in the codebase.</p>
@@ -92,31 +84,15 @@ public class SpringBatchFormatter {
      * @return multi-line string; each non-blank line is exactly 128 characters
      */
     public String formatCoda(List<CodaRecord> records) {
-        Path tempFile = null;
         try {
-            tempFile = Files.createTempFile("sb-coda-", ".dat");
-            FlatFileItemWriter<CodaRecord> writer = new FlatFileItemWriterBuilder<CodaRecord>()
-                    .name("codaWriter")
-                    .resource(new FileSystemResource(tempFile.toFile()))
-                    .lineAggregator(codaAggregator)
-                    .lineSeparator("\n")
-                    .build();
-            writer.open(new ExecutionContext());
-            try {
-                writer.write(new Chunk<>(records));
-            } finally {
-                writer.close();
-            }
-            String content = Files.readString(tempFile);
-            // Normalise any platform line endings that may survive despite the explicit setting
-            return content.replace("\r\n", "\n").replace("\r", "\n");
+            return records.stream()
+                    .map(codaAggregator::aggregate)
+                    .collect(Collectors.joining("\n")) + "\n";
         } catch (Exception e) {
             log.warn("Spring Batch CODA format failed — falling back to CodaRecord.toFixedWidth(): {}", e.getMessage());
             return records.stream()
                     .map(CodaRecord::toFixedWidth)
                     .collect(Collectors.joining("\n")) + "\n";
-        } finally {
-            deleteQuietly(tempFile);
         }
     }
 
@@ -131,40 +107,24 @@ public class SpringBatchFormatter {
         if (content == null || content.isBlank()) {
             return List.of();
         }
-        Path tempFile = null;
         try {
-            tempFile = Files.createTempFile("sb-coda-parse-", ".dat");
-            String padded = Arrays.stream(content.replace("\r\n", "\n").replace("\r", "\n").split("\n"))
+            return Arrays.stream(content.replace("\r\n", "\n").replace("\r", "\n").split("\n"))
                     .filter(l -> !l.isBlank())
                     .map(SpringBatchFormatter::ensureWidth)
-                    .collect(Collectors.joining("\n")) + "\n";
-            Files.writeString(tempFile, padded);
-
-            FlatFileItemReader<CodaRecord> reader = new FlatFileItemReaderBuilder<CodaRecord>()
-                    .name("codaReader")
-                    .resource(new FileSystemResource(tempFile.toFile()))
-                    .lineTokenizer(codaTokenizer)
-                    .fieldSetMapper(codaFieldSetMapper)
-                    .build();
-            reader.open(new ExecutionContext());
-            try {
-                List<CodaRecord> out = new ArrayList<>();
-                CodaRecord r;
-                while ((r = reader.read()) != null) {
-                    out.add(r);
-                }
-                return out;
-            } finally {
-                reader.close();
-            }
+                    .map(line -> {
+                        try {
+                            return codaFieldSetMapper.mapFieldSet(codaTokenizer.tokenize(line));
+                        } catch (Exception e) {
+                            return CodaRecord.fromFixedWidth(line);
+                        }
+                    })
+                    .toList();
         } catch (Exception e) {
             log.warn("Spring Batch CODA parse failed — falling back to CodaRecord.fromFixedWidth(): {}", e.getMessage());
             return Arrays.stream(content.split("\n"))
                     .filter(l -> !l.isBlank())
                     .map(CodaRecord::fromFixedWidth)
                     .toList();
-        } finally {
-            deleteQuietly(tempFile);
         }
     }
 
@@ -310,15 +270,5 @@ public class SpringBatchFormatter {
         String s = a.abs().toBigInteger().toString();
         if (s.length() >= length) return s.substring(0, length);
         return "0".repeat(length - s.length()) + s;
-    }
-
-    private static void deleteQuietly(Path p) {
-        if (p != null) {
-            try {
-                Files.deleteIfExists(p);
-            } catch (IOException ignored) {
-                // best-effort cleanup
-            }
-        }
     }
 }
