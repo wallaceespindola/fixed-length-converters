@@ -276,6 +276,18 @@
                     </execution>
                 </executions>
             </plugin>
+            <!-- Surefire: exclude JMH benchmark classes and generated JMH types from normal test runs -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <excludes>
+                        <exclude>**/*Benchmark.java</exclude>
+                        <exclude>**/*_jmhType*.java</exclude>
+                        <exclude>**/*_jmhTest*.java</exclude>
+                    </excludes>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
