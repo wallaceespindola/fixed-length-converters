@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.Arrays;
+
 /**
  * Represents a single SWIFT MT940/MT942 transaction entry.
  * Contains fields mapping to the standard SWIFT field tags.
@@ -86,6 +88,36 @@ public class SwiftMtRecord {
             sb.append(":62F:").append(closingBalance).append("\n");
         }
         return sb.toString();
+    }
+
+    /**
+     * Parses a single SWIFT MT940 tag-block (one section between record delimiters)
+     * into a SwiftMtRecord. Centralised here to avoid duplication across all formatters.
+     */
+    public static SwiftMtRecord fromSwiftSection(String section) {
+        SwiftMtRecord r = new SwiftMtRecord();
+        for (String line : section.split("\n")) {
+            if (line.startsWith(":20:"))       r.setTransactionReference(line.substring(4).trim());
+            else if (line.startsWith(":25:"))  r.setAccountIdentification(line.substring(4).trim());
+            else if (line.startsWith(":28C:")) r.setStatementNumber(line.substring(5).trim());
+            else if (line.startsWith(":60F:")) r.setOpeningBalance(line.substring(5).trim());
+            else if (line.startsWith(":61:")) {
+                String entry = line.substring(4);
+                if (entry.length() >= 10) {
+                    r.setValueDate(entry.substring(0, 6));
+                    r.setEntryDate(entry.substring(6, 10));
+                    r.setDebitCreditMark(entry.length() > 10 ? String.valueOf(entry.charAt(10)) : "C");
+                    int amtEnd = entry.indexOf("NMSC");
+                    r.setAmount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
+                    r.setTransactionType("NMSC");
+                    r.setCustomerReference(amtEnd >= 0 && entry.length() > amtEnd + 4
+                            ? entry.substring(amtEnd + 4).trim() : "NONREF");
+                }
+            }
+            else if (line.startsWith(":86:"))  r.setInformation(line.substring(4).trim());
+            else if (line.startsWith(":62F:")) r.setClosingBalance(line.substring(5).trim());
+        }
+        return r;
     }
 
     private static String truncate(String value, int maxLen) {

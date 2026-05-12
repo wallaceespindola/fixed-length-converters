@@ -22,10 +22,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Formatter wrapping BeanIO (2.1.0) for CODA and SWIFT MT serialisation.
+ * Formatter wrapping BeanIO (3.2.1) for CODA and SWIFT MT serialisation.
  * Uses programmatic FieldBuilder for CODA (fixed-length) with explicit 0-based positions.
- * SWIFT uses MT940 tag format (same as other strategies) via SwiftMtRecord.toSwiftFormat().
- * No XML mapping files required — fully annotation/programmatic-based.
+ * Padding and alignment are fully annotation/builder-driven — no manual string padding.
  */
 @Component
 public class BeanIOFormatter {
@@ -37,7 +36,8 @@ public class BeanIOFormatter {
     public BeanIOFormatter() {
         factory = StreamFactory.newInstance();
 
-        // CODA: fixed-length stream — FieldBuilder.at() uses 0-based character positions
+        // FieldBuilder.at() uses 0-based character positions.
+        // Padding/alignment configured here; toXxx() passes raw values only.
         factory.define(new StreamBuilder("coda")
                 .format("fixedlength")
                 .addRecord(new RecordBuilder("codaRecord")
@@ -56,8 +56,6 @@ public class BeanIOFormatter {
                         .addField(new FieldBuilder("sequenceNumber").at(117).length(4)
                                 .align(Align.RIGHT).trim())
                         .addField(new FieldBuilder("filler").at(121).length(7).trim())));
-
-        log.debug("BeanIO StreamFactory defined: coda(fixedlength/FieldBuilder)");
     }
 
     public String formatCoda(List<CodaRecord> records) {
@@ -68,13 +66,12 @@ public class BeanIOFormatter {
         }
         writer.flush();
         writer.close();
-        return ensureCodaLineLength(sw.toString());
+        return sw.toString();
     }
 
     public List<CodaRecord> parseCoda(String content) {
         List<CodaRecord> result = new ArrayList<>();
-        String padded = ensureCodaLineLength(content);
-        BeanReader reader = factory.createReader("coda", new StringReader(padded));
+        BeanReader reader = factory.createReader("coda", new StringReader(ensureWidth(content)));
         try {
             Object record;
             while ((record = reader.read()) != null) {
@@ -93,61 +90,34 @@ public class BeanIOFormatter {
     public String formatSwift(List<SwiftMtRecord> records) {
         StringBuilder sb = new StringBuilder();
         for (SwiftMtRecord record : records) {
-            sb.append(record.toSwiftFormat());
-            sb.append("---\n");
+            sb.append(record.toSwiftFormat()).append("---\n");
         }
         return sb.toString();
     }
 
     public List<SwiftMtRecord> parseSwift(String content) {
-        List<SwiftMtRecord> result = new ArrayList<>();
-        String[] sections = content.split("---\n");
-        for (String section : sections) {
-            if (section.isBlank()) continue;
-            result.add(parseSwiftSection(section));
-        }
-        return result;
+        return Arrays.stream(content.split("---\n"))
+                .filter(s -> !s.isBlank())
+                .map(SwiftMtRecord::fromSwiftSection)
+                .toList();
     }
 
-    private SwiftMtRecord parseSwiftSection(String section) {
-        SwiftMtRecord.SwiftMtRecordBuilder builder = SwiftMtRecord.builder();
-        Arrays.stream(section.split("\n")).forEach(line -> {
-            if (line.startsWith(":20:")) builder.transactionReference(line.substring(4).trim());
-            else if (line.startsWith(":25:")) builder.accountIdentification(line.substring(4).trim());
-            else if (line.startsWith(":28C:")) builder.statementNumber(line.substring(5).trim());
-            else if (line.startsWith(":60F:")) builder.openingBalance(line.substring(5).trim());
-            else if (line.startsWith(":61:")) {
-                String entry = line.substring(4);
-                if (entry.length() >= 10) {
-                    builder.valueDate(entry.substring(0, 6));
-                    builder.entryDate(entry.substring(6, 10));
-                    builder.debitCreditMark(entry.length() > 10 ? String.valueOf(entry.charAt(10)) : "C");
-                    int amtEnd = entry.indexOf("NMSC");
-                    builder.amount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
-                    builder.transactionType("NMSC");
-                    builder.customerReference(amtEnd >= 0 && entry.length() > amtEnd + 4
-                            ? entry.substring(amtEnd + 4).trim() : "NONREF");
-                }
-            } else if (line.startsWith(":86:")) builder.information(line.substring(4).trim());
-            else if (line.startsWith(":62F:")) builder.closingBalance(line.substring(5).trim());
-        });
-        return builder.build();
-    }
+    // ── conversion: raw values only; BeanIO builder config handles all padding ──
 
     private BeanIoCodaRecord toBeanIo(CodaRecord r) {
         BeanIoCodaRecord b = new BeanIoCodaRecord();
-        b.setRecordType(r.getRecordType() != null ? r.getRecordType() : " ");
-        b.setBankId(pad(r.getBankId(), 3));
-        b.setReferenceNumber(pad(r.getReferenceNumber(), 10));
-        b.setAccountNumber(pad(r.getAccountNumber(), 37));
-        b.setCurrency(pad(r.getCurrency(), 3));
-        b.setAmountStr(padAmount(r.getAmount(), 16));
-        b.setEntryDate(pad(r.getEntryDate(), 6));
-        b.setValueDate(pad(r.getValueDate(), 6));
-        b.setDescription(pad(r.getDescription(), 32));
-        b.setTransactionCode(pad(r.getTransactionCode(), 3));
-        b.setSequenceNumber(padRight(r.getSequenceNumber(), 4));
-        b.setFiller(pad(r.getFiller() != null ? r.getFiller() : "", 7));
+        b.setRecordType(orEmpty(r.getRecordType()));
+        b.setBankId(orEmpty(r.getBankId()));
+        b.setReferenceNumber(orEmpty(r.getReferenceNumber()));
+        b.setAccountNumber(orEmpty(r.getAccountNumber()));
+        b.setCurrency(orEmpty(r.getCurrency()));
+        b.setAmountStr(amountToStr(r.getAmount()));
+        b.setEntryDate(orEmpty(r.getEntryDate()));
+        b.setValueDate(orEmpty(r.getValueDate()));
+        b.setDescription(orEmpty(r.getDescription()));
+        b.setTransactionCode(orEmpty(r.getTransactionCode()));
+        b.setSequenceNumber(orEmpty(r.getSequenceNumber()));
+        b.setFiller(orEmpty(r.getFiller()));
         return b;
     }
 
@@ -168,7 +138,10 @@ public class BeanIOFormatter {
                 .build();
     }
 
-    private String ensureCodaLineLength(String content) {
+    // ── shared read-path helpers ──────────────────────────────────────────────
+
+    /** Ensures every non-blank line is exactly 128 chars (defensive for the read path). */
+    private static String ensureWidth(String content) {
         if (content == null || content.isBlank()) return content;
         StringBuilder sb = new StringBuilder();
         for (String line : content.split("\n")) {
@@ -180,36 +153,17 @@ public class BeanIOFormatter {
         return sb.toString();
     }
 
-    private static String pad(String value, int length) {
-        if (value == null) value = "";
-        if (value.length() >= length) return value.substring(0, length);
-        return value + " ".repeat(length - value.length());
+    private static String orEmpty(String s) { return s != null ? s : ""; }
+
+    private static String amountToStr(BigDecimal a) {
+        return (a != null ? a : BigDecimal.ZERO).abs().toBigInteger().toString();
     }
 
-    private static String padRight(String value, int length) {
-        if (value == null) value = "";
-        if (value.length() >= length) return value.substring(0, length);
-        return " ".repeat(length - value.length()) + value;
-    }
+    private static String trim(String s) { return s != null ? s.trim() : ""; }
 
-    private static String padAmount(BigDecimal amount, int length) {
-        if (amount == null) amount = BigDecimal.ZERO;
-        // Strip decimal places before encoding — amounts stored as plain integers in CODA
-        String s = amount.abs().setScale(0, java.math.RoundingMode.HALF_UP).toPlainString();
-        if (s.length() >= length) return s.substring(0, length);
-        return "0".repeat(length - s.length()) + s;
-    }
-
-    private static BigDecimal parseAmount(String amountStr) {
-        if (amountStr == null || amountStr.isBlank()) return BigDecimal.ZERO;
-        try {
-            return new BigDecimal(amountStr.trim());
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private static String trim(String value) {
-        return value != null ? value.trim() : "";
+    private static BigDecimal parseAmount(String s) {
+        if (s == null || s.isBlank()) return BigDecimal.ZERO;
+        try { return new BigDecimal(s.trim()); }
+        catch (NumberFormatException e) { return BigDecimal.ZERO; }
     }
 }

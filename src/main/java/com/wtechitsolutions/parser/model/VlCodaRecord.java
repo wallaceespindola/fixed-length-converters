@@ -34,7 +34,7 @@ public class VlCodaRecord implements Serializable {
     @FixedField(offset = 52, length = 3)
     private String currency;
 
-    /** Amount stored as String (16 chars, zero-padded). */
+    /** Amount stored as String (16 chars, zero-padded right-aligned integer — padded by formatter). */
     @FixedField(offset = 55, length = 16)
     private String amountStr;
 

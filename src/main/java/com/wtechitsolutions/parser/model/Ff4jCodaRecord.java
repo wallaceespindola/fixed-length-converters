@@ -1,5 +1,6 @@
 package com.wtechitsolutions.parser.model;
 
+import com.ancientprogramming.fixedformat4j.annotation.Align;
 import com.ancientprogramming.fixedformat4j.annotation.Field;
 import com.ancientprogramming.fixedformat4j.annotation.Record;
 import lombok.AllArgsConstructor;
@@ -32,8 +33,8 @@ public class Ff4jCodaRecord {
     @Field(offset = 52, length = 3)
     private String currency;
 
-    /** Amount stored as String (16 chars, zero-padded integer, 2 implied decimal places). */
-    @Field(offset = 55, length = 16)
+    /** Amount stored as String (16 chars, zero-padded right-aligned integer). */
+    @Field(offset = 55, length = 16, align = Align.RIGHT, paddingChar = '0')
     private String amountStr;
 
     @Field(offset = 71, length = 6)
@@ -48,7 +49,7 @@ public class Ff4jCodaRecord {
     @Field(offset = 115, length = 3)
     private String transactionCode;
 
-    @Field(offset = 118, length = 4)
+    @Field(offset = 118, length = 4, align = Align.RIGHT)
     private String sequenceNumber;
 
     @Field(offset = 122, length = 7)

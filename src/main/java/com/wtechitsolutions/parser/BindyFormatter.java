@@ -25,8 +25,8 @@ import java.util.stream.Collectors;
 
 /**
  * Formatter wrapping Apache Camel Bindy (4.20.0) for CODA and SWIFT MT serialisation.
- * Uses annotation-driven mapping via @FixedLengthRecord and @DataField on BindyCodaRecord.
- * A minimal CamelContext is managed internally for standalone (non-Camel-Spring) use.
+ * Field layout, padding and alignment are declared via @FixedLengthRecord/@DataField
+ * annotations on BindyCodaRecord — no manual string padding in conversion methods.
  */
 @Component
 public class BindyFormatter {
@@ -43,7 +43,6 @@ public class BindyFormatter {
             codaFormat = new BindyFixedLengthDataFormat(BindyCodaRecord.class);
             camelContext.start();
             codaFormat.start();
-            log.debug("BindyFormatter (Camel Bindy) initialised successfully");
         } catch (Exception e) {
             log.error("Failed to initialise BindyFormatter: {}", e.getMessage());
             throw new RuntimeException("Camel Bindy initialisation failed", e);
@@ -60,24 +59,16 @@ public class BindyFormatter {
         }
     }
 
-    /**
-     * Serialises a list of CodaRecord objects using Apache Camel Bindy.
-     */
     public String formatCoda(List<CodaRecord> records) {
         StringBuilder sb = new StringBuilder();
         for (CodaRecord record : records) {
             try {
-                BindyCodaRecord bindy = toBindy(record);
                 ByteArrayOutputStream out = new ByteArrayOutputStream();
                 Exchange exchange = new DefaultExchange(camelContext);
-                codaFormat.marshal(exchange, List.of(bindy), out);
+                codaFormat.marshal(exchange, List.of(toBindy(record)), out);
                 String line = out.toString(StandardCharsets.UTF_8).replace("\r\n", "\n").replace("\r", "\n");
-                // Post-process: ensure exactly 128 chars per line
                 for (String l : line.split("\n")) {
-                    if (l.isBlank()) continue;
-                    if (l.length() < 128) l = l + " ".repeat(128 - l.length());
-                    else if (l.length() > 128) l = l.substring(0, 128);
-                    sb.append(l).append("\n");
+                    if (!l.isBlank()) sb.append(ensureWidth(l)).append("\n");
                 }
             } catch (Exception e) {
                 log.warn("Bindy CODA format failed for recordType={}: {}", record.getRecordType(), e.getMessage());
@@ -87,25 +78,18 @@ public class BindyFormatter {
         return sb.toString();
     }
 
-    /**
-     * Parses a fixed-length CODA string using Apache Camel Bindy.
-     */
     @SuppressWarnings("unchecked")
     public List<CodaRecord> parseCoda(String content) {
         if (content == null || content.isBlank()) return List.of();
         try {
-            // Ensure all lines are exactly 128 chars before passing to Bindy
-            String paddedContent = Arrays.stream(content.split("\n"))
+            String padded = Arrays.stream(content.split("\n"))
                     .filter(l -> !l.isBlank())
-                    .map(l -> {
-                        if (l.length() < 128) return l + " ".repeat(128 - l.length());
-                        return l.length() > 128 ? l.substring(0, 128) : l;
-                    })
+                    .map(this::ensureWidth)
                     .collect(Collectors.joining("\n")) + "\n";
 
             Exchange exchange = new DefaultExchange(camelContext);
             Object parsed = codaFormat.unmarshal(exchange,
-                    new ByteArrayInputStream(paddedContent.getBytes(StandardCharsets.UTF_8)));
+                    new ByteArrayInputStream(padded.getBytes(StandardCharsets.UTF_8)));
 
             if (parsed instanceof List<?> list) {
                 return list.stream()
@@ -126,44 +110,37 @@ public class BindyFormatter {
         }
     }
 
-    /**
-     * Serialises SWIFT MT940 records.
-     * Camel Bindy is primarily a fixed-length formatter; SWIFT tag format is
-     * generated using SwiftMtRecord's built-in serialiser for each record.
-     */
     public String formatSwift(List<SwiftMtRecord> records) {
         StringBuilder sb = new StringBuilder();
         for (SwiftMtRecord record : records) {
-            sb.append(record.toSwiftFormat());
-            sb.append("###\n");
+            sb.append(record.toSwiftFormat()).append("###\n");
         }
         return sb.toString();
     }
 
-    /**
-     * Parses SWIFT MT940 content back into a list of SwiftMtRecord objects.
-     */
     public List<SwiftMtRecord> parseSwift(String content) {
         return Arrays.stream(content.split("###\n"))
                 .filter(s -> !s.isBlank())
-                .map(this::parseSwiftSection)
-                .collect(Collectors.toList());
+                .map(SwiftMtRecord::fromSwiftSection)
+                .toList();
     }
+
+    // ── conversion: raw values only; @DataField annotations handle all padding ─
 
     private BindyCodaRecord toBindy(CodaRecord r) {
         BindyCodaRecord b = new BindyCodaRecord();
-        b.setRecordType(r.getRecordType() != null ? r.getRecordType() : " ");
-        b.setBankId(pad(r.getBankId(), 3));
-        b.setReferenceNumber(pad(r.getReferenceNumber(), 10));
-        b.setAccountNumber(pad(r.getAccountNumber(), 37));
-        b.setCurrency(pad(r.getCurrency(), 3));
-        b.setAmountStr(padAmount(r.getAmount(), 16));
-        b.setEntryDate(pad(r.getEntryDate(), 6));
-        b.setValueDate(pad(r.getValueDate(), 6));
-        b.setDescription(pad(r.getDescription(), 32));
-        b.setTransactionCode(pad(r.getTransactionCode(), 3));
-        b.setSequenceNumber(padRight(r.getSequenceNumber(), 4));
-        b.setFiller(pad(r.getFiller() != null ? r.getFiller() : "", 7));
+        b.setRecordType(orEmpty(r.getRecordType()));
+        b.setBankId(orEmpty(r.getBankId()));
+        b.setReferenceNumber(orEmpty(r.getReferenceNumber()));
+        b.setAccountNumber(orEmpty(r.getAccountNumber()));
+        b.setCurrency(orEmpty(r.getCurrency()));
+        b.setAmountStr(amountToStr(r.getAmount()));
+        b.setEntryDate(orEmpty(r.getEntryDate()));
+        b.setValueDate(orEmpty(r.getValueDate()));
+        b.setDescription(orEmpty(r.getDescription()));
+        b.setTransactionCode(orEmpty(r.getTransactionCode()));
+        b.setSequenceNumber(orEmpty(r.getSequenceNumber()));
+        b.setFiller(orEmpty(r.getFiller()));
         return b;
     }
 
@@ -202,62 +179,26 @@ public class BindyFormatter {
                 .build();
     }
 
-    private SwiftMtRecord parseSwiftSection(String section) {
-        SwiftMtRecord.SwiftMtRecordBuilder builder = SwiftMtRecord.builder();
-        for (String line : section.split("\n")) {
-            if (line.startsWith(":20:")) builder.transactionReference(line.substring(4).trim());
-            else if (line.startsWith(":25:")) builder.accountIdentification(line.substring(4).trim());
-            else if (line.startsWith(":28C:")) builder.statementNumber(line.substring(5).trim());
-            else if (line.startsWith(":60F:")) builder.openingBalance(line.substring(5).trim());
-            else if (line.startsWith(":61:")) {
-                String entry = line.substring(4);
-                if (entry.length() >= 10) {
-                    builder.valueDate(entry.substring(0, 6));
-                    builder.entryDate(entry.substring(6, 10));
-                    builder.debitCreditMark(String.valueOf(entry.charAt(10)));
-                    int amtEnd = entry.indexOf("NMSC");
-                    builder.amount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
-                    builder.transactionType("NMSC");
-                }
-            } else if (line.startsWith(":86:")) builder.information(line.substring(4).trim());
-            else if (line.startsWith(":62F:")) builder.closingBalance(line.substring(5).trim());
-        }
-        return builder.build();
+    // ── shared read-path helpers ──────────────────────────────────────────────
+
+    private String ensureWidth(String line) {
+        if (line.length() < 128) return line + " ".repeat(128 - line.length());
+        return line.length() > 128 ? line.substring(0, 128) : line;
     }
 
-    private static String pad(String value, int length) {
-        if (value == null) value = "";
-        if (value.length() >= length) return value.substring(0, length);
-        return value + " ".repeat(length - value.length());
+    private static String orEmpty(String s) { return s != null ? s : ""; }
+
+    private static String amountToStr(BigDecimal a) {
+        return (a != null ? a : BigDecimal.ZERO).abs().toBigInteger().toString();
     }
 
-    private static String padRight(String value, int length) {
-        if (value == null) value = "";
-        if (value.length() >= length) return value.substring(0, length);
-        return " ".repeat(length - value.length()) + value;
-    }
+    private static String trim(String s) { return s != null ? s.trim() : ""; }
 
-    private static String padAmount(BigDecimal amount, int length) {
-        if (amount == null) amount = BigDecimal.ZERO;
-        String s = amount.abs().toBigInteger().toString();
-        if (s.length() >= length) return s.substring(0, length);
-        return "0".repeat(length - s.length()) + s;
-    }
+    private static String str(Object o) { return o != null ? o.toString().trim() : ""; }
 
-    private static BigDecimal parseAmount(String amountStr) {
-        if (amountStr == null || amountStr.isBlank()) return BigDecimal.ZERO;
-        try {
-            return new BigDecimal(amountStr.trim());
-        } catch (NumberFormatException e) {
-            return BigDecimal.ZERO;
-        }
-    }
-
-    private static String trim(String value) {
-        return value != null ? value.trim() : "";
-    }
-
-    private static String str(Object o) {
-        return o != null ? o.toString().trim() : "";
+    private static BigDecimal parseAmount(String s) {
+        if (s == null || s.isBlank()) return BigDecimal.ZERO;
+        try { return new BigDecimal(s.trim()); }
+        catch (NumberFormatException e) { return BigDecimal.ZERO; }
     }
 }
