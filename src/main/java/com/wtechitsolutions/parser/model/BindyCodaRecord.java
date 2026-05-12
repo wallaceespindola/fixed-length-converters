@@ -26,26 +26,26 @@ public class BindyCodaRecord {
     @DataField(pos = 5, length = 10)
     private String referenceNumber;
 
-    @DataField(pos = 15, length = 37)
+    @DataField(pos = 15, length = 37, align = "L")
     private String accountNumber;
 
-    @DataField(pos = 52, length = 3)
+    @DataField(pos = 52, length = 3, align = "L")
     private String currency;
 
     /** Amount stored as String (16 chars, zero-padded right-aligned integer). */
     @DataField(pos = 55, length = 16, align = "R", paddingChar = '0', trim = true)
     private String amountStr;
 
-    @DataField(pos = 71, length = 6, trim = true)
+    @DataField(pos = 71, length = 6, align = "L", trim = true)
     private String entryDate;
 
-    @DataField(pos = 77, length = 6, trim = true)
+    @DataField(pos = 77, length = 6, align = "L", trim = true)
     private String valueDate;
 
-    @DataField(pos = 83, length = 32, trim = true)
+    @DataField(pos = 83, length = 32, align = "L", trim = true)
     private String description;
 
-    @DataField(pos = 115, length = 3, trim = true)
+    @DataField(pos = 115, length = 3, align = "L", trim = true)
     private String transactionCode;
 
     @DataField(pos = 118, length = 4, align = "R", trim = true)
