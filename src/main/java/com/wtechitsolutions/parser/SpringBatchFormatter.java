@@ -162,7 +162,7 @@ public class SpringBatchFormatter {
             return Arrays.stream(content.split("\n"))
                     .filter(l -> !l.isBlank())
                     .map(CodaRecord::fromFixedWidth)
-                    .collect(Collectors.toList());
+                    .toList();
         } finally {
             deleteQuietly(tempFile);
         }
@@ -294,7 +294,7 @@ public class SpringBatchFormatter {
         return s != null ? s : "";
     }
 
-    /** Right-pads value with leading spaces to reach {@code length}; truncates if longer. */
+    /** Left-pads {@code value} with spaces (right-aligns) to {@code length}; truncates if longer. */
     private static String padLeft(String value, int length) {
         if (value == null) value = "";
         if (value.length() >= length) return value.substring(0, length);
