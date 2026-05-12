@@ -548,13 +548,15 @@ Domain Object → generate file → parse file → rebuild Domain Object → ass
 root/
 ├── README.md
 ├── CLAUDE.md
-├── CONTRIBUTING.md
 ├── Makefile
 ├── pom.xml
 ├── .gitignore
 ├── docs/
-│   ├── prd.md
+│   ├── PRD.md
+│   ├── CHANGELOG.md
+│   ├── CONTRIBUTING.md
 │   ├── architecture.md
+│   ├── implementation-plan.md
 │   ├── benchmark-results.md
 │   ├── examples/
 │   │   ├── coda/

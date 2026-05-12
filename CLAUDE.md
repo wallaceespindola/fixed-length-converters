@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 7 Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
 
-**PRD:** `PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
+**PRD:** `docs/PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
 
 ## Implementation Status: COMPLETE
 
@@ -153,4 +153,4 @@ All packages: `com.wtechitsolutions.*`
 
 ## Repository Structure
 
-See `PRD.md` §18 and `docs/specs/design-spec.md` for full specs.
+See `docs/PRD.md` §18 and `docs/specs/design-spec.md` for full specs.

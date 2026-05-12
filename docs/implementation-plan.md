@@ -1978,9 +1978,9 @@ git commit -m "docs: add 7 architecture diagrams in PlantUML and Mermaid formats
 - Modify: `README.md` (full content with embedded Mermaid diagrams)
 - Create: `docs/architecture.md`
 - Create: `docs/benchmark-results.md`
-- Create: `docs/prd.md` (copy/symlink of PRD.md)
-- Create: `CONTRIBUTING.md`
-- Create: `CHANGELOG.md`
+- Create: `docs/PRD.md`
+- Create: `docs/CONTRIBUTING.md`
+- Create: `docs/CHANGELOG.md`
 
 - [x] **Step 12.1: Write full README.md**
 

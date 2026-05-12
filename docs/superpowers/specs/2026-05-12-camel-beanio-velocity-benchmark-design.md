@@ -5,7 +5,7 @@
 | **Date** | 2026-05-12 |
 | **Author** | Wallace Espindola |
 | **Status** | Approved |
-| **PRD Reference** | PRD.md §5, §11, §13 |
+| **PRD Reference** | docs/PRD.md §5, §11, §13 |
 
 ---
 

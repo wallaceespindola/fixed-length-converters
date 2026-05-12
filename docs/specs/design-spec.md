@@ -5,7 +5,7 @@
 | **Date** | 2026-04-30 |
 | **Author** | Wallace Espindola |
 | **Status** | Approved |
-| **PRD** | PRD.md (v3.0) |
+| **PRD** | docs/PRD.md (v3.0) |
 
 ---
 
@@ -23,8 +23,7 @@ fixed-length-converters/
 ├── Makefile
 ├── .gitignore
 ├── README.md
-├── CONTRIBUTING.md
-├── CHANGELOG.md
+├── CLAUDE.md
 ├── src/
 │   ├── main/
 │   │   ├── java/com/wtechitsolutions/
@@ -44,6 +43,12 @@ fixed-length-converters/
 │   │   └── frontend/                 # React 18 + Vite + MUI + TypeScript source
 │   └── test/java/com/wtechitsolutions/ # mirrors main package structure
 ├── docs/
+│   ├── PRD.md
+│   ├── CHANGELOG.md
+│   ├── CONTRIBUTING.md
+│   ├── architecture.md
+│   ├── implementation-plan.md
+│   ├── benchmark-results.md
 │   ├── examples/coda/            # valid, malformed, edge-case, benchmark CODA files
 │   ├── examples/swift/           # valid, malformed, edge-case, benchmark SWIFT files
 │   ├── diagrams/                 # 7 diagram types × .puml + .mmd
