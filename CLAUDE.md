@@ -24,7 +24,7 @@ All 76 tests pass. Application starts and runs end-to-end.
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x |
 | Testing | JUnit 5 + Mockito, 75 tests |
-| Libraries | BeanIO 2.1.0, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0 |
+| Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0 |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands

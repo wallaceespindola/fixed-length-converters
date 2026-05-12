@@ -101,7 +101,7 @@ All four wrappers are **annotation-based** — no XML mapping files exist.
 
 | Wrapper | Library | Mechanism |
 |---|---|---|
-| `BeanIOFormatter` | BeanIO 2.1.0 | `StreamBuilder` + `FieldBuilder` (0-based positions); CSV for SWIFT |
+| `BeanIOFormatter` | BeanIO 3.2.1 | `StreamBuilder` + `FieldBuilder` (0-based positions); CSV for SWIFT |
 | `FixedFormat4JFormatter` | fixedformat4j 1.7.0 | `@Record(length=128)` + `@Field(offset=X, length=Y)` on `Ff4jCodaRecord` |
 | `FixedLengthFormatter` | fixedlength 0.15 | `@FixedLine(startsWith="")` + `@FixedField(offset=X, length=Y)` on `VlCodaRecord` |
 | `BindyFormatter` | Camel Bindy 4.20.0 | `@FixedLengthRecord(length=128)` + `@DataField(pos=X, length=Y)` on `BindyCodaRecord` |

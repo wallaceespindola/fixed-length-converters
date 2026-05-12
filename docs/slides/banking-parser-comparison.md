@@ -85,7 +85,7 @@ React SPA → REST API → Spring Batch Pipeline
 
 | Library | Version | Annotation Style | XML Required | Spring Batch Fit |
 |---|---|---|---|---|
-| **BeanIO** | 2.1.0 | `@Record` + `FieldBuilder` | ❌ None | ✅ Good |
+| **BeanIO** | 3.2.1 | `@Record` + `FieldBuilder` | ❌ None | ✅ Good |
 | **fixedformat4j** | 1.7.0 | `@Record` + `@Field(offset, length)` | ❌ None | ✅ Excellent |
 | **fixedlength** | 0.15 | `@FixedLine` + `@FixedField(offset, length)` | ❌ None | ✅ Good |
 | **Camel Bindy** | 4.20.0 | `@FixedLengthRecord` + `@DataField(pos, length)` | ❌ None | ⚠️ Needs CamelContext |

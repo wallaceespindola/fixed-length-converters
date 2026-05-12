@@ -48,7 +48,7 @@ graph TB
         S4[4 SWIFT Strategies]
     end
     subgraph Parsers["Parser Library Wrappers"]
-        BIO[BeanIO 2.1.0]
+        BIO[BeanIO 3.2.1]
         FF4J[fixedformat4j 1.7.0]
         VL[fixedlength 0.15]
         BINDY[Camel Bindy 4.20.0]
@@ -104,7 +104,7 @@ chains.
 
 | Library                | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
 |------------------------|---------|-----------------|--------------------|------------------|--------|
-| **BeanIO**             | 2.1.0   | Excellent       | Good               | Good             | Low    |
+| **BeanIO**             | 3.2.1   | Excellent       | Good               | Good             | Low    |
 | **fixedformat4j**      | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
 | **fixedlength**        | 0.15    | Limited         | Good               | Good             | Medium |
 | **Apache Camel Bindy** | 4.20.0  | Limited         | Good               | Medium           | Medium |
@@ -381,7 +381,7 @@ fixed-length-converters/
 
 - [Febelfin CODA Specification](https://www.febelfin.be/en/payments-standards/coda)
 - [SWIFT MT940 Documentation](https://www.swift.com/standards/data-standards/mt)
-- [BeanIO on Maven Central](https://mvnrepository.com/artifact/org.beanio/beanio)
+- [BeanIO on Maven Central](https://mvnrepository.com/artifact/com.github.beanio/beanio)
 - [fixedformat4j on Maven Central](https://mvnrepository.com/artifact/com.ancientprogramming.fixedformat4j/fixedformat4j)
 - [fixedlength on Maven Central](https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixedlength)
 - [Apache Camel Bindy](https://camel.apache.org/components/latest/dataformats/bindy-dataformat.html)
