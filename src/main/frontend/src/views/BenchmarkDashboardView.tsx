@@ -13,6 +13,9 @@ const LIBRARY_COLORS: Record<string, string> = {
   FIXFORMAT4J: '#2e7d32',
   FIXEDLENGTH: '#ed6c02',
   BINDY: '#9c27b0',
+  CAMEL_BEANIO: '#c0392b',
+  VELOCITY: '#16a085',
+  SPRING_BATCH: '#f39c12',
 }
 
 function byLibrary(data: BenchmarkResultResponse[]) {
