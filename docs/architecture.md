@@ -44,7 +44,7 @@ com.wtechitsolutions/
 ├── batch/          Spring Batch components (reader, processor, writer, listeners, service)
 ├── benchmark/      BenchmarkService (CSV/JSON/Markdown/HTML export)
 ├── config/         Spring configuration (BatchConfig, OpenApiConfig, WebConfig)
-├── domain/         JPA entities, JPA repositories, DomainDataGenerator, enums
+├── domain/         JPA entities, JPA repositories, DomainDataGenerator, enums (incl. LoadProfile)
 ├── parser/         7 formatter wrappers + library-specific annotated model classes
 │   └── model/      CodaRecord, SwiftMtRecord, and library-annotated variants
 └── strategy/       FileGenerationStrategy interface, StrategyResolver, 14 implementations
@@ -102,15 +102,19 @@ Seven wrappers in `com.wtechitsolutions.parser`:
 
 | Wrapper | Library | Mechanism |
 |---|---|---|
-| `BeanIOFormatter` | BeanIO 3.2.1 | `StreamBuilder` + `FieldBuilder` (0-based positions); CSV for SWIFT |
+| `BeanIOFormatter` | BeanIO 3.2.1 | `StreamBuilder` + `FieldBuilder` (0-based positions) |
 | `FixedFormat4JFormatter` | fixedformat4j 1.7.0 | `@Record(length=128)` + `@Field(offset=X, length=Y)` on `Ff4jCodaRecord` |
 | `FixedLengthFormatter` | fixedlength 0.15 | `@FixedLine(startsWith="")` + `@FixedField(offset=X, length=Y)` on `VlCodaRecord` |
 | `BindyFormatter` | Camel Bindy 4.20.0 | `@FixedLengthRecord(length=128)` + `@DataField(pos=X, length=Y)` on `BindyCodaRecord` |
 | `CamelBeanIOFormatter` | Apache Camel BeanIO 4.20.0 | Camel BeanIO DataFormat with XML stream mapping |
 | `VelocityFormatter` | Apache Velocity 2.4 | `.vm` template files; `VelocityEngine` renders records to string |
-| `SpringBatchFormatter` | Spring Batch 5.x native | `FlatFileItemWriter` with `BeanWrapperFieldExtractor` + `FormatterLineAggregator` |
+| `SpringBatchFormatter` | Spring Batch 5.x native | `LineAggregator` + `FixedLengthTokenizer` + `FieldSetMapper` applied directly per record (refactored away from `FlatFileItemWriter`/`FlatFileItemReader` to avoid transactional buffering issues in nested batch contexts) |
 
 **CODA amount encoding:** Amounts are stored as plain integers (scale stripped via `setScale(0, ROUND_HALF_UP)`) in a 16-character zero-padded field. BeanIO `FieldBuilder` positions are 0-based; XML would use 1-based (different convention).
+
+**CODA Bindy alignment:** `BindyCodaRecord` text fields carry explicit `align="L"` annotations. Camel Bindy defaults to right-alignment; without this, text like "TOTAL" in trailer description fields was pushed to the far end of the field rather than left-padded.
+
+**SWIFT inter-message separator:** All 7 formatters emit `---\n` between MT940 records. `BindyFormatter` previously used `###` and `FixedLengthFormatter` previously used `===`; both are now aligned to `---`.
 
 ---
 
@@ -131,7 +135,7 @@ Spring Batch's own tables (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, etc.) 
 
 | Method | Path | Description |
 |---|---|---|
-| POST | `/api/domain/generate` | Generate 20 accounts + 200 transactions + 10 statements |
+| POST | `/api/domain/generate` | Generate domain data; optional `?loadProfile=LOW\|HIGH` |
 | POST | `/api/batch/generate` | Trigger batch job `{fileType, library}` |
 | GET | `/api/batch/history` | Last 50 job executions |
 | GET | `/api/benchmark/results` | All benchmark metrics |
@@ -141,6 +145,10 @@ Spring Batch's own tables (`BATCH_JOB_EXECUTION`, `BATCH_STEP_EXECUTION`, etc.) 
 | GET | `/api/benchmark/export/html` | HTML export (Velocity-rendered) |
 | GET | `/actuator/health` | Health (H2 + disk + ping) |
 | GET | `/actuator/info` | App name, version, build time |
+
+**Load profiles for `/api/domain/generate`:**
+- `LOW` (default) — 20 accounts, 200 transactions, 10 statements
+- `HIGH` — 200 accounts, 2 000 transactions, 100 statements
 
 All responses include an `Instant timestamp` field (ISO-8601). Error responses use RFC 9457 `ProblemDetail`. Swagger UI is available only in the `dev` Spring profile.
 

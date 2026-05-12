@@ -68,6 +68,7 @@ React SPA → REST API → Spring Batch Pipeline
 
 - **Tag-based** format: `:TAG:value`
 - Key tags: `:20:` reference, `:25:` account, `:28C:` sequence, `:60F:` opening balance, `:61:` entry, `:86:` narrative, `:62F:` closing balance
+- Inter-message separator: `---` (standardized across all 7 formatters)
 
 ```
 :20:STMT000001
@@ -77,6 +78,7 @@ React SPA → REST API → Spring Batch Pipeline
 :61:260429260429C750NMSCREF000001NONREF
 :86:Payment for services rendered
 :62F:C260429EUR10750,00
+---
 ```
 
 ---
@@ -91,7 +93,7 @@ React SPA → REST API → Spring Batch Pipeline
 | **Camel Bindy** | 4.20.0 | `@FixedLengthRecord` + `@DataField(pos, length)` | None | Medium |
 | **Camel BeanIO** | 4.20.0 | XML stream mapping | Required | Medium |
 | **Apache Velocity** | 2.4 | `.vm` templates | None | Good |
-| **Spring Batch native** | 5.x | `BeanWrapperFieldExtractor` | None | Excellent |
+| **Spring Batch native** | 5.x | `LineAggregator` + `FixedLengthTokenizer` | None | Excellent |
 
 ---
 
@@ -169,7 +171,7 @@ Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown` or `/html`
 
 ## Slide 11 — Code Quality & CI/CD
 
-- **Tests:** 117 tests passing (unit, integration, symmetry, API, Actuator, Swagger)
+- **Tests:** 118 tests passing (unit, integration, symmetry, API, Actuator, Swagger)
 - **Coverage:** JaCoCo enforced (minimum threshold configured)
 - **CI:** GitHub Actions — build, test, benchmark, CodeQL security scan, releases
 - **Dependencies:** Dependabot auto-PRs weekly for Maven + Actions + npm
@@ -183,11 +185,11 @@ Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown` or `/html`
 - [SWIFT MT940 Documentation](https://www.swift.com/standards/data-standards/mt)
 - [BeanIO](https://mvnrepository.com/artifact/org.beanio/beanio)
 - [fixedformat4j](https://mvnrepository.com/artifact/com.ancientprogramming.fixedformat4j/fixedformat4j)
-- [fixedlength](https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixedlength)
+- [fixedlength](https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixelength)
 - [Apache Camel Bindy](https://camel.apache.org/components/latest/dataformats/bindy-dataformat.html)
 - [Apache Camel BeanIO](https://camel.apache.org/components/latest/dataformats/beanio-dataformat.html)
 - [Apache Velocity](https://velocity.apache.org/)
-- [Spring Batch FlatFileItemWriter](https://docs.spring.io/spring-batch/docs/current/reference/html/readersAndWriters.html#flatFileItemWriter)
+- [Spring Batch Reference](https://docs.spring.io/spring-batch/docs/current/reference/html/readersAndWriters.html)
 
 ---
 

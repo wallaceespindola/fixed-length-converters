@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Implementation Status: COMPLETE
 
-All 117 tests pass. Application starts and runs end-to-end.
+All 118 tests pass. Application starts and runs end-to-end.
 
 ## Technical Stack
 
@@ -23,13 +23,16 @@ All 117 tests pass. Application starts and runs end-to-end.
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x |
-| Testing | JUnit 5 + Mockito, 117 tests |
+| Testing | JUnit 5 + Mockito, 118 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0, Camel BeanIO 4.20.0, Velocity 2.3, Spring Batch 5.x |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands
 
 ```bash
+# Full pipeline end-to-end (frontend build + Java compile + 118 tests + JaCoCo + repackage + install)
+mvn clean install
+
 # Quick build (no tests, no frontend)
 mvn clean package -DskipTests -Pskip-frontend
 
@@ -65,7 +68,7 @@ src/main/java/com/wtechitsolutions/
 ├── benchmark/         BenchmarkService (CSV/JSON/Markdown/HTML export)
 ├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig
 ├── domain/            JPA entities (Account, Transaction, BankingStatement, BenchmarkMetrics)
-│                       Repositories, DomainDataGenerator, enums (FileType, Library, TransactionType)
+│                       Repositories, DomainDataGenerator, enums (FileType, Library, LoadProfile, TransactionType)
 ├── parser/            7 formatter wrappers (annotation-based, template-based, or programmatic):
 │   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter,
 │   │                   CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter
@@ -80,7 +83,7 @@ src/main/java/com/wtechitsolutions/
 
 ### Core Flow
 
-1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2 (20 accounts, 200 transactions, 10 statements)
+1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2; supports `?loadProfile=LOW` (default: 20 accounts, 200 transactions, 10 statements) or `?loadProfile=HIGH` (200 accounts, 2 000 transactions, 100 statements)
 2. `POST /api/batch/generate` → `BatchJobService.launch(fileType, library)` → Spring Batch job
 3. Spring Batch: `DomainEntityItemReader` (H2) → `FileGenerationItemProcessor` (StrategyResolver) → `FileOutputItemWriter` (writes to `/output/`)
 4. `BatchMetricsListener.afterJob()` → saves `BenchmarkMetrics` row
@@ -96,16 +99,18 @@ src/main/java/com/wtechitsolutions/
 - Amounts: **plain integer** (no decimal places) stored as left-zero-padded 16-char string
 - `padAmount()` uses `setScale(0, ROUND_HALF_UP)` to strip decimal scale from H2 BigDecimal values
 - BeanIO uses `FieldBuilder.at()` with **0-based** character positions (NOT 1-based)
+- `BindyCodaRecord` text fields carry explicit `align="L"` to force left-alignment (Camel Bindy defaults to right-align, which pushed "TOTAL" to the end of the description field in trailer records)
 
 ### SWIFT Format Notes
 
-- All strategies serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters
+- All 7 formatters serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters between messages
+- The `---\n` separator is standardized across all formatters; previously `BindyFormatter` used `###` and `FixedLengthFormatter` used `===`
 - BeanIO previously used CSV format; fixed to be consistent with the other strategies
 
 ## REST API Endpoints
 
 ```
-POST /api/domain/generate        → generate + persist 20 accounts, 200 transactions
+POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|HIGH
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
 GET  /api/benchmark/results      → all benchmark metrics
@@ -121,11 +126,12 @@ GET  /actuator/info              → app name, version, description
 
 - **NO `@EnableBatchProcessing`** — Spring Boot 3.x auto-configures; adding it disables auto-config
 - **Swagger enabled in `dev` profile only** — default profile has springdoc disabled
-- **All parser formatters are annotation-based** — NO XML mapping files anywhere
+- **All parser formatters are annotation-based** — NO XML mapping files anywhere (except Camel BeanIO which uses XML stream mapping)
 - **BeanIO FieldBuilder.at() is 0-based** — confirmed from library source; annotation @Field(at=X) may differ
 - **Output files** written to `/output/` directory (gitignored)
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
+- **Pre-built frontend bundle** in `src/main/resources/static/` is committed; `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild
 
 ## Testing Strategy
 

@@ -614,7 +614,7 @@ public class BindyFormatter {
 
 - [x] **Step 4.5: Create CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter**
 
-Mirror the above wrappers using Apache Camel BeanIO DataFormat with XML stream mapping, Apache Velocity `.vm` template engine, and Spring Batch native `FlatFileItemWriter` with `BeanWrapperFieldExtractor` respectively.
+Mirror the above wrappers using Apache Camel BeanIO DataFormat with XML stream mapping, Apache Velocity `.vm` template engine, and Spring Batch native `LineAggregator` + `FixedLengthTokenizer` + `FieldSetMapper` applied directly per record respectively.
 
 - [x] **Step 4.6: Write unit tests for parser wrappers**
 
@@ -2381,7 +2381,7 @@ git commit -m "chore: update CLAUDE.md with final implementation state"
 - [ ] Test coverage > 80% (currently enforced at 40%; frontend adds coverage)
 
 ### Testing
-- [x] All TS-001 through TS-012 passing (117 tests, 0 failures; JMH via -Pbenchmark)
+- [x] All TS-001 through TS-012 passing (118 tests, 0 failures; JMH via -Pbenchmark)
 - [x] Symmetry tests pass for all 14 strategy combinations
 - [x] Golden file tests pass (GoldenFileTest: 13 tests)
 

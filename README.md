@@ -18,7 +18,7 @@ Enterprise-grade banking file experimentation and benchmarking platform. Generat
 This platform is a technical laboratory for evaluating Java fixed-length parser frameworks across correctness,
 performance, and Spring Batch compatibility. Engineers can:
 
-- Generate realistic banking transaction datasets (20 accounts, 200 transactions per call)
+- Generate realistic banking transaction datasets (configurable LOW or HIGH load profiles)
 - Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 7 libraries
 - Compare library outputs side-by-side through benchmark dashboards
 - Export benchmark results as CSV, JSON, Markdown, or styled HTML
@@ -150,7 +150,7 @@ chains.
 
 - Java 21+ (tested with Amazon Corretto 21)
 - Maven 3.9+
-- Node.js 22+ (for frontend build)
+- Node.js 22+ (for frontend build — only needed if you change frontend code)
 - Python 3.12+ _(optional — benchmark aggregation tools only)_
 - `make` _(optional — simplifies commands; see install instructions below)_
 
@@ -170,6 +170,10 @@ Verify with: `make --version`
 Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
+# Full pipeline end-to-end — frontend build + Java compile + 118 tests + JaCoCo coverage + install
+# (no flags needed; frontend-maven-plugin handles the React build automatically)
+mvn clean install
+
 # Compile and package — fastest (skips tests and frontend)
 # with make
 make build
@@ -183,6 +187,7 @@ make build-full
 mvn clean package -DskipTests
 
 # Start in dev mode — Swagger UI enabled at http://localhost:8080/swagger-ui.html
+# The pre-built frontend bundle in src/main/resources/static/ is served immediately.
 # with make
 make run
 # direct
@@ -254,18 +259,35 @@ python tools/python/report_generator.py target/jmh-result.json docs/benchmark-re
 
 ## REST API
 
-| Method | Endpoint                         | Description                                    |
-|--------|----------------------------------|------------------------------------------------|
-| `POST` | `/api/domain/generate`           | Generate 20 accounts + 200 transactions in H2  |
-| `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}` |
-| `GET`  | `/api/batch/history`             | Last 50 batch job executions                   |
-| `GET`  | `/api/benchmark/results`         | All benchmark metrics                          |
-| `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                  |
-| `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                             |
-| `GET`  | `/api/benchmark/export/json`     | Export as JSON                                 |
-| `GET`  | `/api/benchmark/export/html`     | Export as styled HTML (Velocity template)      |
-| `GET`  | `/actuator/health`               | Application health                             |
-| `GET`  | `/actuator/info`                 | Application metadata                           |
+| Method | Endpoint                         | Description                                                           |
+|--------|----------------------------------|-----------------------------------------------------------------------|
+| `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|HIGH`        |
+| `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                        |
+| `GET`  | `/api/batch/history`             | Last 50 batch job executions                                          |
+| `GET`  | `/api/benchmark/results`         | All benchmark metrics                                                 |
+| `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                                         |
+| `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                                                    |
+| `GET`  | `/api/benchmark/export/json`     | Export as JSON                                                        |
+| `GET`  | `/api/benchmark/export/html`     | Export as styled HTML (Velocity template)                             |
+| `GET`  | `/actuator/health`               | Application health                                                    |
+| `GET`  | `/actuator/info`                 | Application metadata                                                  |
+
+### Load Profiles
+
+`POST /api/domain/generate` accepts an optional `loadProfile` query parameter:
+
+| Profile | Accounts | Transactions | Statements | Notes        |
+|---------|----------|--------------|------------|--------------|
+| `LOW`   | 20       | 200          | 10         | Default      |
+| `HIGH`  | 200      | 2 000        | 100        | Stress test  |
+
+```bash
+# Default (LOW) profile
+curl -s -X POST http://localhost:8080/api/domain/generate | jq .
+
+# HIGH load profile
+curl -s -X POST 'http://localhost:8080/api/domain/generate?loadProfile=HIGH' | jq .
+```
 
 ### Example: Generate Data and Run Batch
 
@@ -354,13 +376,18 @@ mvn test -Pskip-frontend -Dtest="DomainControllerTest,BatchControllerTest"
 The React 18 + Vite + MUI frontend provides:
 
 - **Dashboard** — health status, actuator info, quick-action buttons
-- **Data Generator** — trigger domain data generation, display results
-- **Batch Runner** — select FileType + Library, submit, preview generated file
+- **Data Generator** — trigger domain data generation with "Low Load" or "High Load" buttons, display results
+- **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires all 14 fileType × library combinations sequentially with live per-row progress.
 - **Batch History** — sortable/filterable table of all job executions
-- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD
-  export
+- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD export. Library Summary cards and both bar charts auto-sort by avg throughput (best to worst) on every refresh.
 
-Build the frontend: `mvn generate-resources` (handled by `frontend-maven-plugin`)
+The pre-built frontend bundle is committed to `src/main/resources/static/`, so `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild. If you change frontend source code, rebuild with:
+
+```bash
+cd src/main/frontend && npm run build
+```
+
+Then commit the resulting bundle in `src/main/resources/static/`.
 
 ---
 
@@ -375,10 +402,11 @@ fixed-length-converters/
 │   ├── batch/                  Spring Batch reader/processor/writer/listeners
 │   ├── benchmark/              BenchmarkService (CSV/JSON/MD/HTML export)
 │   ├── config/                 Spring, Batch, OpenAPI, Web config
-│   ├── domain/                 JPA entities + repositories + DomainDataGenerator
+│   ├── domain/                 JPA entities + repositories + DomainDataGenerator + LoadProfile enum
 │   ├── parser/                 7 formatter wrappers + annotated model classes
 │   └── strategy/               FileGenerationStrategy + 14 implementations
 ├── src/main/frontend/          React 18 + Vite + MUI source
+├── src/main/resources/static/  Pre-built frontend bundle (committed — served directly)
 ├── docs/
 │   ├── examples/coda/          Valid, malformed, edge-case CODA files
 │   ├── examples/swift-mt/      Valid, malformed, edge-case SWIFT MT940 files

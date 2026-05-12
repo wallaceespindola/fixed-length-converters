@@ -187,6 +187,9 @@ All examples and file structures shall be derived from:
   - Statements
   - Metadata
 
+### FR-002a
+- [ ] `POST /api/domain/generate` shall accept an optional `loadProfile` query parameter with values `LOW` (default) and `HIGH`. The `LOW` profile generates 20 accounts, 200 transactions, and 10 statements. The `HIGH` profile generates 200 accounts, 2 000 transactions, and 100 statements. The profile is implemented via a `LoadProfile` enum in `com.wtechitsolutions.domain`. The frontend shall expose both options as "Low Load" and "High Load" buttons.
+
 ### FR-003
 - [ ] All generated domain data shall be persisted to the H2 in-memory database.
 
@@ -244,7 +247,7 @@ All examples and file structures shall be derived from:
 
 | ID | Method | Endpoint | Description |
 |---|---|---|---|
-| FR-015 | POST | `/api/domain/generate` | Generate and persist banking domain data |
+| FR-015 | POST | `/api/domain/generate` | Generate and persist banking domain data; optional `?loadProfile=LOW\|HIGH` |
 | FR-016 | POST | `/api/batch/generate` | Trigger a Spring Batch job; params: `fileType`, `library` |
 | FR-017 | GET | `/api/batch/history` | Retrieve batch job execution history |
 | FR-018 | GET | `/api/benchmark/results` | Retrieve benchmark metrics |

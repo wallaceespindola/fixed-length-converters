@@ -14,6 +14,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - 28 JMH `@Benchmark` methods (generate + parse for all 14 strategies)
 - New endpoint: `GET /api/benchmark/export/html` — Velocity-driven HTML benchmark report
 - `Library` enum expanded to: `BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY, SPRING_BATCH`
+- Added LOW/HIGH load profile for `POST /api/domain/generate` (LOW: 20 accounts/200 txns/10 statements — default; HIGH: 200 accounts/2 000 txns/100 statements); implemented via `LoadProfile` enum in `com.wtechitsolutions.domain`
+- "Run All Combinations" button on Batch Runner fires all 14 fileType × library combinations sequentially with live per-row progress
+- Library Summary cards and both bar charts on the Benchmark Dashboard auto-sort by avg throughput (best to worst) on every refresh
+- Pre-built frontend bundle committed to `src/main/resources/static/` — `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild
+
+### Fixed
+- Standardized SWIFT inter-message separator to `---` across all 7 formatters (was `###` for Bindy, `===` for FixedLength)
+- Fixed CODA Bindy trailer/description text alignment — `BindyCodaRecord` text fields now explicitly `align="L"` so trim+repad is left-aligned (Camel Bindy defaults to right-align, which pushed TOTAL to the end of the description field)
+- Refactored `SpringBatchFormatter` to use `LineAggregator` + `FixedLengthTokenizer` + `FieldSetMapper` directly per record, removing the `FlatFileItemWriter`/`FlatFileItemReader` wrappers that caused transactional buffering issues (empty output files) when invoked inside an outer Spring Batch chunk
 
 ---
 
