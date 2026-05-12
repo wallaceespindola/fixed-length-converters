@@ -27,12 +27,15 @@ function byLibrary(data: BenchmarkResultResponse[]) {
     map[d.library].batchDuration += d.batchDurationMs
     map[d.library].count++
   })
-  return Object.entries(map).map(([lib, v]) => ({
-    library: lib,
-    avgThroughput: v.count ? +(v.throughput / v.count).toFixed(2) : 0,
-    avgGenDuration: v.count ? +(v.genDuration / v.count).toFixed(0) : 0,
-    avgBatchDuration: v.count ? +(v.batchDuration / v.count).toFixed(0) : 0,
-  }))
+  return Object.entries(map)
+    .map(([lib, v]) => ({
+      library: lib,
+      avgThroughput: v.count ? +(v.throughput / v.count).toFixed(2) : 0,
+      avgGenDuration: v.count ? +(v.genDuration / v.count).toFixed(0) : 0,
+      avgBatchDuration: v.count ? +(v.batchDuration / v.count).toFixed(0) : 0,
+    }))
+    // Best to worst: highest throughput first
+    .sort((a, b) => b.avgThroughput - a.avgThroughput)
 }
 
 export default function BenchmarkDashboardView() {
