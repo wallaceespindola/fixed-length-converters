@@ -77,15 +77,16 @@ export default function BenchmarkDashboardView() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Avg Throughput by Library (ops/s)</Typography>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={libraryData}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 36, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="library" />
-                    <YAxis />
+                    <XAxis dataKey="library" interval={0} angle={-30} textAnchor="end" height={60}
+                      tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
                     <Bar dataKey="avgThroughput" name="Avg Throughput (ops/s)"
                       fill="#1976d2"
-                      label={{ position: 'top', fontSize: 11 }} />
+                      label={{ position: 'top', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
@@ -96,19 +97,20 @@ export default function BenchmarkDashboardView() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Avg Duration by Library (ms)</Typography>
-                <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={libraryData}>
+                <ResponsiveContainer width="100%" height={280}>
+                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 36, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="library" />
-                    <YAxis />
+                    <XAxis dataKey="library" interval={0} angle={-30} textAnchor="end" height={60}
+                      tick={{ fontSize: 10 }} />
+                    <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
-                    <Legend />
+                    <Legend wrapperStyle={{ fontSize: 11 }} />
                     <Bar dataKey="avgBatchDuration" name="Avg Batch Duration (ms)"
                       fill="#ed6c02"
-                      label={{ position: 'top', fontSize: 11 }} />
+                      label={{ position: 'top', fontSize: 10 }} />
                     <Bar dataKey="avgGenDuration" name="Avg Generation Duration (ms)"
                       fill="#9c27b0"
-                      label={{ position: 'top', fontSize: 11 }} />
+                      label={{ position: 'top', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>
               </CardContent>
