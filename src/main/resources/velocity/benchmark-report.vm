@@ -28,6 +28,7 @@
     <thead>
       <tr>
         <th>ID</th>
+        <th>Job</th>
         <th>File Type</th>
         <th>Library</th>
         <th class="num">Throughput (ops/s)</th>
@@ -35,7 +36,9 @@
         <th class="num">Gen (ms)</th>
         <th class="num">Parse (ms)</th>
         <th class="num">Records</th>
-        <th class="num">Success Rate</th>
+        <th class="num">Memory (bytes)</th>
+        <th class="num">Success %</th>
+        <th class="num">Symmetry %</th>
         <th>Timestamp</th>
       </tr>
     </thead>
@@ -43,6 +46,7 @@
 #foreach($m in $metrics)
       <tr>
         <td>${m.id}</td>
+        <td>${m.jobExecutionId}</td>
         <td>${m.fileType}</td>
         <td class="lib-${m.library}">${m.library}</td>
         <td class="num">${m.throughputRps}</td>
@@ -50,7 +54,9 @@
         <td class="num">${m.generationDurationMs}</td>
         <td class="num">${m.parseDurationMs}</td>
         <td class="num">${m.recordsProcessed}</td>
+        <td class="num">${m.memoryUsedBytes}</td>
         <td class="num">${m.successRate}</td>
+        <td class="num">${m.symmetryRate}</td>
         <td>${m.timestamp}</td>
       </tr>
 #end
