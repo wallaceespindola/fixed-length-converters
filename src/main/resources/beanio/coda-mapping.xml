@@ -1,5 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
+  Bootstrap sentinel only — DO NOT MODIFY for runtime behavior changes.
+
+  This file exists solely to satisfy BeanIODataFormat.doInit() in
+  CamelBeanIOFormatter, which requires a non-null classpath mapping path.
+  The effective StreamFactory at runtime is built programmatically by
+  CamelBeanIOFormatter.buildStreamFactory() and replaces this one via
+  setFactory() immediately after start().
+
+  To change the CODA layout, edit buildStreamFactory() in CamelBeanIOFormatter.
+  Field positions below are kept consistent with the programmatic definition
+  for documentation purposes only.
+-->
+<!--
     BeanIO fixed-length mapping for CODA records.
     Used by CamelBeanIOFormatter via Apache Camel BeanIO data format (4.20.0).
     Total record length: 128 characters per Febelfin CODA specification.

@@ -86,7 +86,7 @@ public class CamelBeanIOFormatter {
         try {
             List<BeanIoCodaRecord> beanioRecords = records.stream()
                     .map(this::toBeanIo)
-                    .collect(Collectors.toList());
+                    .toList();
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             Exchange exchange = new DefaultExchange(camelContext);
             codaFormat.marshal(exchange, beanioRecords, out);
@@ -124,7 +124,7 @@ public class CamelBeanIOFormatter {
             return Arrays.stream(content.split("\n"))
                     .filter(l -> !l.isBlank())
                     .map(CodaRecord::fromFixedWidth)
-                    .collect(Collectors.toList());
+                    .toList();
         }
     }
 

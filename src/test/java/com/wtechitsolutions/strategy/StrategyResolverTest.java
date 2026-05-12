@@ -23,7 +23,7 @@ class StrategyResolverTest {
 
     @ParameterizedTest
     @MethodSource("allCombinations")
-    void resolves_all_8_strategies(FileType fileType, Library library) {
+    void resolves_all_registered_strategies(FileType fileType, Library library) {
         FileGenerationStrategy strategy = resolver.resolve(fileType, library);
 
         assertThat(strategy).isNotNull();
