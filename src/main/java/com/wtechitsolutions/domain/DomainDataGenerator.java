@@ -31,29 +31,36 @@ public class DomainDataGenerator {
         this.statementRepository = statementRepository;
     }
 
+    /** Default generation using the LOW load profile (20 accounts, 200 transactions, 10 statements). */
     @Transactional
     public GenerationResult generate() {
-        long operationId = operationIdCounter.incrementAndGet();
-        log.info("Generating domain data for operationId={}", operationId);
+        return generate(LoadProfile.LOW);
+    }
 
-        List<Account> accounts = IntStream.range(0, 20)
+    @Transactional
+    public GenerationResult generate(LoadProfile profile) {
+        long operationId = operationIdCounter.incrementAndGet();
+        log.info("Generating domain data for operationId={} profile={}", operationId, profile);
+
+        List<Account> accounts = IntStream.range(0, profile.accountCount())
                 .mapToObj(i -> buildAccount(i, operationId))
                 .map(accountRepository::save)
                 .toList();
 
+        int perAccount = profile.transactionsPerAccount();
         List<Transaction> transactions = accounts.stream()
-                .flatMap(a -> IntStream.range(0, 10).mapToObj(i -> buildTransaction(a, i)))
+                .flatMap(a -> IntStream.range(0, perAccount).mapToObj(i -> buildTransaction(a, i)))
                 .map(transactionRepository::save)
                 .toList();
 
         List<BankingStatement> statements = accounts.stream()
-                .limit(10)
+                .limit(profile.statementCount())
                 .map(a -> buildStatement(a, operationId))
                 .map(statementRepository::save)
                 .toList();
 
-        log.info("Generated {} accounts, {} transactions, {} statements for operationId={}",
-                accounts.size(), transactions.size(), statements.size(), operationId);
+        log.info("Generated {} accounts, {} transactions, {} statements for operationId={} profile={}",
+                accounts.size(), transactions.size(), statements.size(), operationId, profile);
 
         return new GenerationResult(operationId, accounts.size(), transactions.size(), statements.size());
     }

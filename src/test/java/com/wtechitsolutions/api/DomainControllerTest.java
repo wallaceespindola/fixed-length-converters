@@ -1,11 +1,12 @@
 package com.wtechitsolutions.api;
 
 import com.wtechitsolutions.domain.DomainDataGenerator;
+import com.wtechitsolutions.domain.LoadProfile;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.Mockito.when;
@@ -24,7 +25,7 @@ class DomainControllerTest {
 
     @Test
     void generate_returns_200_with_expected_fields() throws Exception {
-        when(generator.generate())
+        when(generator.generate(LoadProfile.LOW))
                 .thenReturn(new DomainDataGenerator.GenerationResult(1001L, 20, 200, 10));
 
         mockMvc.perform(post("/api/domain/generate")
@@ -38,12 +39,25 @@ class DomainControllerTest {
 
     @Test
     void generate_calls_domain_generator() throws Exception {
-        when(generator.generate())
+        when(generator.generate(LoadProfile.LOW))
                 .thenReturn(new DomainDataGenerator.GenerationResult(2002L, 20, 200, 10));
 
         mockMvc.perform(post("/api/domain/generate")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.operationId").value(2002));
+    }
+
+    @Test
+    void generate_high_load_passes_profile_through() throws Exception {
+        when(generator.generate(LoadProfile.HIGH))
+                .thenReturn(new DomainDataGenerator.GenerationResult(3003L, 200, 2000, 100));
+
+        mockMvc.perform(post("/api/domain/generate?loadProfile=HIGH")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.operationId").value(3003))
+                .andExpect(jsonPath("$.accountsGenerated").value(200))
+                .andExpect(jsonPath("$.transactionsGenerated").value(2000));
     }
 }

@@ -52,8 +52,10 @@ export interface BenchmarkResultResponse {
   timestamp: string
 }
 
-export const generateDomain = () =>
-  api.post<GenerateDomainResponse>('/api/domain/generate').then(r => r.data)
+export type LoadProfile = 'LOW' | 'HIGH'
+
+export const generateDomain = (loadProfile: LoadProfile = 'LOW') =>
+  api.post<GenerateDomainResponse>('/api/domain/generate', null, { params: { loadProfile } }).then(r => r.data)
 
 export const generateBatch = (req: BatchJobRequest) =>
   api.post<BatchJobResponse>('/api/batch/generate', req).then(r => r.data)
