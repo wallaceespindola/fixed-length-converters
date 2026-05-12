@@ -45,6 +45,8 @@
         <fixedformat4j.version>1.8.1</fixedformat4j.version>
         <fixedlength.version>0.15</fixedlength.version>
         <camel.version>4.20.0</camel.version>
+        <velocity.version>2.3</velocity.version>
+        <velocity-tools.version>3.1</velocity-tools.version>
         <jmh.version>1.37</jmh.version>
         <jacoco.version>0.8.14</jacoco.version>
         <node.version>v22.15.0</node.version>
@@ -127,6 +129,23 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
             <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-beanio</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+
+        <!-- Apache Velocity (template engine for benchmark report generation) -->
+        <dependency>
+            <groupId>org.apache.velocity</groupId>
+            <artifactId>velocity-engine-core</artifactId>
+            <version>${velocity.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.velocity.tools</groupId>
+            <artifactId>velocity-tools-generic</artifactId>
+            <version>${velocity-tools.version}</version>
         </dependency>
 
         <!-- JMH Benchmarking -->
