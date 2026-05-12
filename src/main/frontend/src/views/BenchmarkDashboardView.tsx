@@ -80,11 +80,11 @@ export default function BenchmarkDashboardView() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Avg Throughput by Library (ops/s)</Typography>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 36, left: 0 }}>
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 48, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="library" interval={0} angle={-30} textAnchor="end" height={60}
-                      tick={{ fontSize: 10 }} />
+                    <XAxis dataKey="library" interval={0} angle={-45} textAnchor="end" height={80}
+                      tick={{ fontSize: 9 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
                     <Bar dataKey="avgThroughput" name="Avg Throughput (ops/s)"
@@ -100,11 +100,11 @@ export default function BenchmarkDashboardView() {
             <Card>
               <CardContent>
                 <Typography variant="h6" gutterBottom>Avg Duration by Library (ms)</Typography>
-                <ResponsiveContainer width="100%" height={280}>
-                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 36, left: 0 }}>
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={libraryData} margin={{ top: 8, right: 16, bottom: 48, left: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="library" interval={0} angle={-30} textAnchor="end" height={60}
-                      tick={{ fontSize: 10 }} />
+                    <XAxis dataKey="library" interval={0} angle={-45} textAnchor="end" height={80}
+                      tick={{ fontSize: 9 }} />
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
                     <Legend wrapperStyle={{ fontSize: 11 }} />
