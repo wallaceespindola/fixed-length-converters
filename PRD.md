@@ -69,7 +69,7 @@
 
 ## 1. Executive Summary
 
-This platform is an enterprise-grade banking file experimentation and benchmarking environment built with Java 25 and Spring technologies. It generates and parses fixed-length banking files in CODA and SWIFT MT formats using four distinct Java formatter libraries, orchestrated through Spring Batch and the Strategy Pattern.
+This platform is an enterprise-grade banking file experimentation and benchmarking environment built with Java 25 and Spring technologies. It generates and parses fixed-length banking files in CODA and SWIFT MT formats using seven distinct Java formatter libraries, orchestrated through Spring Batch and the Strategy Pattern.
 
 The platform serves as a technical laboratory for evaluating parser frameworks across correctness, performance, maintainability, and Spring Batch compatibility. Engineers can generate realistic banking domain data, trigger batch processing jobs via REST, visualize benchmark results, and compare library outputs side-by-side — all from a single-page frontend.
 
@@ -140,6 +140,9 @@ All examples and file structures shall be derived from:
 | fixedformat4j | 1.7.2 | 2026-04-20 | Low |
 | fixedlength | 0.15 | 2026-02-26 | Medium |
 | Apache Camel Bindy | 4.20.0 | 2026-04-23 | Medium |
+| Apache Camel BeanIO | 4.20.0 | 2026-04-23 | Medium |
+| Apache Velocity | 2.4 | 2024-11-01 | Low |
+| Spring Batch (native flat-file) | 5.x | 2026-04-23 | Low |
 
 ### Comparison Matrix
 
@@ -149,6 +152,9 @@ All examples and file structures shall be derived from:
 | fixedformat4j | Limited | Excellent | Excellent | Low |
 | fixedlength | Limited | Good | Good | Medium |
 | Apache Camel Bindy | Limited | Good | Medium | Medium |
+| Apache Camel BeanIO | Excellent | Good | Medium | Medium |
+| Apache Velocity | Template-based | N/A | Good | Low |
+| Spring Batch (native) | Limited | Good | Excellent | Low |
 
 ### Strategic Recommendations
 
@@ -158,6 +164,8 @@ All examples and file structures shall be derived from:
 | Simplicity, maintainability, modern annotations | fixedformat4j |
 | Existing Apache Camel ecosystem | Apache Camel Bindy |
 | Lightweight experimentation | fixedlength |
+| Template-driven report generation | Apache Velocity |
+| Native Spring Batch integration | Spring Batch flat-file |
 
 ---
 
@@ -202,7 +210,7 @@ All examples and file structures shall be derived from:
 - [ ] The frontend shall allow the user to select a **File Type**: CODA or SWIFT MT.
 
 ### FR-006
-- [ ] The frontend shall allow the user to select a **Formatter Library**: BeanIO, fixedformat4j, fixedlength, or Apache Camel Bindy.
+- [ ] The frontend shall allow the user to select a **Formatter Library**: BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, Apache Camel BeanIO, Apache Velocity, or Spring Batch native.
 
 ### FR-007
 - [ ] On submission, the backend shall trigger a Spring Batch job parameterised with the selected file type and library.
@@ -240,6 +248,7 @@ All examples and file structures shall be derived from:
 | FR-016 | POST | `/api/batch/generate` | Trigger a Spring Batch job; params: `fileType`, `library` |
 | FR-017 | GET | `/api/batch/history` | Retrieve batch job execution history |
 | FR-018 | GET | `/api/benchmark/results` | Retrieve benchmark metrics |
+| FR-018a | GET | `/api/benchmark/export/html` | Export benchmark report as Velocity-rendered HTML |
 | FR-019 | GET | `/actuator/health` | Application health status |
 | FR-020 | GET | `/actuator/info` | Application metadata |
 
@@ -322,12 +331,12 @@ All examples and file structures shall be derived from:
 ### Comparisons
 
 ### FR-037
-- [ ] The benchmark dashboard shall support pairwise comparisons: BeanIO vs fixedformat4j, BeanIO vs fixedlength, BeanIO vs Apache Camel Bindy, and all libraries combined.
+- [ ] The benchmark dashboard shall support pairwise comparisons across all 7 libraries and all libraries combined.
 
 ### Export
 
 ### FR-038
-- [ ] Benchmark results shall be exportable in CSV, JSON, and Markdown formats.
+- [ ] Benchmark results shall be exportable in CSV, JSON, Markdown, and HTML (Velocity-rendered) formats.
 
 ---
 
@@ -357,9 +366,9 @@ The `ItemReader` loads domain entities from H2. The `ItemProcessor` resolves and
 com.wtechitsolutions/
 ├── api/          REST controllers and DTOs
 ├── batch/        Spring Batch jobs, readers, processors, writers
-├── strategy/     Strategy interface and all 8 implementations
+├── strategy/     Strategy interface and all 14 implementations
 ├── domain/       Banking domain entities (Account, Transaction, Statement)
-├── parser/       Low-level formatter library wrappers
+├── parser/       Low-level formatter library wrappers (7 total)
 └── config/       Spring and batch configuration
 ```
 
@@ -375,11 +384,14 @@ All formatter logic is encapsulated behind a single interface:
 
 ```java
 public interface FileGenerationStrategy {
-    String generate(List<DomainEntity> entities);
+    String generate(List<Transaction> transactions, List<Account> accounts);
+    List<Transaction> parse(String fileContent);
+    FileType getFileType();
+    Library getLibrary();
 }
 ```
 
-The `ItemProcessor` resolves the correct strategy at runtime based on job parameters (`fileType` × `library`). Eight strategy classes are required:
+The `ItemProcessor` resolves the correct strategy at runtime based on job parameters (`fileType` × `library`). Fourteen strategy classes are required:
 
 | Class | Format | Library |
 |---|---|---|
@@ -387,10 +399,16 @@ The `ItemProcessor` resolves the correct strategy at runtime based on job parame
 | `CodaFixedFormat4JStrategy` | CODA | fixedformat4j |
 | `CodaFixedLengthStrategy` | CODA | fixedlength |
 | `CodaBindyStrategy` | CODA | Apache Camel Bindy |
+| `CodaCamelBeanIOStrategy` | CODA | Apache Camel BeanIO |
+| `CodaVelocityStrategy` | CODA | Apache Velocity |
+| `CodaSpringBatchStrategy` | CODA | Spring Batch native |
 | `SwiftBeanIOStrategy` | SWIFT MT | BeanIO |
 | `SwiftFixedFormat4JStrategy` | SWIFT MT | fixedformat4j |
 | `SwiftFixedLengthStrategy` | SWIFT MT | fixedlength |
 | `SwiftBindyStrategy` | SWIFT MT | Apache Camel Bindy |
+| `SwiftCamelBeanIOStrategy` | SWIFT MT | Apache Camel BeanIO |
+| `SwiftVelocityStrategy` | SWIFT MT | Apache Velocity |
+| `SwiftSpringBatchStrategy` | SWIFT MT | Spring Batch native |
 
 ---
 
@@ -409,7 +427,7 @@ The `ItemProcessor` resolves the correct strategy at runtime based on job parame
 - [ ] File generation for datasets under 1,000 records shall complete in under 5 seconds.
 
 ### NFR-003
-- [ ] Benchmark metrics shall be exportable to CSV, JSON, and Markdown (see FR-038).
+- [ ] Benchmark metrics shall be exportable to CSV, JSON, Markdown, and HTML (see FR-038).
 
 ### NFR-004
 - [ ] The system shall report both chunk-level and job-level timing for all batch executions.
@@ -495,7 +513,7 @@ The `ItemProcessor` resolves the correct strategy at runtime based on job parame
 - [ ] **Spring Batch tests** — job launch, step execution, restartability, parameter binding.
 
 ### TS-007
-- [ ] **Strategy resolution tests** — all 8 strategy classes resolve correctly for their `fileType` × `library` combination.
+- [ ] **Strategy resolution tests** — all 14 strategy classes resolve correctly for their `fileType` × `library` combination.
 
 ### TS-008
 - [ ] **Parser compatibility tests** — each library generates valid output for both CODA and SWIFT MT.
@@ -511,10 +529,10 @@ Domain Object → generate file → parse file → rebuild Domain Object → ass
 ```
 
 ### TS-011
-- [ ] **Cross-library comparison tests** — output of all 4 libraries for the same input produces semantically equivalent results.
+- [ ] **Cross-library comparison tests** — output of all 7 libraries for the same input produces semantically equivalent results.
 
 ### TS-012
-- [ ] **Benchmark tests** — JMH micro-benchmarks for all 8 strategy classes measuring throughput and latency.
+- [ ] **Benchmark tests** — JMH micro-benchmarks (28 `@Benchmark` methods) for all 14 strategy classes measuring throughput and latency.
 
 ---
 
@@ -782,8 +800,8 @@ The project is considered complete only when all of the following are satisfied:
 
 ### Functional
 - [ ] All FR-001 through FR-038 implemented and verified.
-- [ ] All 4 formatter libraries (BeanIO, fixedformat4j, fixedlength, Camel Bindy) generate valid CODA and SWIFT MT files end-to-end.
-- [ ] All 8 Strategy classes (§13) are implemented and resolve correctly.
+- [ ] All 7 formatter libraries (BeanIO, fixedformat4j, fixedlength, Camel Bindy, Camel BeanIO, Velocity, Spring Batch native) generate valid CODA and SWIFT MT files end-to-end.
+- [ ] All 14 Strategy classes (§13) are implemented and resolve correctly.
 - [ ] REST API endpoints (FR-015 through FR-020) return correct responses with `timestamp` fields.
 - [ ] Swagger UI accessible in `dev` profile; all endpoints documented.
 - [ ] Spring Actuator `/health` and `/info` operational with H2 and Batch indicators.
@@ -796,7 +814,7 @@ The project is considered complete only when all of the following are satisfied:
 
 ### Testing
 - [ ] All TS-001 through TS-012 passing.
-- [ ] Parser symmetry tests (TS-010) pass for all 8 strategy/format combinations.
+- [ ] Parser symmetry tests (TS-010) pass for all 14 strategy/format combinations.
 - [ ] Golden file tests (TS-009) pass against `docs/examples/`.
 
 ### Operations and DevEx
@@ -817,7 +835,7 @@ The project is considered complete only when all of the following are satisfied:
 
 ## 28. Conclusion
 
-This platform is a professional banking integration experimentation environment. Its primary value is enabling direct, evidence-based comparison of four Java fixed-length formatter libraries across realistic banking workloads — both in terms of output correctness and operational performance.
+This platform is a professional banking integration experimentation environment. Its primary value is enabling direct, evidence-based comparison of seven Java fixed-length formatter libraries across realistic banking workloads — both in terms of output correctness and operational performance.
 
 The architecture prioritizes:
 

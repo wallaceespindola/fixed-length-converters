@@ -31,10 +31,16 @@ package "Strategy Pattern" {
     [CodaFixedFormat4JStrategy]
     [CodaFixedLengthStrategy]
     [CodaBindyStrategy]
+    [CodaCamelBeanIOStrategy]
+    [CodaVelocityStrategy]
+    [CodaSpringBatchStrategy]
     [SwiftBeanIOStrategy]
     [SwiftFixedFormat4JStrategy]
     [SwiftFixedLengthStrategy]
     [SwiftBindyStrategy]
+    [SwiftCamelBeanIOStrategy]
+    [SwiftVelocityStrategy]
+    [SwiftSpringBatchStrategy]
 }
 
 package "Parser Wrappers" {
@@ -42,6 +48,9 @@ package "Parser Wrappers" {
     [FixedFormat4JFormatter]
     [FixedLengthFormatter]
     [BindyFormatter]
+    [CamelBeanIOFormatter]
+    [VelocityFormatter]
+    [SpringBatchFormatter]
 }
 
 database "H2 In-Memory" {

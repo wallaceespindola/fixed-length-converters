@@ -36,7 +36,7 @@ classDiagram
     }
 
     class CodaFixedFormat4JStrategy {
-        +getLibrary() Library.FIXEDFORMAT4J
+        +getLibrary() Library.FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
@@ -53,6 +53,24 @@ classDiagram
         #parseRecords(content) List~CodaRecord~
     }
 
+    class CodaCamelBeanIOStrategy {
+        +getLibrary() Library.CAMEL_BEANIO
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class CodaVelocityStrategy {
+        +getLibrary() Library.VELOCITY
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
+    class CodaSpringBatchStrategy {
+        +getLibrary() Library.SPRING_BATCH
+        #formatRecords(records) String
+        #parseRecords(content) List~CodaRecord~
+    }
+
     class SwiftBeanIOStrategy {
         +getLibrary() Library.BEANIO
         #formatRecords(records) String
@@ -60,7 +78,7 @@ classDiagram
     }
 
     class SwiftFixedFormat4JStrategy {
-        +getLibrary() Library.FIXEDFORMAT4J
+        +getLibrary() Library.FIXFORMAT4J
     }
 
     class SwiftFixedLengthStrategy {
@@ -69,6 +87,18 @@ classDiagram
 
     class SwiftBindyStrategy {
         +getLibrary() Library.BINDY
+    }
+
+    class SwiftCamelBeanIOStrategy {
+        +getLibrary() Library.CAMEL_BEANIO
+    }
+
+    class SwiftVelocityStrategy {
+        +getLibrary() Library.VELOCITY
+    }
+
+    class SwiftSpringBatchStrategy {
+        +getLibrary() Library.SPRING_BATCH
     }
 
     class StrategyResolver {
@@ -82,8 +112,14 @@ classDiagram
     AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy
     AbstractCodaStrategy <|-- CodaFixedLengthStrategy
     AbstractCodaStrategy <|-- CodaBindyStrategy
+    AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy
+    AbstractCodaStrategy <|-- CodaVelocityStrategy
+    AbstractCodaStrategy <|-- CodaSpringBatchStrategy
     AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
     AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
     AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
     AbstractSwiftStrategy <|-- SwiftBindyStrategy
+    AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy
+    AbstractSwiftStrategy <|-- SwiftVelocityStrategy
+    AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy
     StrategyResolver --> FileGenerationStrategy

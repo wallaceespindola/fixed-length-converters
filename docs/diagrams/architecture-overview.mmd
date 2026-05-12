@@ -6,7 +6,7 @@ graph TB
     subgraph API["REST API Layer"]
         DC[DomainController<br/>POST /api/domain/generate]
         BC[BatchController<br/>POST /api/batch/generate<br/>GET /api/batch/history]
-        BNC[BenchmarkController<br/>GET /api/benchmark/results]
+        BNC[BenchmarkController<br/>GET /api/benchmark/results<br/>GET /api/benchmark/export/html]
         ACT[Spring Actuator<br/>/health /info]
     end
 
@@ -21,8 +21,8 @@ graph TB
 
     subgraph Strategy["Strategy Pattern"]
         SR[StrategyResolver]
-        CODA4[4 CODA Strategies]
-        SWIFT4[4 SWIFT Strategies]
+        CODA7[7 CODA Strategies]
+        SWIFT7[7 SWIFT Strategies]
     end
 
     subgraph Parsers["Parser Library Wrappers"]
@@ -30,6 +30,9 @@ graph TB
         FF4J[FixedFormat4JFormatter]
         VL[FixedLengthFormatter]
         BINDY[BindyFormatter]
+        CBIO[CamelBeanIOFormatter]
+        VEL[VelocityFormatter]
+        SBF[SpringBatchFormatter]
     end
 
     subgraph Data["Data Layer - H2 In-Memory"]
@@ -45,7 +48,7 @@ graph TB
     DC --> Data
     BC --> JL --> JOB --> STEP
     STEP --> READER --> Data
-    STEP --> PROC --> SR --> CODA4 & SWIFT4
-    CODA4 & SWIFT4 --> Parsers
+    STEP --> PROC --> SR --> CODA7 & SWIFT7
+    CODA7 & SWIFT7 --> Parsers
     STEP --> WRITER --> OUTPUT
     BNC --> Data

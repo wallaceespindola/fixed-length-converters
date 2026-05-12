@@ -2,11 +2,11 @@
 
 > Steps use checkbox (`- [ ]`) syntax for progress tracking.
 
-**Goal:** Build a complete enterprise-grade banking file experimentation platform generating, parsing, and benchmarking CODA and SWIFT MT files via 4 Java formatter libraries, Spring Batch, and a React frontend.
+**Goal:** Build a complete enterprise-grade banking file experimentation platform generating, parsing, and benchmarking CODA and SWIFT MT files via 7 Java formatter libraries, Spring Batch, and a React frontend.
 
-**Architecture:** Single Maven module, Java 25, Spring Boot 3.4.x. Domain model persisted to H2 in-memory DB. Spring Batch drives file generation via ItemReader→ItemProcessor→ItemWriter. 8 Strategy implementations (FileType × Library) selected at runtime by StrategyResolver. React 18 SPA built by frontend-maven-plugin and served as static resources from the JAR.
+**Architecture:** Single Maven module, Java 25, Spring Boot 3.4.x. Domain model persisted to H2 in-memory DB. Spring Batch drives file generation via ItemReader→ItemProcessor→ItemWriter. 14 Strategy implementations (FileType × Library) selected at runtime by StrategyResolver. React 18 SPA built by frontend-maven-plugin and served as static resources from the JAR.
 
-**Tech Stack:** Java 25, Spring Boot 3.4.x, Spring Batch, Spring Data JPA, H2, Lombok, BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, JMH, React 18, TypeScript, Vite, MUI v5, Recharts, JUnit 5, Mockito, JaCoCo, GitHub Actions.
+**Tech Stack:** Java 25, Spring Boot 3.4.x, Spring Batch, Spring Data JPA, H2, Lombok, BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, Apache Camel BeanIO, Apache Velocity, Spring Batch native flat-file, JMH, React 18, TypeScript, Vite, MUI v5, Recharts, JUnit 5, Mockito, JaCoCo, GitHub Actions.
 
 **Spec reference:** `docs/specs/design-spec.md`
 
@@ -39,7 +39,7 @@ mkdir -p .github/{workflows,ISSUE_TEMPLATE}
 
 - [x] **Step 1.2: Create pom.xml**
 
-Full `pom.xml` with all dependencies for Spring Boot 3.4.x, Spring Batch, JPA, H2, Lombok, all 4 parser libraries, JMH, springdoc-openapi, and frontend-maven-plugin.
+Full `pom.xml` with all dependencies for Spring Boot 3.4.x, Spring Batch, JPA, H2, Lombok, all 7 parser libraries, JMH, springdoc-openapi, and frontend-maven-plugin.
 
 - [x] **Step 1.3: Create Spring Boot main class**
 
@@ -99,7 +99,7 @@ public enum FileType { CODA, SWIFT }
 
 // Library.java
 package com.wtechitsolutions.domain;
-public enum Library { BEANIO, FIXEDFORMAT4J, FIXEDLENGTH, BINDY }
+public enum Library { BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY, SPRING_BATCH }
 
 // TransactionType.java
 package com.wtechitsolutions.domain;
@@ -458,6 +458,9 @@ git commit -m "feat: add parser format models and BeanIO XML mapping files"
 - Create: `src/main/java/com/wtechitsolutions/parser/FixedFormat4JFormatter.java`
 - Create: `src/main/java/com/wtechitsolutions/parser/FixedLengthFormatter.java`
 - Create: `src/main/java/com/wtechitsolutions/parser/BindyFormatter.java`
+- Create: `src/main/java/com/wtechitsolutions/parser/CamelBeanIOFormatter.java`
+- Create: `src/main/java/com/wtechitsolutions/parser/VelocityFormatter.java`
+- Create: `src/main/java/com/wtechitsolutions/parser/SpringBatchFormatter.java`
 
 - [x] **Step 4.1: Create BeanIOFormatter**
 
@@ -609,7 +612,11 @@ public class BindyFormatter {
 }
 ```
 
-- [x] **Step 4.5: Write unit tests for parser wrappers**
+- [x] **Step 4.5: Create CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter**
+
+Mirror the above wrappers using Apache Camel BeanIO DataFormat with XML stream mapping, Apache Velocity `.vm` template engine, and Spring Batch native `FlatFileItemWriter` with `BeanWrapperFieldExtractor` respectively.
+
+- [x] **Step 4.6: Write unit tests for parser wrappers**
 
 `src/test/java/com/wtechitsolutions/parser/ParserRoundTripTest.java`
 
@@ -645,22 +652,22 @@ class ParserRoundTripTest {
 }
 ```
 
-- [x] **Step 4.6: Run parser tests**
+- [x] **Step 4.7: Run parser tests**
 
 ```bash
 mvn test -Dtest=ParserRoundTripTest -q
 ```
 
-- [x] **Step 4.7: Commit**
+- [x] **Step 4.8: Commit**
 
 ```bash
 git add src/main/java/com/wtechitsolutions/parser/ src/test/java/com/wtechitsolutions/parser/
-git commit -m "feat: add 4 parser formatter wrappers with round-trip capability"
+git commit -m "feat: add 7 parser formatter wrappers with round-trip capability"
 ```
 
 ---
 
-## Task 5: Strategy Pattern — Interface, Resolver, and 8 Implementations
+## Task 5: Strategy Pattern — Interface, Resolver, and 14 Implementations
 
 **Files:**
 - Create: `src/main/java/com/wtechitsolutions/strategy/FileGenerationStrategy.java`
@@ -669,10 +676,16 @@ git commit -m "feat: add 4 parser formatter wrappers with round-trip capability"
 - Create: `src/main/java/com/wtechitsolutions/strategy/CodaFixedFormat4JStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/CodaFixedLengthStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/CodaBindyStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/CodaCamelBeanIOStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/CodaVelocityStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/CodaSpringBatchStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/SwiftBeanIOStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/SwiftFixedFormat4JStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/SwiftFixedLengthStrategy.java`
 - Create: `src/main/java/com/wtechitsolutions/strategy/SwiftBindyStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/SwiftCamelBeanIOStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/SwiftVelocityStrategy.java`
+- Create: `src/main/java/com/wtechitsolutions/strategy/SwiftSpringBatchStrategy.java`
 
 - [x] **Step 5.1: Create FileGenerationStrategy interface**
 
@@ -822,6 +835,12 @@ public class CodaBeanIOStrategy implements FileGenerationStrategy {
 
 - [x] **Step 5.6: Create CodaBindyStrategy** (mirrors CodaBeanIOStrategy, uses BindyFormatter)
 
+- [x] **Step 5.6a: Create CodaCamelBeanIOStrategy** (mirrors CodaBeanIOStrategy, uses CamelBeanIOFormatter)
+
+- [x] **Step 5.6b: Create CodaVelocityStrategy** (mirrors CodaBeanIOStrategy, uses VelocityFormatter)
+
+- [x] **Step 5.6c: Create CodaSpringBatchStrategy** (mirrors CodaBeanIOStrategy, uses SpringBatchFormatter)
+
 - [x] **Step 5.7: Create SwiftBeanIOStrategy**
 
 Similar structure but generates MT940-format content:
@@ -905,6 +924,10 @@ public class SwiftBeanIOStrategy implements FileGenerationStrategy {
 
 Mirror SwiftBeanIOStrategy but delegate formatting to their respective formatter wrappers.
 
+- [x] **Step 5.8a: Create SwiftCamelBeanIOStrategy, SwiftVelocityStrategy, SwiftSpringBatchStrategy**
+
+Mirror SwiftBeanIOStrategy but delegate to CamelBeanIOFormatter, VelocityFormatter, and SpringBatchFormatter respectively.
+
 - [x] **Step 5.9: Write strategy resolution unit tests**
 
 `src/test/java/com/wtechitsolutions/strategy/StrategyResolverTest.java`
@@ -916,7 +939,7 @@ class StrategyResolverTest {
 
     @ParameterizedTest
     @MethodSource("allCombinations")
-    void resolves_all_8_strategies(FileType fileType, Library library) {
+    void resolves_all_14_strategies(FileType fileType, Library library) {
         FileGenerationStrategy strategy = resolver.resolve(fileType, library);
         assertThat(strategy).isNotNull();
         assertThat(strategy.getFileType()).isEqualTo(fileType);
@@ -942,13 +965,13 @@ class StrategyResolverTest {
 ```bash
 mvn test -Dtest=StrategyResolverTest -q
 ```
-Expected: Tests run: 9, Failures: 0
+Expected: Tests run: 15, Failures: 0
 
 - [x] **Step 5.11: Commit**
 
 ```bash
 git add src/main/java/com/wtechitsolutions/strategy/ src/test/java/com/wtechitsolutions/strategy/
-git commit -m "feat: add FileGenerationStrategy interface, StrategyResolver, and 8 strategy implementations"
+git commit -m "feat: add FileGenerationStrategy interface, StrategyResolver, and 14 strategy implementations"
 ```
 
 ---
@@ -1232,7 +1255,7 @@ class BatchJobIntegrationTest {
 ```bash
 mvn test -Dtest=BatchJobIntegrationTest -q
 ```
-Expected: Tests run: 8, Failures: 0
+Expected: Tests run: 14, Failures: 0
 
 - [x] **Step 6.10: Commit**
 
@@ -1397,6 +1420,13 @@ public class BenchmarkController {
         return ResponseEntity.ok()
             .header(HttpHeaders.CONTENT_TYPE, "text/markdown")
             .body(benchmarkService.exportAsMarkdown());
+    }
+
+    @GetMapping("/export/html")
+    public ResponseEntity<String> exportHtml() {
+        return ResponseEntity.ok()
+            .header(HttpHeaders.CONTENT_TYPE, "text/html")
+            .body(benchmarkService.exportAsHtml());
     }
 
     private BenchmarkResultResponse toResponse(BenchmarkMetrics m) {
@@ -1753,7 +1783,7 @@ Routes:
 
 - [x] **Step 9.6: Create BatchRunnerView**
 
-`src/main/frontend/src/views/BatchRunnerView.tsx` — MUI Select for FileType (CODA/SWIFT), MUI Select for Library (BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY), Submit button, POST to `/api/batch/generate`, file preview panel (scrollable monospace textarea).
+`src/main/frontend/src/views/BatchRunnerView.tsx` — MUI Select for FileType (CODA/SWIFT), MUI Select for Library (all 7 options), Submit button, POST to `/api/batch/generate`, file preview panel (scrollable monospace textarea).
 
 - [x] **Step 9.7: Create BatchHistoryView**
 
@@ -1761,7 +1791,7 @@ Routes:
 
 - [x] **Step 9.8: Create BenchmarkDashboardView**
 
-`src/main/frontend/src/views/BenchmarkDashboardView.tsx` — GET `/api/benchmark/results`, Recharts LineChart (execution time over runs), BarChart (library throughput comparison), pairwise comparison section, export buttons (CSV, JSON, Markdown).
+`src/main/frontend/src/views/BenchmarkDashboardView.tsx` — GET `/api/benchmark/results`, Recharts LineChart (execution time over runs), BarChart (library throughput comparison), pairwise comparison section, export buttons (CSV, JSON, Markdown, HTML).
 
 - [x] **Step 9.9: Create API client**
 
@@ -2254,7 +2284,7 @@ public class FileGenerationBenchmark {
 
     @Benchmark public String codaBeanIO() { return codaBeanIO.generate(transactions, accounts); }
     @Benchmark public String swiftBeanIO() { return swiftBeanIO.generate(transactions, accounts); }
-    // ... additional benchmarks for all 8 strategies
+    // ... additional benchmarks for all 14 strategies (28 @Benchmark methods total: generate + parse per strategy)
 }
 ```
 
@@ -2283,7 +2313,7 @@ public class FileGenerationBenchmark {
 
 ```bash
 git add src/test/java/com/wtechitsolutions/benchmark/ pom.xml
-git commit -m "feat: add JMH benchmarks for all 8 strategy implementations"
+git commit -m "feat: add JMH benchmarks for all 14 strategy implementations"
 ```
 
 ---
@@ -2338,8 +2368,8 @@ git commit -m "chore: update CLAUDE.md with final implementation state"
 
 ### Functional
 - [x] FR-001 through FR-038 implemented and verified
-- [x] All 4 formatter libraries generate valid CODA and SWIFT MT files
-- [x] All 8 Strategy classes implemented and resolve correctly
+- [x] All 7 formatter libraries generate valid CODA and SWIFT MT files
+- [x] All 14 Strategy classes implemented and resolve correctly
 - [x] REST API endpoints return correct responses with `timestamp` fields
 - [x] Swagger UI accessible in `dev` profile
 - [x] Spring Actuator `/health` and `/info` operational
@@ -2351,8 +2381,8 @@ git commit -m "chore: update CLAUDE.md with final implementation state"
 - [ ] Test coverage > 80% (currently enforced at 40%; frontend adds coverage)
 
 ### Testing
-- [x] All TS-001 through TS-012 passing (75 tests, 0 failures; JMH via -Pbenchmark)
-- [x] Symmetry tests pass for all 8 strategy combinations
+- [x] All TS-001 through TS-012 passing (117 tests, 0 failures; JMH via -Pbenchmark)
+- [x] Symmetry tests pass for all 14 strategy combinations
 - [x] Golden file tests pass (GoldenFileTest: 13 tests)
 
 ### Operations and DevEx

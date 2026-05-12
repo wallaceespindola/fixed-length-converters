@@ -10,7 +10,7 @@
 **Banking Fixed-Length File Generator & Parser Validation Platform**
 
 - Generates and parses **CODA** (Febelfin) and **SWIFT MT940** banking files
-- Uses **4 Java formatter libraries** benchmarked side-by-side
+- Uses **7 Java formatter libraries** benchmarked side-by-side
 - Orchestrated via **Spring Batch** + **Strategy Pattern**
 - Single-JAR deployment: `mvn spring-boot:run`
 
@@ -35,11 +35,11 @@ Evaluation criteria:
 React SPA → REST API → Spring Batch Pipeline
                               ↓
                     StrategyResolver (O(1) map)
-                    ↙    ↙    ↘    ↘
+                    ↙    ↙    ↘    ↘    ...
               CODA×    CODA×   SWIFT×  SWIFT×
               BeanIO  ff4j    BeanIO  ff4j  ...
                     ↓
-              Parser Wrappers (annotation-only, no XML)
+              Parser Wrappers (7 libraries)
                     ↓
               H2 In-Memory DB + output/ files
 ```
@@ -85,22 +85,26 @@ React SPA → REST API → Spring Batch Pipeline
 
 | Library | Version | Annotation Style | XML Required | Spring Batch Fit |
 |---|---|---|---|---|
-| **BeanIO** | 3.2.1 | `@Record` + `FieldBuilder` | ❌ None | ✅ Good |
-| **fixedformat4j** | 1.7.0 | `@Record` + `@Field(offset, length)` | ❌ None | ✅ Excellent |
-| **fixedlength** | 0.15 | `@FixedLine` + `@FixedField(offset, length)` | ❌ None | ✅ Good |
-| **Camel Bindy** | 4.20.0 | `@FixedLengthRecord` + `@DataField(pos, length)` | ❌ None | ⚠️ Needs CamelContext |
+| **BeanIO** | 3.2.1 | `@Record` + `FieldBuilder` | Optional | Good |
+| **fixedformat4j** | 1.7.0 | `@Record` + `@Field(offset, length)` | None | Excellent |
+| **fixedlength** | 0.15 | `@FixedLine` + `@FixedField(offset, length)` | None | Good |
+| **Camel Bindy** | 4.20.0 | `@FixedLengthRecord` + `@DataField(pos, length)` | None | Medium |
+| **Camel BeanIO** | 4.20.0 | XML stream mapping | Required | Medium |
+| **Apache Velocity** | 2.4 | `.vm` templates | None | Good |
+| **Spring Batch native** | 5.x | `BeanWrapperFieldExtractor` | None | Excellent |
 
 ---
 
 ## Slide 7 — Strategy Pattern Implementation
 
 ```java
-// One interface, 8 implementations
+// One interface, 14 implementations
 public interface FileGenerationStrategy {
     String generate(List<Transaction> txs, List<Account> accts);
     List<Transaction> parse(String fileContent);
     FileType getFileType();   // CODA or SWIFT
-    Library getLibrary();     // BEANIO, FIXEDFORMAT4J, FIXEDLENGTH, BINDY
+    Library getLibrary();     // BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY,
+                              // CAMEL_BEANIO, VELOCITY, SPRING_BATCH
 }
 
 // Resolution — no if/switch, O(1) map lookup
@@ -108,7 +112,7 @@ FileGenerationStrategy s = strategyResolver.resolve(FileType.CODA, Library.BEANI
 String codaFile = s.generate(transactions, accounts);
 ```
 
-8 concrete classes: `Coda/Swift × BeanIO/FixedFormat4J/FixedLength/Bindy`
+14 concrete classes: `Coda/Swift × BeanIO/FixedFormat4J/FixedLength/Bindy/CamelBeanIO/Velocity/SpringBatch`
 
 ---
 
@@ -142,7 +146,9 @@ Each run = unique `JobInstance` → fully restartable from last checkpoint.
 | `symmetryRate` | % of parsed records matching original |
 | `successRate` | % of chunks completed without error |
 
-Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown`
+Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown` or `/html`
+
+28 JMH `@Benchmark` methods cover generate + parse for all 7 libraries × 2 file types.
 
 ---
 
@@ -154,6 +160,8 @@ Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown`
 | New projects, clean code | **fixedformat4j** | Best annotation DX, no boilerplate |
 | Existing Camel ecosystem | **Camel Bindy** | Native Camel integration |
 | Prototyping / lightweight | **fixedlength** | Minimal setup, pure annotations |
+| Template-driven reports | **Apache Velocity** | Flexible HTML/text generation |
+| Native Spring Batch | **Spring Batch flat-file** | Tightest framework integration |
 
 **Avoid** mixing multiple libraries in production — pick one and standardise.
 
@@ -161,7 +169,7 @@ Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown`
 
 ## Slide 11 — Code Quality & CI/CD
 
-- **Tests:** 62 tests passing (unit, integration, symmetry, API, Actuator, Swagger)
+- **Tests:** 117 tests passing (unit, integration, symmetry, API, Actuator, Swagger)
 - **Coverage:** JaCoCo enforced (minimum threshold configured)
 - **CI:** GitHub Actions — build, test, benchmark, CodeQL security scan, releases
 - **Dependencies:** Dependabot auto-PRs weekly for Maven + Actions + npm
@@ -177,6 +185,9 @@ Export: `GET /api/benchmark/export/csv` or `/json` or `/markdown`
 - [fixedformat4j](https://mvnrepository.com/artifact/com.ancientprogramming.fixedformat4j/fixedformat4j)
 - [fixedlength](https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixedlength)
 - [Apache Camel Bindy](https://camel.apache.org/components/latest/dataformats/bindy-dataformat.html)
+- [Apache Camel BeanIO](https://camel.apache.org/components/latest/dataformats/beanio-dataformat.html)
+- [Apache Velocity](https://velocity.apache.org/)
+- [Spring Batch FlatFileItemWriter](https://docs.spring.io/spring-batch/docs/current/reference/html/readersAndWriters.html#flatFileItemWriter)
 
 ---
 

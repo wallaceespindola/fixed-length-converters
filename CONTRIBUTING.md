@@ -29,7 +29,7 @@ Examples:
 ```
 feat: add fixedformat4j 2.0 strategy for CODA
 fix: ensure CODA output lines are exactly 128 chars
-test: add symmetry tests for all 8 strategy combinations
+test: add symmetry tests for all 14 strategy combinations
 ```
 
 ## Code Standards

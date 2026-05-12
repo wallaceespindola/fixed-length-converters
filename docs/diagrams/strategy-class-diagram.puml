@@ -38,7 +38,7 @@ class CodaBeanIOStrategy {
 
 class CodaFixedFormat4JStrategy {
   -formatter : FixedFormat4JFormatter
-  +getLibrary() : Library.FIXEDFORMAT4J
+  +getLibrary() : Library.FIXFORMAT4J
 }
 
 class CodaFixedLengthStrategy {
@@ -51,6 +51,21 @@ class CodaBindyStrategy {
   +getLibrary() : Library.BINDY
 }
 
+class CodaCamelBeanIOStrategy {
+  -formatter : CamelBeanIOFormatter
+  +getLibrary() : Library.CAMEL_BEANIO
+}
+
+class CodaVelocityStrategy {
+  -formatter : VelocityFormatter
+  +getLibrary() : Library.VELOCITY
+}
+
+class CodaSpringBatchStrategy {
+  -formatter : SpringBatchFormatter
+  +getLibrary() : Library.SPRING_BATCH
+}
+
 class SwiftBeanIOStrategy {
   -formatter : BeanIOFormatter
   +getLibrary() : Library.BEANIO
@@ -58,7 +73,7 @@ class SwiftBeanIOStrategy {
 
 class SwiftFixedFormat4JStrategy {
   -formatter : FixedFormat4JFormatter
-  +getLibrary() : Library.FIXEDFORMAT4J
+  +getLibrary() : Library.FIXFORMAT4J
 }
 
 class SwiftFixedLengthStrategy {
@@ -69,6 +84,21 @@ class SwiftFixedLengthStrategy {
 class SwiftBindyStrategy {
   -formatter : BindyFormatter
   +getLibrary() : Library.BINDY
+}
+
+class SwiftCamelBeanIOStrategy {
+  -formatter : CamelBeanIOFormatter
+  +getLibrary() : Library.CAMEL_BEANIO
+}
+
+class SwiftVelocityStrategy {
+  -formatter : VelocityFormatter
+  +getLibrary() : Library.VELOCITY
+}
+
+class SwiftSpringBatchStrategy {
+  -formatter : SpringBatchFormatter
+  +getLibrary() : Library.SPRING_BATCH
 }
 
 class StrategyResolver {
@@ -83,9 +113,15 @@ AbstractCodaStrategy <|-- CodaBeanIOStrategy
 AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy
 AbstractCodaStrategy <|-- CodaFixedLengthStrategy
 AbstractCodaStrategy <|-- CodaBindyStrategy
+AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy
+AbstractCodaStrategy <|-- CodaVelocityStrategy
+AbstractCodaStrategy <|-- CodaSpringBatchStrategy
 AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
 AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
 AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
 AbstractSwiftStrategy <|-- SwiftBindyStrategy
+AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy
+AbstractSwiftStrategy <|-- SwiftVelocityStrategy
+AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy
 StrategyResolver o--> FileGenerationStrategy : resolves
 @enduml

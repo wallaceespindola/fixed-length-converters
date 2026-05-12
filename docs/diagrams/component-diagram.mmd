@@ -15,14 +15,17 @@ graph LR
     end
     subgraph Strategy["Strategy Layer"]
         SR[StrategyResolver]
-        CS["4× CodaStrategy"]
-        SS["4× SwiftStrategy"]
+        CS["7× CodaStrategy"]
+        SS["7× SwiftStrategy"]
     end
     subgraph Parser["Parser Library Wrappers"]
         BIO[BeanIOFormatter]
         FF4J[FixedFormat4JFormatter]
         VL[FixedLengthFormatter]
         BINDY[BindyFormatter]
+        CBIO[CamelBeanIOFormatter]
+        VEL[VelocityFormatter]
+        SBF[SpringBatchFormatter]
     end
     subgraph Domain["Domain Layer"]
         DDG[DomainDataGenerator]
@@ -49,10 +52,16 @@ graph LR
     CS --> FF4J
     CS --> VL
     CS --> BINDY
+    CS --> CBIO
+    CS --> VEL
+    CS --> SBF
     SS --> BIO
     SS --> FF4J
     SS --> VL
     SS --> BINDY
+    SS --> CBIO
+    SS --> VEL
+    SS --> SBF
     IR --> TR
     DDG --> AR
     DDG --> TR

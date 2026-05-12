@@ -5,6 +5,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ---
 
+## [Unreleased]
+
+### Added
+- 3 additional parser formatter wrappers: `CamelBeanIOFormatter`, `VelocityFormatter`, `SpringBatchFormatter`
+- 6 additional strategy implementations: `CodaCamelBeanIOStrategy`, `CodaVelocityStrategy`, `CodaSpringBatchStrategy`, `SwiftCamelBeanIOStrategy`, `SwiftVelocityStrategy`, `SwiftSpringBatchStrategy`
+- Total strategies: 14 (7 libraries × 2 file types)
+- 28 JMH `@Benchmark` methods (generate + parse for all 14 strategies)
+- New endpoint: `GET /api/benchmark/export/html` — Velocity-driven HTML benchmark report
+- `Library` enum expanded to: `BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY, SPRING_BATCH`
+
+---
+
 ## [1.0.0-SNAPSHOT] — 2026-04-30
 
 ### Added
@@ -13,12 +25,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Domain model: `Account`, `Transaction`, `BankingStatement`, `BenchmarkMetrics`
 - `DomainDataGenerator`: generates 20 accounts, 200 transactions, 10 statements per call
 - 4 annotation-based parser formatter wrappers (no XML):
-  - `BeanIOFormatter` — BeanIO 2.1.0 with StreamBuilder API
+  - `BeanIOFormatter` — BeanIO 3.2.1 with StreamBuilder API
   - `FixedFormat4JFormatter` — fixedformat4j 1.7.0 with `@Record`/`@Field`
   - `FixedLengthFormatter` — fixedlength 0.15 with `@FixedLine`/`@FixedField`
   - `BindyFormatter` — Apache Camel Bindy 4.20.0 with `@FixedLengthRecord`/`@DataField`
 - `FileGenerationStrategy` interface and `StrategyResolver`
-- 8 strategy implementations: `Coda/Swift × BeanIO/FixedFormat4J/FixedLength/Bindy`
+- 8 initial strategy implementations: `Coda/Swift × BeanIO/FixedFormat4J/FixedLength/Bindy`
 - Abstract base classes: `AbstractCodaStrategy`, `AbstractSwiftStrategy`
 - Spring Batch pipeline: `DomainEntityItemReader` → `FileGenerationItemProcessor` → `FileOutputItemWriter`
 - `BatchMetricsListener` and `ChunkTimingListener`
