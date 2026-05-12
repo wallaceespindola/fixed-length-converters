@@ -4,13 +4,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 4 Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
+**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 7 Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
 
 **PRD:** `PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
 
 ## Implementation Status: COMPLETE
 
-All 76 tests pass. Application starts and runs end-to-end.
+All 117 tests pass. Application starts and runs end-to-end.
 
 ## Technical Stack
 
@@ -23,8 +23,8 @@ All 76 tests pass. Application starts and runs end-to-end.
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x |
-| Testing | JUnit 5 + Mockito, 75 tests |
-| Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0 |
+| Testing | JUnit 5 + Mockito, 117 tests |
+| Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0, Camel BeanIO 4.20.0, Velocity 2.3, Spring Batch 5.x |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands
@@ -62,20 +62,20 @@ src/main/java/com/wtechitsolutions/
 │   └── dto/           Java Record DTOs (BatchJobRequest/Response, GenerateDomainResponse, etc.)
 ├── batch/             Spring Batch: DomainEntityItemReader, FileGenerationItemProcessor,
 │                       FileOutputItemWriter, BatchMetricsListener, ChunkTimingListener, BatchJobService
-├── benchmark/         BenchmarkService (CSV/JSON/Markdown export)
+├── benchmark/         BenchmarkService (CSV/JSON/Markdown/HTML export)
 ├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig
 ├── domain/            JPA entities (Account, Transaction, BankingStatement, BenchmarkMetrics)
 │                       Repositories, DomainDataGenerator, enums (FileType, Library, TransactionType)
-├── parser/            4 formatter wrappers (all annotation-based, no XML):
-│   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter
-│   └── model/         Annotated model classes per library:
-│                       CodaRecord (shared model with toFixedWidth/fromFixedWidth)
-│                       BeanIoCodaRecord, Ff4jCodaRecord, VlCodaRecord, BindyCodaRecord
-│                       SwiftMtRecord, BeanIoSwiftRecord
-└── strategy/          FileGenerationStrategy interface, StrategyResolver, 8 implementations:
+├── parser/            7 formatter wrappers (annotation-based, template-based, or programmatic):
+│   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter,
+│   │                   CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter
+│   └── model/         Annotated model classes per library (CodaRecord, BeanIoCodaRecord, etc.)
+└── strategy/          FileGenerationStrategy interface, StrategyResolver, 14 implementations:
                         AbstractCodaStrategy, AbstractSwiftStrategy (base classes)
                         CodaBeanIOStrategy, CodaFixedFormat4JStrategy, CodaFixedLengthStrategy, CodaBindyStrategy
+                        CodaCamelBeanIOStrategy, CodaVelocityStrategy, CodaSpringBatchStrategy
                         SwiftBeanIOStrategy, SwiftFixedFormat4JStrategy, SwiftFixedLengthStrategy, SwiftBindyStrategy
+                        SwiftCamelBeanIOStrategy, SwiftVelocityStrategy, SwiftSpringBatchStrategy
 ```
 
 ### Core Flow
@@ -99,7 +99,7 @@ src/main/java/com/wtechitsolutions/
 
 ### SWIFT Format Notes
 
-- All 4 strategies serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters
+- All strategies serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters
 - BeanIO previously used CSV format; fixed to be consistent with the other strategies
 
 ## REST API Endpoints
@@ -112,6 +112,7 @@ GET  /api/benchmark/results      → all benchmark metrics
 GET  /api/benchmark/export/csv   → CSV export
 GET  /api/benchmark/export/markdown → Markdown export
 GET  /api/benchmark/export/json  → JSON export
+GET  /api/benchmark/export/html  → styled HTML export (Velocity template)
 GET  /actuator/health            → H2 + disk + ping health
 GET  /actuator/info              → app name, version, description
 ```
@@ -132,9 +133,9 @@ GET  /actuator/info              → app name, version, description
 |---|---|---|
 | Unit | `DomainDataGeneratorTest` | Mock repos, counts |
 | Unit | `CodaRecordTest` | toFixedWidth/fromFixedWidth, 128-char lines |
-| Integration | `StrategyResolverTest` | All 8 strategies resolve by key |
+| Integration | `StrategyResolverTest` | All 14 strategies resolve by key |
 | Integration | `CodaStrategyTest` | Each CODA library: 128-char lines, header/trailer |
-| Integration | `SwiftStrategyTest` | All 4 SWIFT libraries: MT940 tag assertions (12 tests) |
+| Integration | `SwiftStrategyTest` | All 7 SWIFT libraries: MT940 tag assertions |
 | Integration | `SymmetryTest` | Round-trip: generate→parse preserves amount+type |
 | Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate |
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
@@ -142,7 +143,7 @@ GET  /actuator/info              → app name, version, description
 | Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |
 
 | Integration | `GoldenFileTest` | 128-char CODA lines, required record types and MT940 tags |
-| Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 8 strategies (run with -Pbenchmark) |
+| Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 14 strategies (run with -Pbenchmark) |
 
 Run specific test: `mvn test -Pskip-frontend -Dtest=SymmetryTest`
 

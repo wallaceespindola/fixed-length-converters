@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
 
 Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and
-**SWIFT MT940** fixed-length banking files using **4 Java formatter libraries**, all orchestrated through **Spring Batch
+**SWIFT MT940** fixed-length banking files using **7 Java formatter libraries**, all orchestrated through **Spring Batch
 ** and the **Strategy Pattern**.
 
 ---
@@ -19,9 +19,9 @@ This platform is a technical laboratory for evaluating Java fixed-length parser 
 performance, and Spring Batch compatibility. Engineers can:
 
 - Generate realistic banking transaction datasets (20 accounts, 200 transactions per call)
-- Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 4 libraries
+- Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 7 libraries
 - Compare library outputs side-by-side through benchmark dashboards
-- Export benchmark results as CSV, JSON, or Markdown
+- Export benchmark results as CSV, JSON, Markdown, or styled HTML
 
 ---
 
@@ -42,16 +42,19 @@ graph TB
         PROC[FileGenerationItemProcessor]
         WRITER[FileOutputItemWriter]
     end
-    subgraph Strategy["Strategy Pattern × 8"]
+    subgraph Strategy["Strategy Pattern × 14"]
         SR[StrategyResolver]
-        C4[4 CODA Strategies]
-        S4[4 SWIFT Strategies]
+        C7[7 CODA Strategies]
+        S7[7 SWIFT Strategies]
     end
     subgraph Parsers["Parser Library Wrappers"]
         BIO[BeanIO 3.2.1]
         FF4J[fixedformat4j 1.7.0]
         VL[fixedlength 0.15]
         BINDY[Camel Bindy 4.20.0]
+        CBIO[Camel BeanIO 4.20.0]
+        VEL[Velocity 2.3]
+        SB[Spring Batch native]
     end
     Frontend --> API
     DC --> H2[(H2 DB)]
@@ -68,23 +71,29 @@ ItemReader (H2) → ItemProcessor (StrategyResolver) → ItemWriter (output/)
 ```
 
 Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (
-BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY). Jobs are **restartable** from the last checkpoint.
+BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY/CAMELBEANIO/VELOCITY/SPRINGBATCH). Jobs are **restartable** from the last checkpoint.
 
 ### Strategy Pattern
 
-8 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
+14 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
 interface:
 
-| Class                        | Format      | Library            |
-|------------------------------|-------------|--------------------|
-| `CodaBeanIOStrategy`         | CODA        | BeanIO             |
-| `CodaFixedFormat4JStrategy`  | CODA        | fixedformat4j      |
-| `CodaFixedLengthStrategy`    | CODA        | fixedlength        |
-| `CodaBindyStrategy`          | CODA        | Apache Camel Bindy |
-| `SwiftBeanIOStrategy`        | SWIFT MT940 | BeanIO             |
-| `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j      |
-| `SwiftFixedLengthStrategy`   | SWIFT MT940 | fixedlength        |
-| `SwiftBindyStrategy`         | SWIFT MT940 | Apache Camel Bindy |
+| Class                          | Format      | Library                |
+|--------------------------------|-------------|------------------------|
+| `CodaBeanIOStrategy`           | CODA        | BeanIO                 |
+| `CodaFixedFormat4JStrategy`    | CODA        | fixedformat4j          |
+| `CodaFixedLengthStrategy`      | CODA        | fixedlength            |
+| `CodaBindyStrategy`            | CODA        | Apache Camel Bindy     |
+| `CodaCamelBeanIOStrategy`      | CODA        | Apache Camel BeanIO    |
+| `CodaVelocityStrategy`         | CODA        | Apache Velocity        |
+| `CodaSpringBatchStrategy`      | CODA        | Spring Batch Native    |
+| `SwiftBeanIOStrategy`          | SWIFT MT940 | BeanIO                 |
+| `SwiftFixedFormat4JStrategy`   | SWIFT MT940 | fixedformat4j          |
+| `SwiftFixedLengthStrategy`     | SWIFT MT940 | fixedlength            |
+| `SwiftBindyStrategy`           | SWIFT MT940 | Apache Camel Bindy     |
+| `SwiftCamelBeanIOStrategy`     | SWIFT MT940 | Apache Camel BeanIO    |
+| `SwiftVelocityStrategy`        | SWIFT MT940 | Apache Velocity        |
+| `SwiftSpringBatchStrategy`     | SWIFT MT940 | Spring Batch Native    |
 
 `StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch`
 chains.
@@ -108,6 +117,9 @@ chains.
 | **fixedformat4j**      | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
 | **fixedlength**        | 0.15    | Limited         | Good               | Good             | Medium |
 | **Apache Camel Bindy** | 4.20.0  | Limited         | Good               | Medium           | Medium |
+| **Apache Camel BeanIO**| 4.20.0  | Excellent       | XML-based          | Medium           | Medium |
+| **Apache Velocity**    | 2.3     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
+| **Spring Batch Native**| 5.x     | Excellent       | Programmatic       | Native           | Low    |
 
 ### Strategic Recommendations
 
@@ -251,6 +263,7 @@ python tools/python/report_generator.py target/jmh-result.json docs/benchmark-re
 | `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                  |
 | `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                             |
 | `GET`  | `/api/benchmark/export/json`     | Export as JSON                                 |
+| `GET`  | `/api/benchmark/export/html`     | Export as styled HTML (Velocity template)      |
 | `GET`  | `/actuator/health`               | Application health                             |
 | `GET`  | `/actuator/info`                 | Application metadata                           |
 
@@ -360,11 +373,11 @@ fixed-length-converters/
 ├── src/main/java/com/wtechitsolutions/
 │   ├── api/                    REST controllers + DTO records
 │   ├── batch/                  Spring Batch reader/processor/writer/listeners
-│   ├── benchmark/              BenchmarkService (CSV/JSON/MD export)
+│   ├── benchmark/              BenchmarkService (CSV/JSON/MD/HTML export)
 │   ├── config/                 Spring, Batch, OpenAPI, Web config
 │   ├── domain/                 JPA entities + repositories + DomainDataGenerator
-│   ├── parser/                 4 formatter wrappers + annotated model classes
-│   └── strategy/               FileGenerationStrategy + 8 implementations
+│   ├── parser/                 7 formatter wrappers + annotated model classes
+│   └── strategy/               FileGenerationStrategy + 14 implementations
 ├── src/main/frontend/          React 18 + Vite + MUI source
 ├── docs/
 │   ├── examples/coda/          Valid, malformed, edge-case CODA files
