@@ -71,29 +71,30 @@ ItemReader (H2) → ItemProcessor (StrategyResolver) → ItemWriter (output/)
 ```
 
 Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (
-BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY/CAMELBEANIO/VELOCITY/SPRINGBATCH). Jobs are **restartable** from the last checkpoint.
+BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY/CAMELBEANIO/VELOCITY/SPRINGBATCH). Jobs are **restartable** from the last
+checkpoint.
 
 ### Strategy Pattern
 
 14 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
 interface:
 
-| Class                          | Format      | Library                |
-|--------------------------------|-------------|------------------------|
-| `CodaBeanIOStrategy`           | CODA        | BeanIO                 |
-| `CodaFixedFormat4JStrategy`    | CODA        | fixedformat4j          |
-| `CodaFixedLengthStrategy`      | CODA        | fixedlength            |
-| `CodaBindyStrategy`            | CODA        | Apache Camel Bindy     |
-| `CodaCamelBeanIOStrategy`      | CODA        | Apache Camel BeanIO    |
-| `CodaVelocityStrategy`         | CODA        | Apache Velocity        |
-| `CodaSpringBatchStrategy`      | CODA        | Spring Batch Native    |
-| `SwiftBeanIOStrategy`          | SWIFT MT940 | BeanIO                 |
-| `SwiftFixedFormat4JStrategy`   | SWIFT MT940 | fixedformat4j          |
-| `SwiftFixedLengthStrategy`     | SWIFT MT940 | fixedlength            |
-| `SwiftBindyStrategy`           | SWIFT MT940 | Apache Camel Bindy     |
-| `SwiftCamelBeanIOStrategy`     | SWIFT MT940 | Apache Camel BeanIO    |
-| `SwiftVelocityStrategy`        | SWIFT MT940 | Apache Velocity        |
-| `SwiftSpringBatchStrategy`     | SWIFT MT940 | Spring Batch Native    |
+| Class                        | Format      | Library             |
+|------------------------------|-------------|---------------------|
+| `CodaBeanIOStrategy`         | CODA        | BeanIO              |
+| `CodaFixedFormat4JStrategy`  | CODA        | fixedformat4j       |
+| `CodaFixedLengthStrategy`    | CODA        | fixedlength         |
+| `CodaBindyStrategy`          | CODA        | Apache Camel Bindy  |
+| `CodaCamelBeanIOStrategy`    | CODA        | Apache Camel BeanIO |
+| `CodaVelocityStrategy`       | CODA        | Apache Velocity     |
+| `CodaSpringBatchStrategy`    | CODA        | Spring Batch Native |
+| `SwiftBeanIOStrategy`        | SWIFT MT940 | BeanIO              |
+| `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j       |
+| `SwiftFixedLengthStrategy`   | SWIFT MT940 | fixedlength         |
+| `SwiftBindyStrategy`         | SWIFT MT940 | Apache Camel Bindy  |
+| `SwiftCamelBeanIOStrategy`   | SWIFT MT940 | Apache Camel BeanIO |
+| `SwiftVelocityStrategy`      | SWIFT MT940 | Apache Velocity     |
+| `SwiftSpringBatchStrategy`   | SWIFT MT940 | Spring Batch Native |
 
 `StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch`
 chains.
@@ -111,15 +112,15 @@ chains.
 
 ## Formatter Library Comparison
 
-| Library                | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
-|------------------------|---------|-----------------|--------------------|------------------|--------|
-| **BeanIO**             | 3.2.1   | Excellent       | Good               | Good             | Low    |
-| **fixedformat4j**      | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
-| **fixedlength**        | 0.15    | Limited         | Good               | Good             | Medium |
-| **Apache Camel Bindy** | 4.20.0  | Limited         | Good               | Medium           | Medium |
-| **Apache Camel BeanIO**| 4.20.0  | Excellent       | XML-based          | Medium           | Medium |
-| **Apache Velocity**    | 2.3     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
-| **Spring Batch Native**| 5.x     | Excellent       | Programmatic       | Native           | Low    |
+| Library                 | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
+|-------------------------|---------|-----------------|--------------------|------------------|--------|
+| **BeanIO**              | 3.2.1   | Excellent       | Good               | Good             | Low    |
+| **fixedformat4j**       | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
+| **fixedlength**         | 0.15    | Limited         | Good               | Good             | Medium |
+| **Apache Camel Bindy**  | 4.20.0  | Limited         | Good               | Medium           | Medium |
+| **Apache Camel BeanIO** | 4.20.0  | Excellent       | XML-based          | Medium           | Medium |
+| **Apache Velocity**     | 2.3     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
+| **Spring Batch Native** | 5.x     | Excellent       | Programmatic       | Native           | Low    |
 
 ### Strategic Recommendations
 
@@ -136,11 +137,11 @@ chains.
 
 ### Benchmark
 
-![Fixed lenght benchmark.png](resources/images/Fixed%20lenght%20benchmark.png)
+![Fixed length benchmark.png](resources/images/Fixed%20length%20benchmark.png)
 
 ### History
 
-![Fixed lenght history.png](resources/images/Fixed%20lenght%20history.png)
+![Fixed length history.png](resources/images/Fixed%20length%20history.png)
 
 ---
 
@@ -156,12 +157,12 @@ chains.
 
 #### Installing `make`
 
-| Platform | Command |
-|----------|---------|
-| **macOS** | `brew install make` _(already available via Xcode Command Line Tools: `xcode-select --install`)_ |
-| **Ubuntu / Debian** | `sudo apt-get install -y make` |
-| **Fedora / RHEL** | `sudo dnf install -y make` |
-| **Windows** | Install [Git for Windows](https://gitforwindows.org/) (includes `make` in Git Bash), or via [Chocolatey](https://chocolatey.org/): `choco install make`, or via [Scoop](https://scoop.sh/): `scoop install make` |
+| Platform            | Command                                                                                                                                                                                                          |
+|---------------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **macOS**           | `brew install make` _(already available via Xcode Command Line Tools: `xcode-select --install`)_                                                                                                                 |
+| **Ubuntu / Debian** | `sudo apt-get install -y make`                                                                                                                                                                                   |
+| **Fedora / RHEL**   | `sudo dnf install -y make`                                                                                                                                                                                       |
+| **Windows**         | Install [Git for Windows](https://gitforwindows.org/) (includes `make` in Git Bash), or via [Chocolatey](https://chocolatey.org/): `choco install make`, or via [Scoop](https://scoop.sh/): `scoop install make` |
 
 Verify with: `make --version`
 
@@ -241,7 +242,8 @@ Swagger UI (dev profile only): **http://localhost:8080/swagger-ui.html**
 
 ### Python Benchmark Tools _(optional)_
 
-After running benchmarks (`make benchmark` or `mvn test -Pbenchmark`), use the tools in `tools/python/` to analyse results:
+After running benchmarks (`make benchmark` or `mvn test -Pbenchmark`), use the tools in `tools/python/` to analyse
+results:
 
 ```bash
 # Aggregate JMH results and print statistics table (mean, stdev, min per benchmark)
@@ -259,27 +261,27 @@ python tools/python/report_generator.py target/jmh-result.json docs/benchmark-re
 
 ## REST API
 
-| Method | Endpoint                         | Description                                                           |
-|--------|----------------------------------|-----------------------------------------------------------------------|
-| `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|HIGH`        |
-| `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                        |
-| `GET`  | `/api/batch/history`             | Last 50 batch job executions                                          |
-| `GET`  | `/api/benchmark/results`         | All benchmark metrics                                                 |
-| `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                                         |
-| `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                                                    |
-| `GET`  | `/api/benchmark/export/json`     | Export as JSON                                                        |
-| `GET`  | `/api/benchmark/export/html`     | Export as styled HTML (Velocity template)                             |
-| `GET`  | `/actuator/health`               | Application health                                                    |
-| `GET`  | `/actuator/info`                 | Application metadata                                                  |
+| Method | Endpoint                         | Description                                                   |
+|--------|----------------------------------|---------------------------------------------------------------|
+| `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|HIGH` |
+| `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                |
+| `GET`  | `/api/batch/history`             | Last 50 batch job executions                                  |
+| `GET`  | `/api/benchmark/results`         | All benchmark metrics                                         |
+| `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                                 |
+| `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                                            |
+| `GET`  | `/api/benchmark/export/json`     | Export as JSON                                                |
+| `GET`  | `/api/benchmark/export/html`     | Export as styled HTML (Velocity template)                     |
+| `GET`  | `/actuator/health`               | Application health                                            |
+| `GET`  | `/actuator/info`                 | Application metadata                                          |
 
 ### Load Profiles
 
 `POST /api/domain/generate` accepts an optional `loadProfile` query parameter:
 
-| Profile | Accounts | Transactions | Statements | Notes        |
-|---------|----------|--------------|------------|--------------|
-| `LOW`   | 20       | 200          | 10         | Default      |
-| `HIGH`  | 200      | 2 000        | 100        | Stress test  |
+| Profile | Accounts | Transactions | Statements | Notes       |
+|---------|----------|--------------|------------|-------------|
+| `LOW`   | 20       | 200          | 10         | Default     |
+| `HIGH`  | 200      | 2 000        | 100        | Stress test |
 
 ```bash
 # Default (LOW) profile
@@ -377,11 +379,14 @@ The React 18 + Vite + MUI frontend provides:
 
 - **Dashboard** — health status, actuator info, quick-action buttons
 - **Data Generator** — trigger domain data generation with "Low Load" or "High Load" buttons, display results
-- **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires all 14 fileType × library combinations sequentially with live per-row progress.
+- **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
+  all 14 fileType × library combinations sequentially with live per-row progress.
 - **Batch History** — sortable/filterable table of all job executions
-- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD export. Library Summary cards and both bar charts auto-sort by avg throughput (best to worst) on every refresh.
+- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD
+  export. Library Summary cards and both bar charts auto-sort by avg throughput (best to worst) on every refresh.
 
-The pre-built frontend bundle is committed to `src/main/resources/static/`, so `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild. If you change frontend source code, rebuild with:
+The pre-built frontend bundle is committed to `src/main/resources/static/`, so `mvn spring-boot:run -Pskip-frontend`
+serves the latest UI immediately without a frontend rebuild. If you change frontend source code, rebuild with:
 
 ```bash
 cd src/main/frontend && npm run build
