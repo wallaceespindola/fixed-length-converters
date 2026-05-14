@@ -4,7 +4,7 @@
   <img src="resources/images/coda-logo.svg" alt="CODA Febelfin" height="60"/>
 </p>
 
-# Banking Fixed-Length File Generator & Parser Validation Platform
+# Banking Fixed-Length File Generator & Parser Platform
 
 [![Build](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/build.yml/badge.svg)](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/build.yml)
 [![Test](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/test.yml/badge.svg)](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/test.yml)
@@ -200,13 +200,13 @@ corporate treasury system or ERP.
 |--------------------|--------------|----------------------------------------------------------|
 | Deutsche Bank      | Germany      | Global transaction banking leader, MT940 since 1990s     |
 | Commerzbank        | Germany      | Major German corporate bank                              |
-| DZ Bank            | Germany      | Central bank for the Volksbanken/Raiffeisenbanken network |
-| Société Générale   | France       | MT940 used across French and international corporate clients |
+| DZ Bank            | Germany      | Central bank for Volksbanken/Raiffeisenbanken network    |
+| Société Générale   | France       | MT940 used across French and international corp clients  |
 | BNP Paribas        | France       | Pan-European corporate treasury standard                 |
 | Crédit Agricole    | France       | French agricultural banking network                      |
-| ING Group          | Netherlands  | Retail + corporate across NL, BE, DE, PL, RO            |
+| ING Group          | Netherlands  | Retail + corporate across NL, BE, DE, PL, RO             |
 | ABN AMRO           | Netherlands  | Dutch corporate banking, SWIFT service bureau            |
-| Rabobank           | Netherlands  | Cooperative bank, NL/BE/DE agri-sector                  |
+| Rabobank           | Netherlands  | Cooperative bank, NL/BE/DE agri-sector                   |
 | UniCredit          | Italy        | Largest Italian bank, pan-European presence              |
 | Intesa Sanpaolo    | Italy        | Second largest Italian bank                              |
 | Santander          | Spain        | Largest Spanish bank, operates across EU                 |
@@ -226,21 +226,21 @@ messages. The coexistence period runs until **November 2025** (extended for some
 will be retired in favour of **camt.053** (Bank-to-Customer Statement). This platform's MT940 implementation serves
 as a reference for teams validating parsers before migration.
 
-| Legacy MT | ISO 20022 MX replacement | Direction              |
-|-----------|--------------------------|------------------------|
-| MT940     | camt.053                 | Bank → Corporate       |
+| Legacy MT | ISO 20022 MX replacement | Direction                   |
+|-----------|--------------------------|-----------------------------|
+| MT940     | camt.053                 | Bank → Corporate            |
 | MT942     | camt.052                 | Bank → Corporate (intraday) |
-| MT950     | camt.053                 | Bank → Bank            |
-| MT101     | pain.001                 | Corporate → Bank       |
+| MT950     | camt.053                 | Bank → Bank                 |
+| MT101     | pain.001                 | Corporate → Bank            |
 
 ---
 
 ### Standards Summary
 
-| Standard        | Authority | Coverage               | Format              | Delivery   |
-|-----------------|-----------|------------------------|---------------------|------------|
+| Standard        | Authority | Coverage               | Format              | Delivery    |
+|-----------------|-----------|------------------------|---------------------|-------------|
 | **CODA**        | Febelfin  | Belgium (primary), SEPA | 128-char fixed-width | Daily EOD |
-| **SWIFT MT940** | SWIFT     | 200+ countries, pan-EU | Tag-based free-text | Daily EOD  |
+| **SWIFT MT940** | SWIFT     | 200+ countries, pan-EU | Tag-based free-text | Daily EOD   |
 
 ---
 
