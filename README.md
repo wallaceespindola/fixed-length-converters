@@ -126,10 +126,121 @@ chains.
 
 ## Supported Banking Standards
 
-| Standard        | Description                                                                   | Authority |
-|-----------------|-------------------------------------------------------------------------------|-----------|
-| **CODA**        | Belgian/European banking statement format — 128-character fixed-width records | Febelfin  |
-| **SWIFT MT940** | International banking messaging format — tag-based (`field:value`)            | SWIFT     |
+### CODA — Belgian/European Bank Statement Format
+
+**CODA** (COded DAily statement) is the official electronic bank statement format defined and maintained by
+[Febelfin](https://www.febelfin.be/en/payments-standards/coda) — the Federation of Belgian Financial Sector
+Institutions. It is the dominant machine-readable statement format used by Belgian corporate banking.
+
+**Technical format:** fixed-width ASCII records of exactly **128 characters** per line, with structured record types:
+
+| Record type | Meaning            |
+|-------------|--------------------|
+| `0`         | File header        |
+| `1`         | Movement (debit/credit transaction) |
+| `2`         | Movement detail / free communication |
+| `8`         | Information record (closing balance) |
+| `9`         | File trailer       |
+
+**Adopted by all major Belgian banks**, delivered as a daily end-of-day statement file:
+
+| Bank              | Country | Notes                                          |
+|-------------------|---------|------------------------------------------------|
+| BNP Paribas Fortis | Belgium | Largest Belgian bank by assets                |
+| KBC Bank          | Belgium | Dominant retail and corporate bank             |
+| ING Belgium       | Belgium | Part of ING Group (Netherlands)                |
+| Belfius Bank      | Belgium | Formerly Dexia Bank Belgium                    |
+| Argenta           | Belgium | Major savings and mortgage bank                |
+| Crelan            | Belgium | Agricultural cooperative bank                  |
+| bpost bank        | Belgium | Postal bank, wide retail coverage              |
+| Triodos Bank      | Belgium | European ethical bank, BE/NL/DE/FR/ES branches |
+
+CODA files are exchanged through **Isabel** (Isabel Group / Isabel 6 platform), the Belgian interbank file exchange
+network that connects over 70 000 Belgian companies to their banks.
+
+**Regulatory context:** Febelfin publishes versioned CODA specifications. Version 2.6 (current) aligns with the
+**SEPA** payment area requirements and the **PSD2** open banking directive, ensuring CODA files carry the
+structured IBAN/BIC identifiers required for cross-border euro payments.
+
+---
+
+### SWIFT MT940 — International Account Statement Messaging
+
+**SWIFT MT940** is part of the SWIFT **MT (Message Type)** family, the legacy messaging standard operated by
+[SWIFT](https://www.swift.com) (Society for Worldwide Interbank Financial Telecommunication) — the global
+cooperative that connects over **11 500 financial institutions** across **200+ countries**.
+
+MT940 carries the **Customer Statement Message**: a structured end-of-day account statement sent from a bank to a
+corporate treasury system or ERP.
+
+**Related MT messages in the statement family:**
+
+| Message | Purpose                            | Typical delivery |
+|---------|------------------------------------|------------------|
+| MT940   | End-of-day customer statement      | Daily, T+0       |
+| MT942   | Intraday statement (interim)       | Multiple per day |
+| MT950   | Statement message (bank-to-bank)   | Daily            |
+| MT941   | Balance report                     | On demand        |
+
+**MT940 tag structure** (as implemented in this platform):
+
+| Tag    | Field                  | Example                     |
+|--------|------------------------|-----------------------------|
+| `:20:` | Transaction reference  | `STMT20240115001`           |
+| `:25:` | Account identification | `BE68539007547034EUR`       |
+| `:28C:` | Statement / sequence  | `00001/001`                 |
+| `:60F:` | Opening balance       | `C240114EUR10000,00`        |
+| `:61:` | Statement line         | `2401150115CD500,00NTRFREF` |
+| `:86:` | Information to owner   | Free-text transaction detail|
+| `:62F:` | Closing balance       | `C240115EUR10500,00`        |
+
+**Widely adopted by European banks** for corporate cash management and treasury integrations:
+
+| Bank               | Country      | Notes                                                    |
+|--------------------|--------------|----------------------------------------------------------|
+| Deutsche Bank      | Germany      | Global transaction banking leader, MT940 since 1990s     |
+| Commerzbank        | Germany      | Major German corporate bank                              |
+| DZ Bank            | Germany      | Central bank for the Volksbanken/Raiffeisenbanken network |
+| Société Générale   | France       | MT940 used across French and international corporate clients |
+| BNP Paribas        | France       | Pan-European corporate treasury standard                 |
+| Crédit Agricole    | France       | French agricultural banking network                      |
+| ING Group          | Netherlands  | Retail + corporate across NL, BE, DE, PL, RO            |
+| ABN AMRO           | Netherlands  | Dutch corporate banking, SWIFT service bureau            |
+| Rabobank           | Netherlands  | Cooperative bank, NL/BE/DE agri-sector                  |
+| UniCredit          | Italy        | Largest Italian bank, pan-European presence              |
+| Intesa Sanpaolo    | Italy        | Second largest Italian bank                              |
+| Santander          | Spain        | Largest Spanish bank, operates across EU                 |
+| BBVA               | Spain        | Second largest Spanish bank                              |
+| Erste Group        | Austria      | Central/Eastern Europe retail and corporate              |
+| Raiffeisen Bank    | Austria      | CEE specialist, 13 European markets                      |
+| PKO Bank Polski    | Poland       | Largest Polish bank by assets                            |
+| mBank              | Poland       | Digital bank, major corporate MT940 user                 |
+| Nordea             | Nordics      | MT940 for Nordic + Baltic corporate treasury             |
+| SEB                | Sweden       | Nordic-Baltic corporate banking                          |
+| Handelsbanken      | Sweden       | Nordic retail and corporate, conservative SWIFT adopter  |
+| DNB                | Norway       | Largest Norwegian bank                                   |
+| Danske Bank        | Denmark      | Pan-Nordic corporate banking                             |
+
+**ISO 20022 migration:** SWIFT announced the industry-wide migration from legacy MT messages to **ISO 20022 XML (MX)**
+messages. The coexistence period runs until **November 2025** (extended for some corridors into 2026), after which MT940
+will be retired in favour of **camt.053** (Bank-to-Customer Statement). This platform's MT940 implementation serves
+as a reference for teams validating parsers before migration.
+
+| Legacy MT | ISO 20022 MX replacement | Direction              |
+|-----------|--------------------------|------------------------|
+| MT940     | camt.053                 | Bank → Corporate       |
+| MT942     | camt.052                 | Bank → Corporate (intraday) |
+| MT950     | camt.053                 | Bank → Bank            |
+| MT101     | pain.001                 | Corporate → Bank       |
+
+---
+
+### Standards Summary
+
+| Standard        | Authority | Coverage               | Format              | Delivery   |
+|-----------------|-----------|------------------------|---------------------|------------|
+| **CODA**        | Febelfin  | Belgium (primary), SEPA | 128-char fixed-width | Daily EOD |
+| **SWIFT MT940** | SWIFT     | 200+ countries, pan-EU | Tag-based free-text | Daily EOD  |
 
 ---
 
@@ -448,12 +559,26 @@ fixed-length-converters/
 
 ## Links
 
-- [Febelfin CODA Specification](https://www.febelfin.be/en/payments-standards/coda)
-- [SWIFT MT940 Documentation](https://www.swift.com/standards/data-standards/mt)
+### Banking Standards — Official References
+
+- [Febelfin CODA Specification](https://www.febelfin.be/en/payments-standards/coda) — official versioned CODA spec (Febelfin)
+- [SWIFT MT940 — Customer Statement Message](https://www.swift.com/standards/data-standards/mt) — official SWIFT MT standards page
+- [SWIFT Standards — MT Message Reference](https://www2.swift.com/knowledgecentre/publications/us9m_20230720/2.0?topic=mt940.htm) — MT940 field-level reference
+- [SWIFT ISO 20022 Migration Programme](https://www.swift.com/standards/iso-20022) — coexistence timeline and MX migration guide
+- [camt.053 — Bank-to-Customer Statement (ISO 20022)](https://www.iso20022.org/catalogue-messages/iso-20022-messages-archive?search=camt.053) — MT940 successor format
+- [European Payments Council — SEPA Standards](https://www.europeanpaymentscouncil.eu/what-we-do/enabling-technology/standards) — SEPA payment scheme technical specs
+- [Isabel Group — Belgian Interbank File Exchange](https://www.isabel.eu/) — platform distributing CODA files to Belgian corporates
+- [ECB Payment Statistics](https://www.ecb.europa.eu/stats/payment_and_exchange_rates/payment_statistics/html/index.en.html) — European Central Bank payment infrastructure data
+
+### Parser Libraries
+
 - [BeanIO on Maven Central](https://mvnrepository.com/artifact/com.github.beanio/beanio)
 - [fixedformat4j on Maven Central](https://mvnrepository.com/artifact/com.ancientprogramming.fixedformat4j/fixedformat4j)
 - [fixedlength on Maven Central](https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixedlength)
 - [Apache Camel Bindy](https://camel.apache.org/components/latest/dataformats/bindy-dataformat.html)
+- [Apache Camel BeanIO](https://camel.apache.org/components/latest/dataformats/beanio-dataformat.html)
+- [Apache Velocity](https://velocity.apache.org/)
+- [Spring Batch — FlatFileItemReader](https://docs.spring.io/spring-batch/reference/readers-and-writers/flat-files.html)
 
 ---
 
