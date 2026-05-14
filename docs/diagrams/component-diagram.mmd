@@ -1,4 +1,4 @@
-%%{init: {'theme': 'base', 'themeVariables': {'lineColor': '#546e7a', 'edgeLabelBackground': '#eceff1'}}}%%
+%%{init: {'theme': 'base', 'themeVariables': {'lineColor': '#546e7a'}}}%%
 graph LR
     classDef apiStyle      fill:#1565c0,stroke:#0d47a1,color:#fff
     classDef batchStyle    fill:#2e7d32,stroke:#1b5e20,color:#fff
@@ -7,14 +7,14 @@ graph LR
     classDef domainStyle   fill:#e65100,stroke:#bf360c,color:#fff
     classDef configStyle   fill:#37474f,stroke:#263238,color:#fff
 
-    subgraph API["🌐  REST API Layer"]
+    subgraph API["🌐 REST API Layer"]
         DC[DomainController]
         BC[BatchController]
         BNC[BenchmarkController]
         ACT[Actuator]
     end
 
-    subgraph Batch["⚙  Spring Batch"]
+    subgraph Batch["⚙ Spring Batch"]
         JS[BatchJobService]
         JOB[bankingFileGenerationJob]
         IR[DomainEntityItemReader]
@@ -23,13 +23,13 @@ graph LR
         BML[BatchMetricsListener]
     end
 
-    subgraph Strategy["🔀  Strategy Layer"]
+    subgraph Strategy["🔀 Strategy Layer"]
         SR[StrategyResolver]
-        CS["7× CodaStrategy"]
-        SS["7× SwiftStrategy"]
+        CS["7x CodaStrategy"]
+        SS["7x SwiftStrategy"]
     end
 
-    subgraph Parser["📦  Parser Library Wrappers"]
+    subgraph Parser["📦 Parser Library Wrappers"]
         BIO[BeanIOFormatter]
         FF4J[FixedFormat4JFormatter]
         VL[FixedLengthFormatter]
@@ -39,31 +39,43 @@ graph LR
         SBF[SpringBatchFormatter]
     end
 
-    subgraph Domain["🗄  Domain Layer"]
+    subgraph Domain["🗄 Domain Layer"]
         DDG[DomainDataGenerator]
         AR[AccountRepository]
         TR[TransactionRepository]
     end
 
-    subgraph Config["⚙  Configuration"]
+    subgraph Config["⚙ Configuration"]
         BCFG[BatchConfig]
         OAC[OpenApiConfig]
         WC[WebConfig]
     end
 
-    DC  --> DDG
-    BC  --> JS
-    JS  --> JOB
+    DC --> DDG
+    BC --> JS
+    JS --> JOB
     JOB --> IR
     JOB --> IP
     JOB --> IW
     JOB --> BML
-    IP  --> SR
-    SR  --> CS
-    SR  --> SS
-    CS  --> BIO & FF4J & VL & BINDY & CBIO & VEL & SBF
-    SS  --> BIO & FF4J & VL & BINDY & CBIO & VEL & SBF
-    IR  --> TR
+    IP --> SR
+    SR --> CS
+    SR --> SS
+    CS --> BIO
+    CS --> FF4J
+    CS --> VL
+    CS --> BINDY
+    CS --> CBIO
+    CS --> VEL
+    CS --> SBF
+    SS --> BIO
+    SS --> FF4J
+    SS --> VL
+    SS --> BINDY
+    SS --> CBIO
+    SS --> VEL
+    SS --> SBF
+    IR --> TR
     DDG --> AR
     DDG --> TR
 
