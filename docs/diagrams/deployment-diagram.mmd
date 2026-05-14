@@ -1,27 +1,41 @@
+%%{init: {'theme': 'base', 'themeVariables': {'lineColor': '#546e7a', 'edgeLabelBackground': '#eceff1'}}}%%
 graph TB
-    subgraph Dev["Developer Machine"]
-        APP["Spring Boot App\nlocalhost:8080\nJava 21 / Maven 3.9"]
-        H2[("H2 In-Memory DB\nbankingdb")]
-        OUT["output/\n*.txt files"]
-        APP <--> H2
-        APP --> OUT
+    classDef appStyle      fill:#e65100,stroke:#bf360c,color:#fff
+    classDef dbStyle       fill:#e65100,stroke:#bf360c,color:#fff
+    classDef browserStyle  fill:#1565c0,stroke:#0d47a1,color:#fff
+    classDef ciStyle       fill:#2e7d32,stroke:#1b5e20,color:#fff
+    classDef depsStyle     fill:#6a1b9a,stroke:#4a148c,color:#fff
+    classDef storageStyle  fill:#37474f,stroke:#263238,color:#fff
+
+    subgraph Dev["💻  Developer Machine"]
+        APP["Spring Boot App<br/>localhost:8080<br/>Java 21 / Maven 3.9"]
+        H2[("H2 In-Memory DB<br/>bankingdb")]
+        OUT["output/<br/>*.txt files"]
+        APP <-->|JDBC| H2
+        APP -->|write| OUT
     end
 
-    subgraph Browser["Web Browser"]
-        SPA["React SPA\nserved from JAR\n/static/index.html"]
+    subgraph Browser["🌐  Web Browser"]
+        SPA["React SPA<br/>served from JAR<br/>/static/index.html"]
     end
 
-    SPA -->|HTTP REST /api/*| APP
-    SPA -->|HTTP /actuator/*| APP
+    SPA -->|HTTP REST /api/*|    APP
+    SPA -->|HTTP /actuator/*|    APP
 
-    subgraph CI["GitHub Actions (CI/CD)"]
-        BUILD["build.yml\nmvn package -DskipTests"]
-        TEST["test.yml\nmvn verify + JaCoCo"]
-        BENCH["benchmark.yml\nJMH → artifact upload"]
-        CQL["codeql.yml\nSecurity scan (weekly)"]
-        REL["release.yml\nGitHub Release + JAR\non tag v*"]
+    subgraph CI["🔁  GitHub Actions (CI/CD)"]
+        BUILD["build.yml<br/>mvn package -DskipTests"]
+        TEST["test.yml<br/>mvn verify + JaCoCo"]
+        BENCH["benchmark.yml<br/>JMH → artifact upload"]
+        CQL["codeql.yml<br/>Security scan (weekly)"]
+        REL["release.yml<br/>GitHub Release + JAR<br/>on tag v*"]
     end
 
-    subgraph Deps["Dependency Automation"]
-        DBOT["Dependabot\nweekly Maven + Actions + npm PRs"]
+    subgraph Deps["🤖  Dependency Automation"]
+        DBOT["Dependabot<br/>weekly Maven + Actions + npm PRs"]
     end
+
+    class APP,H2 appStyle
+    class OUT storageStyle
+    class SPA browserStyle
+    class BUILD,TEST,BENCH,CQL,REL ciStyle
+    class DBOT depsStyle

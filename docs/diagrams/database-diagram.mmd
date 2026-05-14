@@ -1,55 +1,63 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor':       '#e65100',
+  'primaryTextColor':   '#ffffff',
+  'primaryBorderColor': '#bf360c',
+  'lineColor':          '#546e7a',
+  'secondaryColor':     '#fff8e1',
+  'tertiaryColor':      '#fce4ec'
+}}}%%
 erDiagram
     accounts {
-        bigint id PK
-        varchar accountNumber
-        varchar iban
-        varchar bankCode
-        varchar currency
-        decimal balance
-        varchar holderName
+        bigint    id              PK
+        varchar   accountNumber
+        varchar   iban
+        varchar   bankCode
+        varchar   currency
+        decimal   balance
+        varchar   holderName
         timestamp createdAt
     }
 
     transactions {
-        bigint id PK
-        bigint accountId FK
-        varchar reference
-        decimal amount
-        varchar type
-        varchar description
-        date valueDate
-        date entryDate
+        bigint    id          PK
+        bigint    accountId   FK
+        varchar   reference
+        decimal   amount
+        varchar   type
+        varchar   description
+        date      valueDate
+        date      entryDate
         timestamp createdAt
     }
 
     banking_statements {
-        bigint id PK
-        bigint accountId FK
-        decimal openingBalance
-        decimal closingBalance
-        date statementDate
-        int sequenceNumber
+        bigint    id              PK
+        bigint    accountId       FK
+        decimal   openingBalance
+        decimal   closingBalance
+        date      statementDate
+        int       sequenceNumber
         timestamp createdAt
     }
 
     benchmark_metrics {
-        bigint id PK
-        bigint jobExecutionId
-        varchar library
-        varchar fileType
-        double throughputRps
-        bigint generationDurationMs
-        bigint parseDurationMs
-        bigint memoryUsedBytes
-        bigint batchDurationMs
-        bigint chunkDurationMs
-        double cpuUsagePct
-        double successRate
-        bigint failedCount
-        double symmetryRate
-        bigint recordsProcessed
+        bigint    id               PK
+        bigint    jobExecutionId
+        varchar   library
+        varchar   fileType
+        double    throughputRps
+        bigint    generationDurationMs
+        bigint    parseDurationMs
+        bigint    memoryUsedBytes
+        bigint    batchDurationMs
+        bigint    chunkDurationMs
+        double    cpuUsagePct
+        double    successRate
+        bigint    failedCount
+        double    symmetryRate
+        bigint    recordsProcessed
         timestamp timestamp
     }
 
-    accounts ||--o{ transactions : "has"
-    accounts ||--o{ banking_statements : "has"
+    accounts           ||--o{ transactions       : "has"
+    accounts           ||--o{ banking_statements  : "has"

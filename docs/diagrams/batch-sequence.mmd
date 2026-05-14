@@ -1,47 +1,64 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'actorBkg':            '#1565c0',
+  'actorTextColor':      '#ffffff',
+  'actorBorder':         '#0d47a1',
+  'activationBkgColor':  '#2e7d32',
+  'activationBorderColor': '#1b5e20',
+  'noteBkgColor':        '#f57f17',
+  'noteTextColor':       '#ffffff',
+  'noteBorderColor':     '#e65100',
+  'signalColor':         '#37474f',
+  'signalTextColor':     '#263238',
+  'labelBoxBkgColor':    '#e8eaf6',
+  'labelBoxBorderColor': '#3949ab',
+  'labelTextColor':      '#1a237e'
+}}}%%
 sequenceDiagram
-    participant FE as Frontend
-    participant DC as DomainController
-    participant DG as DomainDataGenerator
-    participant BC as BatchController
+    participant FE  as Frontend
+    participant DC  as DomainController
+    participant DG  as DomainDataGenerator
+    participant BC  as BatchController
     participant BJS as BatchJobService
-    participant JL as JobLauncher
+    participant JL  as JobLauncher
     participant JOB as bankingFileGenerationJob
-    participant IR as DomainEntityItemReader
-    participant IP as FileGenerationItemProcessor
-    participant SR as StrategyResolver
-    participant ST as FileGenerationStrategy
-    participant IW as FileOutputItemWriter
+    participant IR  as DomainEntityItemReader
+    participant IP  as FileGenerationItemProcessor
+    participant SR  as StrategyResolver
+    participant ST  as FileGenerationStrategy
+    participant IW  as FileOutputItemWriter
     participant BML as BatchMetricsListener
-    participant DB as H2 Database
-    participant FS as output/ (filesystem)
+    participant DB  as H2 Database
+    participant FS  as output/ (filesystem)
 
     Note over FE,DG: Step 1 — seed sample data (LOW or HIGH load profile)
-    FE->>DC: POST /api/domain/generate?loadProfile=LOW|HIGH
-    DC->>DG: generate(LoadProfile)
-    DG->>DB: save accounts + transactions + statements
-    DG-->>DC: GenerationResult
-    DC-->>FE: GenerateDomainResponse
+    FE  ->> DC:  POST /api/domain/generate?loadProfile=LOW|HIGH
+    DC  ->> DG:  generate(LoadProfile)
+    DG  ->> DB:  save accounts + transactions + statements
+    DG -->> DC:  GenerationResult
+    DC -->> FE:  GenerateDomainResponse
 
     Note over FE,FS: Step 2 — trigger a Spring Batch job per (fileType × library)
-    FE->>BC: POST /api/batch/generate {fileType, library}
-    BC->>BJS: launch(fileType, library)
-    BJS->>JL: run(job, params)
-    JL->>JOB: execute()
-    JOB->>BML: beforeJob()
+    FE  ->> BC:  POST /api/batch/generate {fileType, library}
+    BC  ->> BJS: launch(fileType, library)
+    BJS ->> JL:  run(job, params)
+    JL  ->> JOB: execute()
+    JOB ->> BML: beforeJob()
+
     loop chunks of 100
-        JOB->>IR: read() → Transaction
-        IR->>DB: findAll transactions
-        JOB->>IP: process(transaction)
-        IP->>SR: resolve(fileType, library)
-        SR-->>IP: FileGenerationStrategy
-        IP->>ST: generate([transaction], accounts)
-        ST-->>IP: formatted string
-        JOB->>IW: write(chunk)
+        JOB ->> IR:  read() → Transaction
+        IR  ->> DB:  findAll transactions
+        JOB ->> IP:  process(transaction)
+        IP  ->> SR:  resolve(fileType, library)
+        SR -->> IP:  FileGenerationStrategy
+        IP  ->> ST:  generate([transaction], accounts)
+        ST -->> IP:  formatted string
+        JOB ->> IW:  write(chunk)
     end
-    IW->>FS: write output file
-    IW->>JOB: afterStep() → COMPLETED
-    JOB->>BML: afterJob()
-    BML->>DB: save BenchmarkMetrics
-    JOB-->>BJS: JobExecution
-    BJS-->>BC: BatchJobResult
-    BC-->>FE: BatchJobResponse {fileContent, fileName, status}
+
+    IW  ->> FS:  write output file
+    IW  ->> JOB: afterStep() → COMPLETED
+    JOB ->> BML: afterJob()
+    BML ->> DB:  save BenchmarkMetrics
+    JOB -->> BJS: JobExecution
+    BJS -->> BC:  BatchJobResult
+    BC  -->> FE:  BatchJobResponse {fileContent, fileName, status}

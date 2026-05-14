@@ -1,3 +1,11 @@
+%%{init: {'theme': 'base', 'themeVariables': {
+  'primaryColor':     '#1565c0',
+  'primaryTextColor': '#ffffff',
+  'primaryBorderColor': '#0d47a1',
+  'lineColor':        '#546e7a',
+  'secondaryColor':   '#e8eaf6',
+  'tertiaryColor':    '#f3e5f5'
+}}}%%
 classDiagram
     class FileGenerationStrategy {
         <<interface>>
@@ -35,42 +43,36 @@ classDiagram
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaFixedFormat4JStrategy {
         -formatter FixedFormat4JFormatter
         +getLibrary() Library.FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaFixedLengthStrategy {
         -formatter FixedLengthFormatter
         +getLibrary() Library.FIXEDLENGTH
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaBindyStrategy {
         -formatter BindyFormatter
         +getLibrary() Library.BINDY
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaCamelBeanIOStrategy {
         -formatter CamelBeanIOFormatter
         +getLibrary() Library.CAMEL_BEANIO
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaVelocityStrategy {
         -formatter VelocityFormatter
         +getLibrary() Library.VELOCITY
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
-
     class CodaSpringBatchStrategy {
         -formatter SpringBatchFormatter
         +getLibrary() Library.SPRING_BATCH
@@ -84,42 +86,36 @@ classDiagram
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftFixedFormat4JStrategy {
         -formatter FixedFormat4JFormatter
         +getLibrary() Library.FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftFixedLengthStrategy {
         -formatter FixedLengthFormatter
         +getLibrary() Library.FIXEDLENGTH
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftBindyStrategy {
         -formatter BindyFormatter
         +getLibrary() Library.BINDY
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftCamelBeanIOStrategy {
         -formatter CamelBeanIOFormatter
         +getLibrary() Library.CAMEL_BEANIO
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftVelocityStrategy {
         -formatter VelocityFormatter
         +getLibrary() Library.VELOCITY
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
-
     class SwiftSpringBatchStrategy {
         -formatter SpringBatchFormatter
         +getLibrary() Library.SPRING_BATCH
@@ -132,20 +128,39 @@ classDiagram
         +resolve(fileType, library) FileGenerationStrategy
     }
 
-    FileGenerationStrategy <|.. AbstractCodaStrategy
-    FileGenerationStrategy <|.. AbstractSwiftStrategy
-    AbstractCodaStrategy <|-- CodaBeanIOStrategy
-    AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy
-    AbstractCodaStrategy <|-- CodaFixedLengthStrategy
-    AbstractCodaStrategy <|-- CodaBindyStrategy
-    AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy
-    AbstractCodaStrategy <|-- CodaVelocityStrategy
-    AbstractCodaStrategy <|-- CodaSpringBatchStrategy
-    AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
-    AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
-    AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
-    AbstractSwiftStrategy <|-- SwiftBindyStrategy
-    AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy
-    AbstractSwiftStrategy <|-- SwiftVelocityStrategy
-    AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy
-    StrategyResolver --> FileGenerationStrategy
+    FileGenerationStrategy  <|..  AbstractCodaStrategy
+    FileGenerationStrategy  <|..  AbstractSwiftStrategy
+    AbstractCodaStrategy    <|--  CodaBeanIOStrategy
+    AbstractCodaStrategy    <|--  CodaFixedFormat4JStrategy
+    AbstractCodaStrategy    <|--  CodaFixedLengthStrategy
+    AbstractCodaStrategy    <|--  CodaBindyStrategy
+    AbstractCodaStrategy    <|--  CodaCamelBeanIOStrategy
+    AbstractCodaStrategy    <|--  CodaVelocityStrategy
+    AbstractCodaStrategy    <|--  CodaSpringBatchStrategy
+    AbstractSwiftStrategy   <|--  SwiftBeanIOStrategy
+    AbstractSwiftStrategy   <|--  SwiftFixedFormat4JStrategy
+    AbstractSwiftStrategy   <|--  SwiftFixedLengthStrategy
+    AbstractSwiftStrategy   <|--  SwiftBindyStrategy
+    AbstractSwiftStrategy   <|--  SwiftCamelBeanIOStrategy
+    AbstractSwiftStrategy   <|--  SwiftVelocityStrategy
+    AbstractSwiftStrategy   <|--  SwiftSpringBatchStrategy
+    StrategyResolver        -->   FileGenerationStrategy
+
+    style FileGenerationStrategy   fill:#1565c0,stroke:#0d47a1,color:#fff
+    style AbstractCodaStrategy     fill:#004A97,stroke:#003580,color:#fff
+    style AbstractSwiftStrategy    fill:#003087,stroke:#001F5B,color:#fff
+    style StrategyResolver         fill:#6a1b9a,stroke:#4a148c,color:#fff
+    style CodaBeanIOStrategy       fill:#006064,stroke:#004d40,color:#fff
+    style CodaFixedFormat4JStrategy fill:#006064,stroke:#004d40,color:#fff
+    style CodaFixedLengthStrategy  fill:#006064,stroke:#004d40,color:#fff
+    style CodaBindyStrategy        fill:#006064,stroke:#004d40,color:#fff
+    style CodaCamelBeanIOStrategy  fill:#006064,stroke:#004d40,color:#fff
+    style CodaVelocityStrategy     fill:#006064,stroke:#004d40,color:#fff
+    style CodaSpringBatchStrategy  fill:#006064,stroke:#004d40,color:#fff
+    style SwiftBeanIOStrategy      fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftFixedFormat4JStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftFixedLengthStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftBindyStrategy       fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftCamelBeanIOStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftVelocityStrategy    fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftSpringBatchStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff

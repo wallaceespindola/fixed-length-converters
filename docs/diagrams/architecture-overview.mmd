@@ -1,16 +1,25 @@
+%%{init: {'theme': 'base', 'themeVariables': {'lineColor': '#546e7a', 'edgeLabelBackground': '#eceff1'}}}%%
 graph TB
-    subgraph Frontend["React SPA (MUI + Recharts)"]
+    classDef frontendStyle fill:#e65100,stroke:#bf360c,color:#fff
+    classDef apiStyle     fill:#1565c0,stroke:#0d47a1,color:#fff
+    classDef batchStyle   fill:#2e7d32,stroke:#1b5e20,color:#fff
+    classDef strategyStyle fill:#6a1b9a,stroke:#4a148c,color:#fff
+    classDef parserStyle  fill:#006064,stroke:#004d40,color:#fff
+    classDef dataStyle    fill:#e65100,stroke:#bf360c,color:#fff
+    classDef storageStyle fill:#37474f,stroke:#263238,color:#fff
+
+    subgraph Frontend["🖥  React SPA (MUI + Recharts)"]
         UI[Dashboard / Batch Runner / History / Benchmark]
     end
 
-    subgraph API["REST API Layer"]
+    subgraph API["🌐  REST API Layer"]
         DC[DomainController<br/>POST /api/domain/generate]
         BC[BatchController<br/>POST /api/batch/generate<br/>GET /api/batch/history]
         BNC[BenchmarkController<br/>GET /api/benchmark/results<br/>GET /api/benchmark/export/html]
-        ACT[Spring Actuator<br/>/health /info]
+        ACT[Spring Actuator<br/>/health  /info]
     end
 
-    subgraph Batch["Spring Batch Pipeline"]
+    subgraph Batch["⚙  Spring Batch Pipeline"]
         JL[JobLauncher]
         JOB[bankingFileGenerationJob]
         STEP[fileGenerationStep<br/>chunk-size = 100]
@@ -19,13 +28,13 @@ graph TB
         WRITER[FileOutputItemWriter]
     end
 
-    subgraph Strategy["Strategy Pattern"]
+    subgraph Strategy["🔀  Strategy Pattern × 14"]
         SR[StrategyResolver]
         CODA7[7 CODA Strategies]
-        SWIFT7[7 SWIFT Strategies]
+        SWIFT7[7 SWIFT MT940 Strategies]
     end
 
-    subgraph Parsers["Parser Library Wrappers"]
+    subgraph Parsers["📦  Parser Library Wrappers"]
         BIO[BeanIOFormatter]
         FF4J[FixedFormat4JFormatter]
         VL[FixedLengthFormatter]
@@ -35,20 +44,30 @@ graph TB
         SBF[SpringBatchFormatter]
     end
 
-    subgraph Data["Data Layer - H2 In-Memory"]
+    subgraph Data["🗄  Data Layer — H2 In-Memory"]
         ACCT[(accounts)]
         TXN[(transactions)]
         STMT[(banking_statements)]
         BENCH[(benchmark_metrics)]
     end
 
-    OUTPUT[(output/\n*.txt files)]
+    OUTPUT[(output/*.txt files)]
 
-    UI --> API
-    DC --> Data
-    BC --> JL --> JOB --> STEP
-    STEP --> READER --> Data
-    STEP --> PROC --> SR --> CODA7 & SWIFT7
-    CODA7 & SWIFT7 --> Parsers
-    STEP --> WRITER --> OUTPUT
-    BNC --> Data
+    UI          -->|HTTP|          API
+    DC          -->|seed|          Data
+    BC          -->|launch|        JL
+    JL          -->               JOB
+    JOB         -->               STEP
+    STEP        --> READER -->|read| Data
+    STEP        --> PROC   --> SR --> CODA7 & SWIFT7
+    CODA7 & SWIFT7 -->            Parsers
+    STEP        --> WRITER -->|write| OUTPUT
+    BNC         -->|query|         Data
+
+    class UI frontendStyle
+    class DC,BC,BNC,ACT apiStyle
+    class JL,JOB,STEP,READER,PROC,WRITER batchStyle
+    class SR,CODA7,SWIFT7 strategyStyle
+    class BIO,FF4J,VL,BINDY,CBIO,VEL,SBF parserStyle
+    class ACCT,TXN,STMT,BENCH dataStyle
+    class OUTPUT storageStyle
