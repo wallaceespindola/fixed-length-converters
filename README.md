@@ -68,7 +68,7 @@ graph TB
         VL[fixedlength 0.15]
         BINDY[Camel Bindy 4.20.0]
         CBIO[Camel BeanIO 4.20.0]
-        VEL[Velocity 2.3]
+        VEL[Velocity 2.4.1]
         SB[Spring Batch native]
     end
 
@@ -253,7 +253,7 @@ as a reference for teams validating parsers before migration.
 | **fixedlength**         | 0.15    | Limited         | Good               | Good             | Medium |
 | **Apache Camel Bindy**  | 4.20.0  | Limited         | Good               | Medium           | Medium |
 | **Apache Camel BeanIO** | 4.20.0  | Excellent       | XML-based          | Medium           | Medium |
-| **Apache Velocity**     | 2.3     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
+| **Apache Velocity**     | 2.4.1   | N/A (template)  | N/A                | Low (gen-only)   | Low    |
 | **Spring Batch Native** | 5.x     | Excellent       | Programmatic       | Native           | Low    |
 
 ### Strategic Recommendations

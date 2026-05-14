@@ -8,7 +8,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * SWIFT MT940 file generation strategy backed by Apache Velocity 2.3 template engine.
+ * SWIFT MT940 file generation strategy backed by Apache Velocity 2.4.1 template engine.
  * Delegates tag-format serialisation to {@link VelocityFormatter} which merges
  * {@link SwiftMtRecord} fields into {@code velocity/swift-record.vm}. Parse path
  * delegates to {@link SwiftMtRecord#fromSwiftSection} since Velocity is one-way.

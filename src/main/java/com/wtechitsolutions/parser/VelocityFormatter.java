@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Formatter using Apache Velocity 2.3 templates for CODA and SWIFT MT serialisation.
+ * Formatter using Apache Velocity 2.4.1 templates for CODA and SWIFT MT serialisation.
  *
  * Fields are padded in Java before being merged into the template, so templates
  * stay simple ($field concatenation). Parse path delegates to the shared

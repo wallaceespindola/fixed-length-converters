@@ -8,6 +8,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
+- Upgraded `velocity-engine-core` from 2.3 to 2.4.1 (backward-compatible; includes bug fixes and performance improvements)
 - Added CODA (Febelfin) and SWIFT MT940 shields.io badges to README header
 - Enhanced README architecture diagram with per-layer color theming (Frontend / API / Batch / Strategy / Parsers / Storage) and labeled data-flow arrows
 

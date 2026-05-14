@@ -45,7 +45,7 @@
         <fixedformat4j.version>1.8.1</fixedformat4j.version>
         <fixedlength.version>0.15</fixedlength.version>
         <camel.version>4.20.0</camel.version>
-        <velocity.version>2.3</velocity.version>
+        <velocity.version>2.4.1</velocity.version>
         <velocity-tools.version>3.1</velocity-tools.version>
         <jmh.version>1.37</jmh.version>
         <jacoco.version>0.8.14</jacoco.version>
