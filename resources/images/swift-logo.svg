@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="140" height="60" viewBox="0 0 140 60">
+  <defs>
+    <linearGradient id="swiftGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001F5B;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#003087;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <rect width="140" height="60" rx="8" fill="url(#swiftGrad)"/>
+  <text x="70" y="30" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="bold" fill="white" text-anchor="middle" dominant-baseline="middle" letter-spacing="2">SWIFT</text>
+  <text x="70" y="50" font-family="Arial, Helvetica, sans-serif" font-size="10" fill="#A0B8E0" text-anchor="middle" dominant-baseline="middle" letter-spacing="2">MT940</text>
+</svg>
