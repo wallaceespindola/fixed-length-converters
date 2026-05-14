@@ -6,6 +6,8 @@
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
+[![CODA](https://img.shields.io/badge/CODA-Febelfin-004A97)](https://www.febelfin.be/en/payments-standards/coda)
+[![SWIFT MT940](https://img.shields.io/badge/SWIFT-MT940-003087)](https://www.swift.com/standards/data-standards/mt)
 
 Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and
 **SWIFT MT940** fixed-length banking files using **7 Java formatter libraries**, all orchestrated through **Spring Batch
@@ -29,25 +31,32 @@ performance, and Spring Batch compatibility. Engineers can:
 
 ```mermaid
 graph TB
-    subgraph Frontend["React SPA (MUI + Recharts)"]
+    classDef frontendStyle fill:#e65100,stroke:#bf360c,color:#fff
+    classDef apiStyle fill:#1565c0,stroke:#0d47a1,color:#fff
+    classDef batchStyle fill:#2e7d32,stroke:#1b5e20,color:#fff
+    classDef strategyStyle fill:#6a1b9a,stroke:#4a148c,color:#fff
+    classDef parserStyle fill:#006064,stroke:#004d40,color:#fff
+    classDef storageStyle fill:#37474f,stroke:#263238,color:#fff
+
+    subgraph Frontend["🖥 React SPA (MUI + Recharts)"]
         UI[Dashboard / Batch Runner / History / Benchmark]
     end
-    subgraph API["REST API Layer"]
+    subgraph API["🌐 REST API Layer"]
         DC[POST /api/domain/generate]
         BC[POST /api/batch/generate]
         BNC[GET /api/benchmark/results]
     end
-    subgraph Batch["Spring Batch Pipeline"]
+    subgraph Batch["⚙ Spring Batch Pipeline"]
         READER[DomainEntityItemReader]
         PROC[FileGenerationItemProcessor]
         WRITER[FileOutputItemWriter]
     end
-    subgraph Strategy["Strategy Pattern × 14"]
+    subgraph Strategy["🔀 Strategy Pattern × 14"]
         SR[StrategyResolver]
         C7[7 CODA Strategies]
-        S7[7 SWIFT Strategies]
+        S7[7 SWIFT MT940 Strategies]
     end
-    subgraph Parsers["Parser Library Wrappers"]
+    subgraph Parsers["📦 Parser Library Wrappers"]
         BIO[BeanIO 3.2.1]
         FF4J[fixedformat4j 1.7.0]
         VL[fixedlength 0.15]
@@ -56,12 +65,20 @@ graph TB
         VEL[Velocity 2.3]
         SB[Spring Batch native]
     end
-    Frontend --> API
-    DC --> H2[(H2 DB)]
-    BC --> Batch
-    Batch --> Strategy
-    Strategy --> Parsers
-    WRITER --> output[(output/)]
+
+    Frontend -->|HTTP| API
+    DC -->|seed| H2[(H2 In-Memory DB)]
+    BC -->|launch job| Batch
+    Batch -->|resolve strategy| Strategy
+    Strategy -->|format / parse| Parsers
+    WRITER -->|write file| output[(output/)]
+
+    class UI frontendStyle
+    class DC,BC,BNC apiStyle
+    class READER,PROC,WRITER batchStyle
+    class SR,C7,S7 strategyStyle
+    class BIO,FF4J,VL,BINDY,CBIO,VEL,SB parserStyle
+    class H2,output storageStyle
 ```
 
 ### Batch Pipeline

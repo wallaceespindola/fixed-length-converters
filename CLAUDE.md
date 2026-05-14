@@ -12,6 +12,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 All 118 tests pass. Application starts and runs end-to-end.
 
+Frontend uses an orange color theme (MUI primary color `#e65100`; throughput chart bars also orange). Pre-built bundle committed to `src/main/resources/static/`.
+
 ## Technical Stack
 
 | Area | Technology |

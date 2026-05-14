@@ -7,6 +7,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Changed
+- Added CODA (Febelfin) and SWIFT MT940 shields.io badges to README header
+- Enhanced README architecture diagram with per-layer color theming (Frontend / API / Batch / Strategy / Parsers / Storage) and labeled data-flow arrows
+
 ### Added
 - 3 additional parser formatter wrappers: `CamelBeanIOFormatter`, `VelocityFormatter`, `SpringBatchFormatter`
 - 6 additional strategy implementations: `CodaCamelBeanIOStrategy`, `CodaVelocityStrategy`, `CodaSpringBatchStrategy`, `SwiftCamelBeanIOStrategy`, `SwiftVelocityStrategy`, `SwiftSpringBatchStrategy`
