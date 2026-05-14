@@ -91,7 +91,7 @@ export default function BenchmarkDashboardView() {
                     <YAxis tick={{ fontSize: 11 }} />
                     <Tooltip />
                     <Bar dataKey="avgThroughput" name="Avg Throughput (ops/s)"
-                      fill="#1976d2"
+                      fill="#e65c00"
                       label={{ position: 'top', fontSize: 10 }} />
                   </BarChart>
                 </ResponsiveContainer>

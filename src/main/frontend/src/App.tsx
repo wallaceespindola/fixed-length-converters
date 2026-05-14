@@ -39,7 +39,13 @@ export default function App() {
   const appVersion = (info as any)?.build?.version ?? (info as any)?.app?.version ?? ''
 
   const theme = useMemo(() =>
-    createTheme({ palette: { mode } }),
+    createTheme({
+      palette: {
+        mode,
+        primary: { main: '#e65c00' },
+        secondary: { main: '#ff9e3d' },
+      },
+    }),
     [mode],
   )
 
