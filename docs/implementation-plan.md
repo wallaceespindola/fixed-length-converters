@@ -2,11 +2,11 @@
 
 > Steps use checkbox (`- [ ]`) syntax for progress tracking.
 
-**Goal:** Build a complete enterprise-grade banking file experimentation platform generating, parsing, and benchmarking CODA and SWIFT MT files via 7 Java formatter libraries, Spring Batch, and a React frontend.
+**Goal:** Build a complete enterprise-grade banking file experimentation platform generating, parsing, and benchmarking CODA and SWIFT MT files via 7 Java formatter libraries and Spring Batch, with a self-contained web UI.
 
-**Architecture:** Single Maven module, Java 25, Spring Boot 3.4.x. Domain model persisted to H2 in-memory DB. Spring Batch drives file generation via ItemReader→ItemProcessor→ItemWriter. 14 Strategy implementations (FileType × Library) selected at runtime by StrategyResolver. React 18 SPA built by frontend-maven-plugin and served as static resources from the JAR.
+**Architecture:** Single Maven module, Java 25, Spring Boot 3.4.x. Domain model persisted to H2 in-memory DB. Spring Batch drives file generation via ItemReader→ItemProcessor→ItemWriter. 14 Strategy implementations (FileType × Library) selected at runtime by StrategyResolver. Vanilla HTML/CSS/JS single-page UI served as a static resource from the JAR — no Node.js or npm required.
 
-**Tech Stack:** Java 25, Spring Boot 3.4.x, Spring Batch, Spring Data JPA, H2, Lombok, BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, Apache Camel BeanIO, Apache Velocity, Spring Batch native flat-file, JMH, React 18, TypeScript, Vite, MUI v5, Recharts, JUnit 5, Mockito, JaCoCo, GitHub Actions.
+**Tech Stack:** Java 25, Spring Boot 3.4.x, Spring Batch, Spring Data JPA, H2, Lombok, BeanIO, fixedformat4j, fixedlength, Apache Camel Bindy, Apache Camel BeanIO, Apache Velocity, Spring Batch native flat-file, JMH, Chart.js (CDN), JUnit 5, Mockito, JaCoCo, GitHub Actions.
 
 **Spec reference:** `docs/specs/design-spec.md`
 
@@ -39,7 +39,7 @@ mkdir -p .github/{workflows,ISSUE_TEMPLATE}
 
 - [x] **Step 1.2: Create pom.xml**
 
-Full `pom.xml` with all dependencies for Spring Boot 3.4.x, Spring Batch, JPA, H2, Lombok, all 7 parser libraries, JMH, springdoc-openapi, and frontend-maven-plugin.
+Full `pom.xml` with all dependencies for Spring Boot 3.4.x, Spring Batch, JPA, H2, Lombok, all 7 parser libraries, JMH, and springdoc-openapi. No frontend build plugin — UI is a static HTML file.
 
 - [x] **Step 1.3: Create Spring Boot main class**
 
@@ -1723,124 +1723,28 @@ git commit -m "feat: configure Actuator, OpenAPI/Swagger (dev only), and SPA rou
 
 ---
 
-## Task 9: Frontend — React 18 + Vite + MUI
+## Task 9: Frontend — Vanilla HTML/CSS/JS
 
 **Files:**
-- Create: `src/main/frontend/` (full React app scaffolded via Vite)
-- Modify: `pom.xml` (add frontend-maven-plugin)
+- Create/Edit: `src/main/resources/static/index.html`
+- No changes to `pom.xml` — no build plugin required
 
-- [x] **Step 9.1: Scaffold React app with Vite**
+- [x] **Step 9.1: Create self-contained index.html**
 
-```bash
-cd src/main
-npm create vite@latest frontend -- --template react-ts
-cd frontend
-npm install @mui/material @emotion/react @emotion/styled @mui/icons-material
-npm install recharts react-query @tanstack/react-query react-router-dom axios
-```
+`src/main/resources/static/index.html` — single file containing all HTML, CSS, and JavaScript. Hash-based SPA routing (`#dashboard`, `#generate`, `#batch`, `#history`, `#benchmark`). Chart.js loaded from CDN for benchmark charts. All API calls via `fetch()`. Dark/light mode toggle persisted in `localStorage`. Orange theme (`#e65100`).
 
-- [x] **Step 9.2: Create Vite config with proxy**
+Views implemented:
+- `#dashboard` → health status, actuator info, quick-action buttons
+- `#generate` → LOW / HIGH load profile buttons, generation result summary
+- `#batch` → FileType + Library selects, single generate + "Run All 14 Combinations" with live progress bar
+- `#history` → batch execution table, auto-refreshes every 15 s
+- `#benchmark` → bar + line charts (Chart.js), library summary, CSV/JSON/Markdown export
 
-`src/main/frontend/vite.config.ts`:
-```typescript
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    outDir: '../resources/static',
-    emptyOutDir: true,
-  },
-  server: {
-    proxy: {
-      '/api': 'http://localhost:8080',
-      '/actuator': 'http://localhost:8080',
-      '/v3': 'http://localhost:8080',
-    }
-  }
-})
-```
-
-- [x] **Step 9.3: Create App layout with sidebar and dark mode toggle**
-
-`src/main/frontend/src/App.tsx` — MUI ThemeProvider, CssBaseline, persistent sidebar with nav links, top bar with dark/light toggle stored in localStorage, React Router outlet.
-
-Routes:
-- `/` → Dashboard
-- `/generate` → DataGeneratorView
-- `/batch` → BatchRunnerView
-- `/history` → BatchHistoryView
-- `/benchmark` → BenchmarkDashboardView
-
-- [x] **Step 9.4: Create Dashboard view**
-
-`src/main/frontend/src/views/DashboardView.tsx` — health status card (polling `/actuator/health`), actuator info card (polling `/actuator/info`), quick-action buttons to navigate to Generate and Batch views, external links to Swagger UI and Actuator endpoints.
-
-- [x] **Step 9.5: Create DataGeneratorView**
-
-`src/main/frontend/src/views/DataGeneratorView.tsx` — "Generate Sample Banking Data" button, POST to `/api/domain/generate`, display operationId, accounts, transactions, timestamp of last generation.
-
-- [x] **Step 9.6: Create BatchRunnerView**
-
-`src/main/frontend/src/views/BatchRunnerView.tsx` — MUI Select for FileType (CODA/SWIFT), MUI Select for Library (all 7 options), Submit button, POST to `/api/batch/generate`, file preview panel (scrollable monospace textarea).
-
-- [x] **Step 9.7: Create BatchHistoryView**
-
-`src/main/frontend/src/views/BatchHistoryView.tsx` — GET `/api/batch/history`, MUI DataGrid or Table, sortable columns: jobId, fileType, library, status, durationMs, startTime, endTime, preview button.
-
-- [x] **Step 9.8: Create BenchmarkDashboardView**
-
-`src/main/frontend/src/views/BenchmarkDashboardView.tsx` — GET `/api/benchmark/results`, Recharts LineChart (execution time over runs), BarChart (library throughput comparison), pairwise comparison section, export buttons (CSV, JSON, Markdown, HTML).
-
-- [x] **Step 9.9: Create API client**
-
-`src/main/frontend/src/api/client.ts` — Axios instance with baseURL `''`, typed request/response interfaces for all endpoints.
-
-- [x] **Step 9.10: Add frontend-maven-plugin to pom.xml**
-
-```xml
-<plugin>
-    <groupId>com.github.eirslett</groupId>
-    <artifactId>frontend-maven-plugin</artifactId>
-    <version>1.15.0</version>
-    <configuration>
-        <workingDirectory>src/main/frontend</workingDirectory>
-        <nodeVersion>v22.13.0</nodeVersion>
-        <npmVersion>10.9.2</npmVersion>
-    </configuration>
-    <executions>
-        <execution>
-            <id>install-node</id>
-            <goals><goal>install-node-and-npm</goal></goals>
-        </execution>
-        <execution>
-            <id>npm-install</id>
-            <goals><goal>npm</goal></goals>
-            <configuration><arguments>install</arguments></configuration>
-        </execution>
-        <execution>
-            <id>npm-build</id>
-            <goals><goal>npm</goal></goals>
-            <phase>generate-resources</phase>
-            <configuration><arguments>run build</arguments></configuration>
-        </execution>
-    </executions>
-</plugin>
-```
-
-- [x] **Step 9.11: Build frontend**
+- [x] **Step 9.2: Commit**
 
 ```bash
-mvn generate-resources -pl . -q
-```
-Expected: React app built to `src/main/resources/static/`
-
-- [x] **Step 9.12: Commit**
-
-```bash
-git add src/main/frontend/ src/main/resources/static/ pom.xml
-git commit -m "feat: add React 18 + Vite + MUI frontend with dashboard, batch runner, history, and benchmark views"
+git add src/main/resources/static/index.html
+git commit -m "refactor(frontend): replace React/npm build with self-contained vanilla HTML/CSS/JS"
 ```
 
 ---

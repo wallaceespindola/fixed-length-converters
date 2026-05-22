@@ -16,7 +16,7 @@ One command starts the full platform: `mvn spring-boot:run`.
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│  React SPA (MUI + Recharts, served from JAR /static/)   │
+│  Web UI (vanilla HTML/CSS/JS, served from JAR /static/) │
 ├─────────────────────────────────────────────────────────┤
 │  REST API Layer (Spring MVC controllers + DTO records)   │
 ├─────────────────────────────────────────────────────────┤

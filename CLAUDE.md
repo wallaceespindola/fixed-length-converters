@@ -12,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 All 118 tests pass. Application starts and runs end-to-end.
 
-Frontend uses an orange color theme (MUI primary color `#e65100`; throughput chart bars also orange). Pre-built bundle committed to `src/main/resources/static/`.
+Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required.
 
 ## Technical Stack
 
@@ -32,26 +32,26 @@ Frontend uses an orange color theme (MUI primary color `#e65100`; throughput cha
 ## Build & Run Commands
 
 ```bash
-# Full pipeline end-to-end (frontend build + Java compile + 118 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 118 tests + JaCoCo + repackage + install)
 mvn clean install
 
-# Quick build (no tests, no frontend)
-mvn clean package -DskipTests -Pskip-frontend
+# Quick build (no tests)
+mvn clean install -DskipTests
 
 # Run in dev mode (Swagger UI enabled at /swagger-ui.html)
-mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 # All tests
-mvn test -Pskip-frontend
+mvn test
 
 # Integration tests with coverage
-mvn verify -Pskip-frontend
+mvn verify
 
 # Run single test class
-mvn test -Pskip-frontend -Dtest=StrategyResolverTest
+mvn test -Dtest=StrategyResolverTest
 
 # JMH benchmarks
-mvn test -Pskip-frontend -Pbenchmark
+mvn test -Pbenchmark
 
 # Makefile shortcuts
 make build | make run | make test | make benchmark | make clean | make kill
@@ -133,7 +133,7 @@ GET  /actuator/info              → app name, version, description
 - **Output files** written to `/output/` directory (gitignored)
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
-- **Pre-built frontend bundle** in `src/main/resources/static/` is committed; `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild
+- **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
 
 ## Testing Strategy
 
@@ -153,7 +153,7 @@ GET  /actuator/info              → app name, version, description
 | Integration | `GoldenFileTest` | 128-char CODA lines, required record types and MT940 tags |
 | Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 14 strategies (run with -Pbenchmark) |
 
-Run specific test: `mvn test -Pskip-frontend -Dtest=SymmetryTest`
+Run specific test: `mvn test -Dtest=SymmetryTest`
 
 ## Java Package Convention
 

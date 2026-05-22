@@ -11,6 +11,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Upgraded `velocity-engine-core` from 2.3 to 2.4.1 (backward-compatible; includes bug fixes and performance improvements)
 - Added CODA (Febelfin) and SWIFT MT940 shields.io badges to README header
 - Enhanced README architecture diagram with per-layer color theming (Frontend / API / Batch / Strategy / Parsers / Storage) and labeled data-flow arrows
+- Replaced React 18 + Vite + MUI frontend with a self-contained vanilla HTML/CSS/JS single-page UI (`src/main/resources/static/index.html`); Chart.js (CDN) used for benchmark charts — no Node.js, npm, or build step required
+- Removed `frontend-maven-plugin` and `skip-frontend` Maven profile; `mvn clean install` and `mvn spring-boot:run` now work with no flags or profiles
+- Simplified all start/stop scripts (`run-all.*`, `kill-all.*`) and `Makefile` to remove npm/Node/Vite references; only Java and Maven are required
+- Updated all documentation to reflect the simplified build and frontend architecture
 
 ### Added
 - 3 additional parser formatter wrappers: `CamelBeanIOFormatter`, `VelocityFormatter`, `SpringBatchFormatter`
@@ -22,7 +26,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Added LOW/HIGH load profile for `POST /api/domain/generate` (LOW: 20 accounts/200 txns/10 statements — default; HIGH: 200 accounts/2 000 txns/100 statements); implemented via `LoadProfile` enum in `com.wtechitsolutions.domain`
 - "Run All Combinations" button on Batch Runner fires all 14 fileType × library combinations sequentially with live per-row progress
 - Library Summary cards and both bar charts on the Benchmark Dashboard auto-sort by avg throughput (best to worst) on every refresh
-- Pre-built frontend bundle committed to `src/main/resources/static/` — `mvn spring-boot:run -Pskip-frontend` serves the latest UI immediately without a frontend rebuild
+- Frontend replaced with a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`) — no Node.js, npm, or build step required; `mvn spring-boot:run` serves the UI directly
 
 ### Fixed
 - Standardized SWIFT inter-message separator to `---` across all 7 formatters (was `###` for Bindy, `===` for FixedLength)
@@ -53,7 +57,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `GlobalExceptionHandler` with RFC 9457 `ProblemDetail` responses
 - Spring Actuator: `/actuator/health`, `/actuator/info`
 - OpenAPI / Swagger UI (dev profile only)
-- React 18 + Vite + MUI frontend with 5 views
+- Vanilla HTML/CSS/JS single-page UI with 5 views (Dashboard, Data Generator, Batch Runner, History, Benchmark)
 - JaCoCo coverage enforcement (>40% instruction coverage)
 - GitHub Actions: build, test, benchmark, CodeQL, release
 - Dependabot for Maven and GitHub Actions

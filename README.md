@@ -44,7 +44,7 @@ graph TB
     classDef parserStyle fill:#006064,stroke:#004d40,color:#fff
     classDef storageStyle fill:#37474f,stroke:#263238,color:#fff
 
-    subgraph Frontend["🖥 React SPA (MUI + Recharts)"]
+    subgraph Frontend["🖥 Web UI (HTML / CSS / JS)"]
         UI[Dashboard / Batch Runner / History / Benchmark]
     end
     subgraph API["🌐 REST API Layer"]
@@ -285,7 +285,6 @@ as a reference for teams validating parsers before migration.
 
 - Java 21+ (tested with Amazon Corretto 21)
 - Maven 3.9+
-- Node.js 22+ (for frontend build — only needed if you change frontend code)
 - Python 3.12+ _(optional — benchmark aggregation tools only)_
 - `make` _(optional — simplifies commands; see install instructions below)_
 
@@ -305,52 +304,44 @@ Verify with: `make --version`
 Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
-# Full pipeline end-to-end — frontend build + Java compile + 118 tests + JaCoCo coverage + install
-# (no flags needed; frontend-maven-plugin handles the React build automatically)
+# Full pipeline — Java compile + 118 tests + JaCoCo coverage + install
 mvn clean install
 
-# Compile and package — fastest (skips tests and frontend)
+# Compile and package (skip tests)
 # with make
 make build
 # direct
-mvn clean package -DskipTests -Pskip-frontend
-
-# Compile and package including frontend build
-# with make
-make build-full
-# direct
-mvn clean package -DskipTests
+mvn clean install -DskipTests
 
 # Start in dev mode — Swagger UI enabled at http://localhost:8080/swagger-ui.html
-# The pre-built frontend bundle in src/main/resources/static/ is served immediately.
 # with make
 make run
 # direct
-mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 # Start without dev profile (no Swagger)
 # with make
 make run-prod
 # direct
-mvn spring-boot:run -Pskip-frontend
+mvn spring-boot:run
 
 # Run all tests (unit + integration) with JaCoCo coverage
 # with make
 make test
 # direct
-mvn verify -Pskip-frontend
+mvn verify
 
 # Run unit tests only
 # with make
 make test-unit
 # direct
-mvn test -Pskip-frontend
+mvn test
 
 # Run JMH benchmark suite
 # with make
 make benchmark
 # direct
-mvn test -Pbenchmark -Pskip-frontend
+mvn test -Pbenchmark
 
 # Remove build artifacts and generated output files
 # with make
@@ -358,7 +349,7 @@ make clean
 # direct
 mvn clean
 
-# Kill any running Spring Boot / Vite processes (free ports 8080, 5173) — make only
+# Kill any running Spring Boot processes (free port 8080) — make only
 make kill
 
 # Run static analysis (compiler warnings) — make only
@@ -458,7 +449,7 @@ http://localhost:8080/v3/api-docs
 # with make
 make run
 # direct
-mvn spring-boot:run -Pskip-frontend -Dspring-boot.run.profiles=dev
+mvn spring-boot:run -Dspring-boot.run.profiles=dev
 ```
 
 ---
@@ -493,40 +484,34 @@ curl http://localhost:8080/actuator/info
 # with make
 make test
 # direct
-mvn verify -Pskip-frontend
+mvn verify
 
 # Run a specific test class
-mvn test -Pskip-frontend -Dtest=StrategyResolverTest
+mvn test -Dtest=StrategyResolverTest
 
 # Run symmetry tests only
-mvn test -Pskip-frontend -Dtest=SymmetryTest
+mvn test -Dtest=SymmetryTest
 
 # Run API tests only
-mvn test -Pskip-frontend -Dtest="DomainControllerTest,BatchControllerTest"
+mvn test -Dtest="DomainControllerTest,BatchControllerTest"
 ```
 
 ---
 
 ## Frontend
 
-The React 18 + Vite + MUI frontend provides:
+The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src/main/resources/static/`) provides:
 
 - **Dashboard** — health status, actuator info, quick-action buttons
 - **Data Generator** — trigger domain data generation with "Low Load" or "High Load" buttons, display results
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
   all 14 fileType × library combinations sequentially with live per-row progress.
-- **Batch History** — sortable/filterable table of all job executions
-- **Benchmark Dashboard** — line charts, bar charts, throughput comparison, library pairwise comparison, CSV/JSON/MD
-  export. Library Summary cards and both bar charts auto-sort by avg throughput (best to worst) on every refresh.
+- **Batch History** — table of all job executions with auto-refresh every 15 s
+- **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
+  CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.
 
-The pre-built frontend bundle is committed to `src/main/resources/static/`, so `mvn spring-boot:run -Pskip-frontend`
-serves the latest UI immediately without a frontend rebuild. If you change frontend source code, rebuild with:
-
-```bash
-cd src/main/frontend && npm run build
-```
-
-Then commit the resulting bundle in `src/main/resources/static/`.
+No build step is needed. To modify the UI, edit `src/main/resources/static/index.html` directly — `mvn spring-boot:run`
+serves the latest version immediately. No Node.js or npm required.
 
 ---
 
@@ -544,8 +529,8 @@ fixed-length-converters/
 │   ├── domain/                 JPA entities + repositories + DomainDataGenerator + LoadProfile enum
 │   ├── parser/                 7 formatter wrappers + annotated model classes
 │   └── strategy/               FileGenerationStrategy + 14 implementations
-├── src/main/frontend/          React 18 + Vite + MUI source
-├── src/main/resources/static/  Pre-built frontend bundle (committed — served directly)
+├── src/main/frontend/          React source (kept for reference; UI now served from static/)
+├── src/main/resources/static/  Vanilla HTML/CSS/JS UI (index.html — served directly)
 ├── docs/
 │   ├── examples/coda/          Valid, malformed, edge-case CODA files
 │   ├── examples/swift-mt/      Valid, malformed, edge-case SWIFT MT940 files

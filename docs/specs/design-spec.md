@@ -11,7 +11,7 @@
 
 ## 1. Approach
 
-Single Maven module, Java 25, Spring Boot 3.4.x. React SPA built by `frontend-maven-plugin` and embedded in the JAR as static resources. One command (`mvn spring-boot:run`) starts the full platform.
+Single Maven module, Java 25, Spring Boot 3.4.x. Vanilla HTML/CSS/JS single-page UI embedded in the JAR as a static resource (`src/main/resources/static/index.html`). One command (`mvn spring-boot:run`) starts the full platform — no Node.js or npm required.
 
 ---
 
@@ -39,8 +39,8 @@ fixed-length-converters/
 │   │   │   ├── application-dev.yml   # Swagger enabled
 │   │   │   ├── beanio/               # BeanIO XML mapping files
 │   │   │   ├── templates/            # Velocity .vm template files
-│   │   │   └── static/               # React build output
-│   │   └── frontend/                 # React 18 + Vite + MUI + TypeScript source
+│   │   │   └── static/               # Vanilla HTML/CSS/JS UI (index.html)
+│   │   └── frontend/                 # React source (kept for reference)
 │   └── test/java/com/wtechitsolutions/ # mirrors main package structure
 ├── docs/
 │   ├── PRD.md
@@ -236,29 +236,29 @@ Actuator: only `/health` and `/info` publicly exposed. Swagger: `springdoc-opena
 
 ---
 
-## 8. Frontend (React + Vite + MUI)
+## 8. Frontend (Vanilla HTML/CSS/JS)
 
 ### Stack
 
-React 18, TypeScript strict, Vite, MUI v5, Recharts, React Query, React Router v6.
+Single self-contained `src/main/resources/static/index.html` file. No framework, no build tool, no npm. Chart.js (CDN) for charts. Hash-based routing. Fetch API for all backend calls. Dark/light mode toggle persisted in `localStorage`.
 
 ### Build Integration
 
-`frontend-maven-plugin` runs `npm install` + `vite build` during `mvn package`. Output to `src/main/resources/static/`. Vite dev server proxies `/api` and `/actuator` to `http://localhost:8080`.
+None — the file is a plain static resource embedded in the Spring Boot JAR. `mvn spring-boot:run` serves it directly. To update the UI, edit `index.html` and restart the server.
 
 ### Layout
 
-Persistent sidebar navigation (always visible) + top bar with dark/light mode toggle (`localStorage` persisted). Breadcrumbs on each screen.
+Persistent sidebar navigation + top app bar with dark/light mode toggle.
 
 ### Views
 
-| Route | View | Key Features |
+| Hash route | View | Key Features |
 |---|---|---|
-| `/` | Dashboard | Health status card, actuator info, quick-action buttons |
-| `/generate` | Data Generator | Generate button, last generation summary, operationId display |
-| `/batch` | Batch Runner | FileType enum select, Library enum select (7 options), Submit, file preview panel |
-| `/history` | Batch History | Sortable/filterable table: jobId, fileType, library, status, duration, timestamp, preview |
-| `/benchmark` | Benchmark Dashboard | Line chart, bar chart, throughput chart, pairwise comparison, CSV/JSON/MD/HTML export |
+| `#` / `#dashboard` | Dashboard | Health status chip, actuator info, quick-action buttons |
+| `#generate` | Data Generator | LOW / HIGH load buttons, generation result summary |
+| `#batch` | Batch Runner | FileType select, Library select (7 options), generate + preview file, run all 14 combinations with live progress |
+| `#history` | Batch History | Table: jobId, fileType, library, status, duration, timestamp; auto-refreshes every 15 s |
+| `#benchmark` | Benchmark Dashboard | Bar + line charts (Chart.js), library summary, CSV/JSON/Markdown export |
 
 ---
 
@@ -287,7 +287,7 @@ Persistent sidebar navigation (always visible) + top bar with dark/light mode to
 
 | Workflow | Trigger | Key Steps |
 |---|---|---|
-| `build.yml` | push + PR | Java 25 setup, `mvn clean package -DskipTests`, Maven cache |
+| `build.yml` | push + PR | Java 25 setup, `mvn clean install -DskipTests`, Maven cache |
 | `test.yml` | push + PR | `mvn verify`, JaCoCo coverage report |
 | `benchmark.yml` | push to `main` | `mvn test -Pbenchmark`, upload JMH artifact |
 | `codeql.yml` | push + PR + weekly | CodeQL Java analysis |

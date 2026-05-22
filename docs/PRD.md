@@ -121,7 +121,7 @@ All examples and file structures shall be derived from:
 | Monitoring | Spring Actuator |
 | Database | H2 In-Memory |
 | API Documentation | OpenAPI V3 + Swagger UI |
-| Frontend | Modern SPA (React or equivalent) |
+| Frontend | Vanilla HTML/CSS/JS single-page UI (no build tools) |
 | Build Tool | Maven |
 | Testing | JUnit 5 + Mockito |
 | Benchmarking | JMH + custom metrics |

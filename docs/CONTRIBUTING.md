@@ -46,22 +46,12 @@ test: add symmetry tests for all 14 strategy combinations
 
 ## Frontend Changes
 
-The pre-built frontend bundle is committed to `src/main/resources/static/`. When you change any frontend source code under `src/main/frontend/src/`, you must rebuild the bundle before committing:
+The frontend is a single self-contained file: `src/main/resources/static/index.html`. To modify the UI, edit this file directly — no build tool, no npm, no Node.js required. The changes are served immediately by `mvn spring-boot:run`.
 
 ```bash
-cd src/main/frontend
-npm install          # only needed if package.json changed
-npm run build        # outputs to src/main/resources/static/
-```
-
-Then stage and commit the rebuilt bundle alongside your source changes:
-
-```bash
-git add src/main/frontend/src/ src/main/resources/static/
+git add src/main/resources/static/index.html
 git commit -m "feat: <describe your frontend change>"
 ```
-
-This ensures that `mvn spring-boot:run -Pskip-frontend` always serves the latest UI without requiring a local Node.js install.
 
 ## Adding a New Parser Library
 
