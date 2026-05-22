@@ -24,9 +24,10 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Monitoring | Spring Actuator |
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
-| Build | Maven 3.9.x |
+| Build | Maven 3.9.x — no profiles required |
 | Testing | JUnit 5 + Mockito, 118 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0, Camel BeanIO 4.20.0, Velocity 2.4.1, Spring Batch 5.x |
+| Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands
@@ -68,7 +69,7 @@ src/main/java/com/wtechitsolutions/
 ├── batch/             Spring Batch: DomainEntityItemReader, FileGenerationItemProcessor,
 │                       FileOutputItemWriter, BatchMetricsListener, ChunkTimingListener, BatchJobService
 ├── benchmark/         BenchmarkService (CSV/JSON/Markdown/HTML export)
-├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig
+├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig, VersionHealthIndicator
 ├── domain/            JPA entities (Account, Transaction, BankingStatement, BenchmarkMetrics)
 │                       Repositories, DomainDataGenerator, enums (FileType, Library, LoadProfile, TransactionType)
 ├── parser/            7 formatter wrappers (annotation-based, template-based, or programmatic):
@@ -102,6 +103,7 @@ src/main/java/com/wtechitsolutions/
 - `padAmount()` uses `setScale(0, ROUND_HALF_UP)` to strip decimal scale from H2 BigDecimal values
 - BeanIO uses `FieldBuilder.at()` with **0-based** character positions (NOT 1-based)
 - `BindyCodaRecord` text fields carry explicit `align="L"` to force left-alignment (Camel Bindy defaults to right-align, which pushed "TOTAL" to the end of the description field in trailer records)
+- **Windows CRLF**: `AbstractCodaStrategy.generate()` and `AbstractSwiftStrategy.generate()` call `.replace("\r\n", "\n")` on `formatRecords()` output — BeanIO uses `System.lineSeparator()` and Velocity uses template file endings, both produce CRLF on Windows which would make lines 129 chars
 
 ### SWIFT Format Notes
 
@@ -134,6 +136,9 @@ GET  /actuator/info              → app name, version, description
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 - **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
+- **No Maven profiles needed** — `mvn clean install` and `mvn spring-boot:run` work with no flags; only the `benchmark` profile exists (JMH)
+- **Line endings**: `.gitattributes` enforces LF for all source files; `.ps1`/`.bat` keep CRLF; `.ps1` files must use **ASCII-only** characters (no Unicode box-drawing) — PowerShell 5.x on Windows reads scripts as the system code page and misinterprets multibyte UTF-8
+- **Actuator health includes version**: `VersionHealthIndicator` in `config/` exposes `version`, `artifact`, `description` as a `version` component alongside `db`, `diskSpace`, `ping`
 
 ## Testing Strategy
 
@@ -149,7 +154,6 @@ GET  /actuator/info              → app name, version, description
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
 | Integration | `ActuatorTest` | TestRestTemplate: /actuator/health, /actuator/info |
 | Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |
-
 | Integration | `GoldenFileTest` | 128-char CODA lines, required record types and MT940 tags |
 | Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 14 strategies (run with -Pbenchmark) |
 
