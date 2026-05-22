@@ -71,7 +71,7 @@ public class BindyFormatter {
                     if (!l.isBlank()) sb.append(ensureWidth(l)).append("\n");
                 }
             } catch (Exception e) {
-                log.warn("Bindy CODA format failed for recordType={}: {}", record.getRecordType(), e.getMessage());
+                log.warn("Bindy CODA format failed for recordType={}: {}", record.recordType(), e.getMessage());
                 sb.append(record.toFixedWidth()).append("\n");
             }
         }
@@ -129,18 +129,18 @@ public class BindyFormatter {
 
     private BindyCodaRecord toBindy(CodaRecord r) {
         BindyCodaRecord b = new BindyCodaRecord();
-        b.setRecordType(orEmpty(r.getRecordType()));
-        b.setBankId(orEmpty(r.getBankId()));
-        b.setReferenceNumber(orEmpty(r.getReferenceNumber()));
-        b.setAccountNumber(orEmpty(r.getAccountNumber()));
-        b.setCurrency(orEmpty(r.getCurrency()));
-        b.setAmountStr(amountToStr(r.getAmount()));
-        b.setEntryDate(orEmpty(r.getEntryDate()));
-        b.setValueDate(orEmpty(r.getValueDate()));
-        b.setDescription(orEmpty(r.getDescription()));
-        b.setTransactionCode(orEmpty(r.getTransactionCode()));
-        b.setSequenceNumber(orEmpty(r.getSequenceNumber()));
-        b.setFiller(orEmpty(r.getFiller()));
+        b.setRecordType(orEmpty(r.recordType()));
+        b.setBankId(orEmpty(r.bankId()));
+        b.setReferenceNumber(orEmpty(r.referenceNumber()));
+        b.setAccountNumber(orEmpty(r.accountNumber()));
+        b.setCurrency(orEmpty(r.currency()));
+        b.setAmountStr(amountToStr(r.amount()));
+        b.setEntryDate(orEmpty(r.entryDate()));
+        b.setValueDate(orEmpty(r.valueDate()));
+        b.setDescription(orEmpty(r.description()));
+        b.setTransactionCode(orEmpty(r.transactionCode()));
+        b.setSequenceNumber(orEmpty(r.sequenceNumber()));
+        b.setFiller(orEmpty(r.filler()));
         return b;
     }
 

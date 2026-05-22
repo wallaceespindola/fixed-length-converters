@@ -32,7 +32,7 @@ public class FixedFormat4JFormatter {
             try {
                 sb.append(manager.export(toFf4j(record))).append("\n");
             } catch (Exception e) {
-                log.warn("fixedformat4j export failed for record type={}: {}", record.getRecordType(), e.getMessage());
+                log.warn("fixedformat4j export failed for record type={}: {}", record.recordType(), e.getMessage());
                 sb.append(record.toFixedWidth()).append("\n");
             }
         }
@@ -73,18 +73,18 @@ public class FixedFormat4JFormatter {
 
     private Ff4jCodaRecord toFf4j(CodaRecord r) {
         Ff4jCodaRecord ff4j = new Ff4jCodaRecord();
-        ff4j.setRecordType(orEmpty(r.getRecordType()));
-        ff4j.setBankId(orEmpty(r.getBankId()));
-        ff4j.setReferenceNumber(orEmpty(r.getReferenceNumber()));
-        ff4j.setAccountNumber(orEmpty(r.getAccountNumber()));
-        ff4j.setCurrency(orEmpty(r.getCurrency()));
-        ff4j.setAmountStr(amountToStr(r.getAmount()));
-        ff4j.setEntryDate(orEmpty(r.getEntryDate()));
-        ff4j.setValueDate(orEmpty(r.getValueDate()));
-        ff4j.setDescription(orEmpty(r.getDescription()));
-        ff4j.setTransactionCode(orEmpty(r.getTransactionCode()));
-        ff4j.setSequenceNumber(orEmpty(r.getSequenceNumber()));
-        ff4j.setFiller(orEmpty(r.getFiller()));
+        ff4j.setRecordType(orEmpty(r.recordType()));
+        ff4j.setBankId(orEmpty(r.bankId()));
+        ff4j.setReferenceNumber(orEmpty(r.referenceNumber()));
+        ff4j.setAccountNumber(orEmpty(r.accountNumber()));
+        ff4j.setCurrency(orEmpty(r.currency()));
+        ff4j.setAmountStr(amountToStr(r.amount()));
+        ff4j.setEntryDate(orEmpty(r.entryDate()));
+        ff4j.setValueDate(orEmpty(r.valueDate()));
+        ff4j.setDescription(orEmpty(r.description()));
+        ff4j.setTransactionCode(orEmpty(r.transactionCode()));
+        ff4j.setSequenceNumber(orEmpty(r.sequenceNumber()));
+        ff4j.setFiller(orEmpty(r.filler()));
         return ff4j;
     }
 

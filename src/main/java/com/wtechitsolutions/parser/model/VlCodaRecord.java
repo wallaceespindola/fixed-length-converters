@@ -1,6 +1,5 @@
 package com.wtechitsolutions.parser.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import name.velikodniy.vitaliy.fixedlength.annotation.FixedField;
@@ -16,7 +15,6 @@ import java.io.Serializable;
 @FixedLine(startsWith = "")
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class VlCodaRecord implements Serializable {
 
     @FixedField(offset = 1, length = 1)

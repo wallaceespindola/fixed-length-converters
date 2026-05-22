@@ -1,6 +1,5 @@
 package com.wtechitsolutions.parser.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.apache.camel.dataformat.bindy.annotation.DataField;
@@ -14,7 +13,6 @@ import org.apache.camel.dataformat.bindy.annotation.FixedLengthRecord;
 @FixedLengthRecord(length = 128, ignoreMissingChars = true, ignoreTrailingChars = true)
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class BindyCodaRecord {
 
     @DataField(pos = 1, length = 1)

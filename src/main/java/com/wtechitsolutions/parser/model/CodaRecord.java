@@ -1,35 +1,29 @@
 package com.wtechitsolutions.parser.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 
 /**
  * Represents a single 128-character CODA fixed-length record per Febelfin specification.
- * Used as the shared model across all 4 parser library strategies.
+ * Used as the shared model across all parser library strategies.
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class CodaRecord {
-
-    /** Record type: 0=header, 1=movement, 2=detail, 8=trailer, 9=end */
-    private String recordType;      // pos 1,  len 1
-    private String bankId;          // pos 2,  len 3
-    private String referenceNumber; // pos 5,  len 10
-    private String accountNumber;   // pos 15, len 37
-    private String currency;        // pos 52, len 3
-    private BigDecimal amount;      // pos 55, len 16
-    private String entryDate;       // pos 71, len 6  (DDMMYY)
-    private String valueDate;       // pos 77, len 6  (DDMMYY)
-    private String description;     // pos 83, len 32
-    private String transactionCode; // pos 115, len 3
-    private String sequenceNumber;  // pos 118, len 4
-    private String filler;          // pos 122, len 7
+public record CodaRecord(
+        /** Record type: 0=header, 1=movement, 2=detail, 8=trailer, 9=end */
+        String recordType,      // pos 1,  len 1
+        String bankId,          // pos 2,  len 3
+        String referenceNumber, // pos 5,  len 10
+        String accountNumber,   // pos 15, len 37
+        String currency,        // pos 52, len 3
+        BigDecimal amount,      // pos 55, len 16
+        String entryDate,       // pos 71, len 6  (DDMMYY)
+        String valueDate,       // pos 77, len 6  (DDMMYY)
+        String description,     // pos 83, len 32
+        String transactionCode, // pos 115, len 3
+        String sequenceNumber,  // pos 118, len 4
+        String filler           // pos 122, len 7
+) {
 
     /**
      * Serialises this record to a 128-character CODA fixed-width line.

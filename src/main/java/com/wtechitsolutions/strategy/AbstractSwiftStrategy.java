@@ -36,7 +36,7 @@ abstract class AbstractSwiftStrategy implements FileGenerationStrategy {
     @Override
     public List<Transaction> parse(String fileContent) {
         return parseRecords(fileContent).stream()
-                .filter(r -> r.getAmount() != null && !r.getAmount().isBlank())
+                .filter(r -> r.amount() != null && !r.amount().isBlank())
                 .map(this::toTransaction)
                 .collect(Collectors.toList());
     }
@@ -79,7 +79,7 @@ abstract class AbstractSwiftStrategy implements FileGenerationStrategy {
     protected Transaction toTransaction(SwiftMtRecord r) {
         LocalDate valueDate;
         try {
-            String yd = r.getValueDate();
+            String yd = r.valueDate();
             valueDate = yd != null && yd.length() == 6
                     ? LocalDate.parse("20" + yd, DateTimeFormatter.ofPattern("yyyyMMdd"))
                     : LocalDate.now();
@@ -89,21 +89,21 @@ abstract class AbstractSwiftStrategy implements FileGenerationStrategy {
 
         BigDecimal amount;
         try {
-            amount = r.getAmount() != null
-                    ? new BigDecimal(r.getAmount().replace(",", "."))
+            amount = r.amount() != null
+                    ? new BigDecimal(r.amount().replace(",", "."))
                     : BigDecimal.ZERO;
         } catch (NumberFormatException e) {
             amount = BigDecimal.ZERO;
         }
 
-        TransactionType type = "D".equals(r.getDebitCreditMark())
+        TransactionType type = "D".equals(r.debitCreditMark())
                 ? TransactionType.DEBIT : TransactionType.CREDIT;
 
         return Transaction.builder()
-                .reference(r.getCustomerReference() != null ? r.getCustomerReference().trim() : "")
+                .reference(r.customerReference() != null ? r.customerReference().trim() : "")
                 .amount(amount)
                 .type(type)
-                .description(r.getInformation() != null ? r.getInformation().trim() : "")
+                .description(r.information() != null ? r.information().trim() : "")
                 .valueDate(valueDate)
                 .entryDate(valueDate)
                 .build();

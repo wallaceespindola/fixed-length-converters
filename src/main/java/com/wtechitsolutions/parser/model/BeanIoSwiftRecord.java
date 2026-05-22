@@ -1,6 +1,5 @@
 package com.wtechitsolutions.parser.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.beanio.annotation.Field;
@@ -14,7 +13,6 @@ import org.beanio.annotation.Record;
 @Record
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class BeanIoSwiftRecord {
 
     @Field(at = 0)

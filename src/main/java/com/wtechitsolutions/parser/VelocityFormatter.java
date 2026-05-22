@@ -94,35 +94,35 @@ public class VelocityFormatter {
 
     private static Map<String, String> padCoda(CodaRecord r) {
         Map<String, String> m = new HashMap<>();
-        m.put("recordType", padRight(r.getRecordType(), 1));
-        m.put("bankId", padRight(r.getBankId(), 3));
-        m.put("referenceNumber", padRight(r.getReferenceNumber(), 10));
-        m.put("accountNumber", padRight(r.getAccountNumber(), 37));
-        m.put("currency", padRight(r.getCurrency(), 3));
-        m.put("amountStr", padAmount(r.getAmount(), 16));
-        m.put("entryDate", padRight(r.getEntryDate(), 6));
-        m.put("valueDate", padRight(r.getValueDate(), 6));
-        m.put("description", padRight(r.getDescription(), 32));
-        m.put("transactionCode", padRight(r.getTransactionCode(), 3));
-        m.put("sequenceNumber", padLeft(r.getSequenceNumber(), 4));
-        m.put("filler", padRight(r.getFiller(), 7));
+        m.put("recordType", padRight(r.recordType(), 1));
+        m.put("bankId", padRight(r.bankId(), 3));
+        m.put("referenceNumber", padRight(r.referenceNumber(), 10));
+        m.put("accountNumber", padRight(r.accountNumber(), 37));
+        m.put("currency", padRight(r.currency(), 3));
+        m.put("amountStr", padAmount(r.amount(), 16));
+        m.put("entryDate", padRight(r.entryDate(), 6));
+        m.put("valueDate", padRight(r.valueDate(), 6));
+        m.put("description", padRight(r.description(), 32));
+        m.put("transactionCode", padRight(r.transactionCode(), 3));
+        m.put("sequenceNumber", padLeft(r.sequenceNumber(), 4));
+        m.put("filler", padRight(r.filler(), 7));
         return m;
     }
 
     private static SwiftMtRecord swiftFallbacks(SwiftMtRecord r) {
         return SwiftMtRecord.builder()
-                .transactionReference(orEmpty(r.getTransactionReference()))
-                .accountIdentification(orEmpty(r.getAccountIdentification()))
-                .statementNumber(orEmpty(r.getStatementNumber()))
-                .openingBalance(orEmpty(r.getOpeningBalance()))
-                .valueDate(or(r.getValueDate(), "000000"))
-                .entryDate(or(r.getEntryDate(), "0000"))
-                .debitCreditMark(or(r.getDebitCreditMark(), "C"))
-                .amount(or(r.getAmount(), "0,00"))
-                .transactionType(or(r.getTransactionType(), "NMSC"))
-                .customerReference(or(r.getCustomerReference(), "NONREF"))
-                .information(orEmpty(r.getInformation()))
-                .closingBalance(orEmpty(r.getClosingBalance()))
+                .transactionReference(orEmpty(r.transactionReference()))
+                .accountIdentification(orEmpty(r.accountIdentification()))
+                .statementNumber(orEmpty(r.statementNumber()))
+                .openingBalance(orEmpty(r.openingBalance()))
+                .valueDate(or(r.valueDate(), "000000"))
+                .entryDate(or(r.entryDate(), "0000"))
+                .debitCreditMark(or(r.debitCreditMark(), "C"))
+                .amount(or(r.amount(), "0,00"))
+                .transactionType(or(r.transactionType(), "NMSC"))
+                .customerReference(or(r.customerReference(), "NONREF"))
+                .information(orEmpty(r.information()))
+                .closingBalance(orEmpty(r.closingBalance()))
                 .build();
     }
 

@@ -1,57 +1,49 @@
 package com.wtechitsolutions.parser.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
-import java.util.Arrays;
 
 /**
  * Represents a single SWIFT MT940/MT942 transaction entry.
  * Contains fields mapping to the standard SWIFT field tags.
  */
-@Data
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class SwiftMtRecord {
+public record SwiftMtRecord(
+        /** :20: Transaction Reference Number, max 16 chars */
+        String transactionReference,
 
-    /** :20: Transaction Reference Number, max 16 chars */
-    private String transactionReference;
+        /** :25: Account Identification (IBAN/currency), max 35 chars */
+        String accountIdentification,
 
-    /** :25: Account Identification (IBAN/currency), max 35 chars */
-    private String accountIdentification;
+        /** :28C: Statement Number / Sequence Number e.g. "00001/001" */
+        String statementNumber,
 
-    /** :28C: Statement Number / Sequence Number e.g. "00001/001" */
-    private String statementNumber;
+        /** :60F: Opening Balance e.g. "C260429EUR1234567,89" */
+        String openingBalance,
 
-    /** :60F: Opening Balance e.g. "C260429EUR1234567,89" */
-    private String openingBalance;
+        /** :61: Value date YYMMDD */
+        String valueDate,
 
-    /** :61: Value date YYMMDD */
-    private String valueDate;
+        /** :61: Entry date MMDD */
+        String entryDate,
 
-    /** :61: Entry date MMDD */
-    private String entryDate;
+        /** :61: Debit/Credit mark — "C" or "D" */
+        String debitCreditMark,
 
-    /** :61: Debit/Credit mark — "C" or "D" */
-    private String debitCreditMark;
+        /** :61: Amount with comma as decimal separator */
+        String amount,
 
-    /** :61: Amount with comma as decimal separator */
-    private String amount;
+        /** :61: Swift transaction type code, e.g. "NMSC", "NTRN" */
+        String transactionType,
 
-    /** :61: Swift transaction type code, e.g. "NMSC", "NTRN" */
-    private String transactionType;
+        /** :61: Customer reference, max 16 chars */
+        String customerReference,
 
-    /** :61: Customer reference, max 16 chars */
-    private String customerReference;
+        /** :86: Additional information / narrative, max 6×65 chars */
+        String information,
 
-    /** :86: Additional information / narrative, max 6×65 chars */
-    private String information;
-
-    /** :62F: Closing Balance e.g. "C260429EUR1234567,89" */
-    private String closingBalance;
+        /** :62F: Closing Balance e.g. "C260429EUR1234567,89" */
+        String closingBalance
+) {
 
     /**
      * Serialises this record to SWIFT MT940 tag format.
@@ -95,29 +87,29 @@ public class SwiftMtRecord {
      * into a SwiftMtRecord. Centralised here to avoid duplication across all formatters.
      */
     public static SwiftMtRecord fromSwiftSection(String section) {
-        SwiftMtRecord r = new SwiftMtRecord();
+        SwiftMtRecordBuilder b = SwiftMtRecord.builder();
         for (String line : section.split("\n")) {
-            if (line.startsWith(":20:"))       r.setTransactionReference(line.substring(4).trim());
-            else if (line.startsWith(":25:"))  r.setAccountIdentification(line.substring(4).trim());
-            else if (line.startsWith(":28C:")) r.setStatementNumber(line.substring(5).trim());
-            else if (line.startsWith(":60F:")) r.setOpeningBalance(line.substring(5).trim());
+            if (line.startsWith(":20:"))       b.transactionReference(line.substring(4).trim());
+            else if (line.startsWith(":25:"))  b.accountIdentification(line.substring(4).trim());
+            else if (line.startsWith(":28C:")) b.statementNumber(line.substring(5).trim());
+            else if (line.startsWith(":60F:")) b.openingBalance(line.substring(5).trim());
             else if (line.startsWith(":61:")) {
                 String entry = line.substring(4);
                 if (entry.length() >= 10) {
-                    r.setValueDate(entry.substring(0, 6));
-                    r.setEntryDate(entry.substring(6, 10));
-                    r.setDebitCreditMark(entry.length() > 10 ? String.valueOf(entry.charAt(10)) : "C");
+                    b.valueDate(entry.substring(0, 6));
+                    b.entryDate(entry.substring(6, 10));
+                    b.debitCreditMark(entry.length() > 10 ? String.valueOf(entry.charAt(10)) : "C");
                     int amtEnd = entry.indexOf("NMSC");
-                    r.setAmount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
-                    r.setTransactionType("NMSC");
-                    r.setCustomerReference(amtEnd >= 0 && entry.length() > amtEnd + 4
+                    b.amount(amtEnd > 11 ? entry.substring(11, amtEnd).trim() : "0,00");
+                    b.transactionType("NMSC");
+                    b.customerReference(amtEnd >= 0 && entry.length() > amtEnd + 4
                             ? entry.substring(amtEnd + 4).trim() : "NONREF");
                 }
             }
-            else if (line.startsWith(":86:"))  r.setInformation(line.substring(4).trim());
-            else if (line.startsWith(":62F:")) r.setClosingBalance(line.substring(5).trim());
+            else if (line.startsWith(":86:"))  b.information(line.substring(4).trim());
+            else if (line.startsWith(":62F:")) b.closingBalance(line.substring(5).trim());
         }
-        return r;
+        return b.build();
     }
 
     private static String truncate(String value, int maxLen) {

@@ -43,7 +43,7 @@ class CodaRecordTest {
         CodaRecord original = sampleRecord();
         String line = original.toFixedWidth();
         CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.getRecordType()).isEqualTo(original.getRecordType());
+        assertThat(parsed.recordType()).isEqualTo(original.recordType());
     }
 
     @Test
@@ -51,7 +51,7 @@ class CodaRecordTest {
         CodaRecord original = sampleRecord();
         String line = original.toFixedWidth();
         CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.getCurrency()).isEqualTo(original.getCurrency());
+        assertThat(parsed.currency()).isEqualTo(original.currency());
     }
 
     @Test
@@ -59,14 +59,14 @@ class CodaRecordTest {
         CodaRecord original = sampleRecord();
         String line = original.toFixedWidth();
         CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.getTransactionCode()).isEqualTo(original.getTransactionCode());
+        assertThat(parsed.transactionCode()).isEqualTo(original.transactionCode());
     }
 
     @Test
     void fromFixedWidth_handles_short_input_without_exception() {
         CodaRecord result = CodaRecord.fromFixedWidth("1310");
         assertThat(result).isNotNull();
-        assertThat(result.getRecordType()).isEqualTo("1");
+        assertThat(result.recordType()).isEqualTo("1");
     }
 
     @Test

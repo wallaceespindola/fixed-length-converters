@@ -6,9 +6,6 @@ import com.wtechitsolutions.parser.model.SwiftMtRecord;
 import org.beanio.BeanReader;
 import org.beanio.BeanWriter;
 import org.beanio.StreamFactory;
-import org.beanio.builder.Align;
-import org.beanio.builder.FieldBuilder;
-import org.beanio.builder.RecordBuilder;
 import org.beanio.builder.StreamBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +20,9 @@ import java.util.List;
 
 /**
  * Formatter wrapping BeanIO (3.2.1) for CODA and SWIFT MT serialisation.
- * Uses programmatic FieldBuilder for CODA (fixed-length) with explicit 0-based positions.
- * Padding and alignment are fully annotation/builder-driven — no manual string padding.
+ * Uses annotation-based stream config on {@link BeanIoCodaRecord} — no programmatic
+ * FieldBuilder required. Field layout is declared via @Record/@Field annotations
+ * with 1-based positions, padding and alignment fully annotation-driven.
  */
 @Component
 public class BeanIOFormatter {
@@ -35,34 +33,16 @@ public class BeanIOFormatter {
 
     public BeanIOFormatter() {
         factory = StreamFactory.newInstance();
-
-        // FieldBuilder.at() uses 0-based character positions.
-        // Padding/alignment configured here; toXxx() passes raw values only.
         factory.define(new StreamBuilder("coda")
                 .format("fixedlength")
-                .addRecord(new RecordBuilder("codaRecord")
-                        .type(BeanIoCodaRecord.class)
-                        .addField(new FieldBuilder("recordType").at(0).length(1).trim())
-                        .addField(new FieldBuilder("bankId").at(1).length(3).trim())
-                        .addField(new FieldBuilder("referenceNumber").at(4).length(10).trim())
-                        .addField(new FieldBuilder("accountNumber").at(14).length(37).trim())
-                        .addField(new FieldBuilder("currency").at(51).length(3).trim())
-                        .addField(new FieldBuilder("amountStr").at(54).length(16)
-                                .padding('0').align(Align.RIGHT).trim())
-                        .addField(new FieldBuilder("entryDate").at(70).length(6).trim())
-                        .addField(new FieldBuilder("valueDate").at(76).length(6).trim())
-                        .addField(new FieldBuilder("description").at(82).length(32).trim())
-                        .addField(new FieldBuilder("transactionCode").at(114).length(3).trim())
-                        .addField(new FieldBuilder("sequenceNumber").at(117).length(4)
-                                .align(Align.RIGHT).trim())
-                        .addField(new FieldBuilder("filler").at(121).length(7).trim())));
+                .addRecord(BeanIoCodaRecord.class));
     }
 
     public String formatCoda(List<CodaRecord> records) {
         StringWriter sw = new StringWriter();
         BeanWriter writer = factory.createWriter("coda", sw);
         for (CodaRecord record : records) {
-            writer.write("codaRecord", toBeanIo(record));
+            writer.write(toBeanIo(record));
         }
         writer.flush();
         writer.close();
@@ -102,22 +82,22 @@ public class BeanIOFormatter {
                 .toList();
     }
 
-    // ── conversion: raw values only; BeanIO builder config handles all padding ──
+    // ── conversion: raw values only; @Field annotation config handles all padding ──
 
     private BeanIoCodaRecord toBeanIo(CodaRecord r) {
         BeanIoCodaRecord b = new BeanIoCodaRecord();
-        b.setRecordType(orEmpty(r.getRecordType()));
-        b.setBankId(orEmpty(r.getBankId()));
-        b.setReferenceNumber(orEmpty(r.getReferenceNumber()));
-        b.setAccountNumber(orEmpty(r.getAccountNumber()));
-        b.setCurrency(orEmpty(r.getCurrency()));
-        b.setAmountStr(amountToStr(r.getAmount()));
-        b.setEntryDate(orEmpty(r.getEntryDate()));
-        b.setValueDate(orEmpty(r.getValueDate()));
-        b.setDescription(orEmpty(r.getDescription()));
-        b.setTransactionCode(orEmpty(r.getTransactionCode()));
-        b.setSequenceNumber(orEmpty(r.getSequenceNumber()));
-        b.setFiller(orEmpty(r.getFiller()));
+        b.setRecordType(orEmpty(r.recordType()));
+        b.setBankId(orEmpty(r.bankId()));
+        b.setReferenceNumber(orEmpty(r.referenceNumber()));
+        b.setAccountNumber(orEmpty(r.accountNumber()));
+        b.setCurrency(orEmpty(r.currency()));
+        b.setAmountStr(amountToStr(r.amount()));
+        b.setEntryDate(orEmpty(r.entryDate()));
+        b.setValueDate(orEmpty(r.valueDate()));
+        b.setDescription(orEmpty(r.description()));
+        b.setTransactionCode(orEmpty(r.transactionCode()));
+        b.setSequenceNumber(orEmpty(r.sequenceNumber()));
+        b.setFiller(orEmpty(r.filler()));
         return b;
     }
 

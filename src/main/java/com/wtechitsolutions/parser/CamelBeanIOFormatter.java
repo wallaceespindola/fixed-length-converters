@@ -174,18 +174,18 @@ public class CamelBeanIOFormatter {
 
     private BeanIoCodaRecord toBeanIo(CodaRecord r) {
         BeanIoCodaRecord b = new BeanIoCodaRecord();
-        b.setRecordType(orEmpty(r.getRecordType()));
-        b.setBankId(orEmpty(r.getBankId()));
-        b.setReferenceNumber(orEmpty(r.getReferenceNumber()));
-        b.setAccountNumber(orEmpty(r.getAccountNumber()));
-        b.setCurrency(orEmpty(r.getCurrency()));
-        b.setAmountStr(amountToStr(r.getAmount()));
-        b.setEntryDate(orEmpty(r.getEntryDate()));
-        b.setValueDate(orEmpty(r.getValueDate()));
-        b.setDescription(orEmpty(r.getDescription()));
-        b.setTransactionCode(orEmpty(r.getTransactionCode()));
-        b.setSequenceNumber(orEmpty(r.getSequenceNumber()));
-        b.setFiller(orEmpty(r.getFiller()));
+        b.setRecordType(orEmpty(r.recordType()));
+        b.setBankId(orEmpty(r.bankId()));
+        b.setReferenceNumber(orEmpty(r.referenceNumber()));
+        b.setAccountNumber(orEmpty(r.accountNumber()));
+        b.setCurrency(orEmpty(r.currency()));
+        b.setAmountStr(amountToStr(r.amount()));
+        b.setEntryDate(orEmpty(r.entryDate()));
+        b.setValueDate(orEmpty(r.valueDate()));
+        b.setDescription(orEmpty(r.description()));
+        b.setTransactionCode(orEmpty(r.transactionCode()));
+        b.setSequenceNumber(orEmpty(r.sequenceNumber()));
+        b.setFiller(orEmpty(r.filler()));
         return b;
     }
 

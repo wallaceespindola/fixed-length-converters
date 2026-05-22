@@ -76,18 +76,18 @@ public class FixedLengthFormatter {
 
     private VlCodaRecord toVl(CodaRecord r) {
         VlCodaRecord vl = new VlCodaRecord();
-        vl.setRecordType(orEmpty(r.getRecordType()));
-        vl.setBankId(orEmpty(r.getBankId()));
-        vl.setReferenceNumber(orEmpty(r.getReferenceNumber()));
-        vl.setAccountNumber(orEmpty(r.getAccountNumber()));
-        vl.setCurrency(orEmpty(r.getCurrency()));
-        vl.setAmountStr(zeroPad(amountToStr(r.getAmount()), 16));   // zero-pad: no annotation support
-        vl.setEntryDate(orEmpty(r.getEntryDate()));
-        vl.setValueDate(orEmpty(r.getValueDate()));
-        vl.setDescription(orEmpty(r.getDescription()));
-        vl.setTransactionCode(orEmpty(r.getTransactionCode()));
-        vl.setSequenceNumber(rightAlign(orEmpty(r.getSequenceNumber()), 4)); // right-align: no annotation support
-        vl.setFiller(orEmpty(r.getFiller()));
+        vl.setRecordType(orEmpty(r.recordType()));
+        vl.setBankId(orEmpty(r.bankId()));
+        vl.setReferenceNumber(orEmpty(r.referenceNumber()));
+        vl.setAccountNumber(orEmpty(r.accountNumber()));
+        vl.setCurrency(orEmpty(r.currency()));
+        vl.setAmountStr(zeroPad(amountToStr(r.amount()), 16));   // zero-pad: no annotation support
+        vl.setEntryDate(orEmpty(r.entryDate()));
+        vl.setValueDate(orEmpty(r.valueDate()));
+        vl.setDescription(orEmpty(r.description()));
+        vl.setTransactionCode(orEmpty(r.transactionCode()));
+        vl.setSequenceNumber(rightAlign(orEmpty(r.sequenceNumber()), 4)); // right-align: no annotation support
+        vl.setFiller(orEmpty(r.filler()));
         return vl;
     }
 

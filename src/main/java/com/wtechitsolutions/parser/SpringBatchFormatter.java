@@ -169,18 +169,18 @@ public class SpringBatchFormatter {
         FormatterLineAggregator<CodaRecord> agg = new FormatterLineAggregator<>();
         agg.setFormat(CODA_FORMAT);
         agg.setFieldExtractor((FieldExtractor<CodaRecord>) r -> new Object[]{
-                orEmpty(r.getRecordType()),
-                orEmpty(r.getBankId()),
-                orEmpty(r.getReferenceNumber()),
-                orEmpty(r.getAccountNumber()),
-                orEmpty(r.getCurrency()),
-                padAmount(r.getAmount(), 16),
-                orEmpty(r.getEntryDate()),
-                orEmpty(r.getValueDate()),
-                orEmpty(r.getDescription()),
-                orEmpty(r.getTransactionCode()),
-                padLeft(orEmpty(r.getSequenceNumber()), 4),
-                orEmpty(r.getFiller())
+                orEmpty(r.recordType()),
+                orEmpty(r.bankId()),
+                orEmpty(r.referenceNumber()),
+                orEmpty(r.accountNumber()),
+                orEmpty(r.currency()),
+                padAmount(r.amount(), 16),
+                orEmpty(r.entryDate()),
+                orEmpty(r.valueDate()),
+                orEmpty(r.description()),
+                orEmpty(r.transactionCode()),
+                padLeft(orEmpty(r.sequenceNumber()), 4),
+                orEmpty(r.filler())
         });
         return agg;
     }

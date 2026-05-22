@@ -3,7 +3,6 @@ package com.wtechitsolutions.parser.model;
 import com.ancientprogramming.fixedformat4j.annotation.Align;
 import com.ancientprogramming.fixedformat4j.annotation.Field;
 import com.ancientprogramming.fixedformat4j.annotation.Record;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -15,7 +14,6 @@ import lombok.NoArgsConstructor;
 @Record(length = 128)
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
 public class Ff4jCodaRecord {
 
     @Field(offset = 1, length = 1)

@@ -50,7 +50,7 @@ abstract class AbstractCodaStrategy implements FileGenerationStrategy {
     @Override
     public List<Transaction> parse(String fileContent) {
         return parseRecords(fileContent).stream()
-                .filter(r -> "1".equals(r.getRecordType()))
+                .filter(r -> "1".equals(r.recordType()))
                 .map(this::toTransaction)
                 .collect(Collectors.toList());
     }
@@ -127,16 +127,16 @@ abstract class AbstractCodaStrategy implements FileGenerationStrategy {
     protected Transaction toTransaction(CodaRecord r) {
         LocalDate date;
         try {
-            date = LocalDate.parse(r.getValueDate(), CODA_DATE);
+            date = LocalDate.parse(r.valueDate(), CODA_DATE);
         } catch (Exception e) {
             date = LocalDate.now();
         }
         return Transaction.builder()
-                .reference(trim(r.getReferenceNumber()))
-                .amount(r.getAmount() != null ? r.getAmount() : BigDecimal.ZERO)
-                .type("001".equals(trim(r.getTransactionCode()))
+                .reference(trim(r.referenceNumber()))
+                .amount(r.amount() != null ? r.amount() : BigDecimal.ZERO)
+                .type("001".equals(trim(r.transactionCode()))
                         ? TransactionType.CREDIT : TransactionType.DEBIT)
-                .description(trim(r.getDescription()))
+                .description(trim(r.description()))
                 .valueDate(date)
                 .entryDate(date)
                 .build();
