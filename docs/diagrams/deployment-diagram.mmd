@@ -7,7 +7,7 @@ graph TB
     classDef storageStyle fill:#37474f,stroke:#263238,color:#fff
 
     subgraph Dev["💻 Developer Machine"]
-        APP["Spring Boot App\nlocalhost:8080\nJava 21 / Maven 3.9"]
+        APP["Spring Boot App\nlocalhost:8080"]
         H2[("H2 In-Memory DB\nbankingdb")]
         OUT["output/ *.txt files"]
         APP <-->|JDBC| H2

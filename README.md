@@ -63,12 +63,12 @@ graph TB
         S7[7 SWIFT MT940 Strategies]
     end
     subgraph Parsers["📦 Parser Library Wrappers"]
-        BIO[BeanIO 3.2.1]
-        FF4J[fixedformat4j 1.7.0]
-        VL[fixedlength 0.15]
-        BINDY[Camel Bindy 4.20.0]
-        CBIO[Camel BeanIO 4.20.0]
-        VEL[Velocity 2.4.1]
+        BIO[BeanIO]
+        FF4J[fixedformat4j]
+        VL[fixedlength]
+        BINDY[Camel Bindy]
+        CBIO[Camel BeanIO]
+        VEL[Velocity]
         SB[Spring Batch native]
     end
 
@@ -246,15 +246,15 @@ as a reference for teams validating parsers before migration.
 
 ## Formatter Library Comparison
 
-| Library                 | Version | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
-|-------------------------|---------|-----------------|--------------------|------------------|--------|
-| **BeanIO**              | 3.2.1   | Excellent       | Good               | Good             | Low    |
-| **fixedformat4j**       | 1.7.0   | Limited         | Excellent          | Excellent        | Low    |
-| **fixedlength**         | 0.15    | Limited         | Good               | Good             | Medium |
-| **Apache Camel Bindy**  | 4.20.0  | Limited         | Good               | Medium           | Medium |
-| **Apache Camel BeanIO** | 4.20.0  | Excellent       | XML-based          | Medium           | Medium |
-| **Apache Velocity**     | 2.4.1   | N/A (template)  | N/A                | Low (gen-only)   | Low    |
-| **Spring Batch Native** | 5.x     | Excellent       | Programmatic       | Native           | Low    |
+| Library                 | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
+|-------------------------|-----------------|--------------------|------------------|--------|
+| **BeanIO**              | Excellent       | Good               | Good             | Low    |
+| **fixedformat4j**       | Limited         | Excellent          | Excellent        | Low    |
+| **fixedlength**         | Limited         | Good               | Good             | Medium |
+| **Apache Camel Bindy**  | Limited         | Good               | Medium           | Medium |
+| **Apache Camel BeanIO** | Excellent       | XML-based          | Medium           | Medium |
+| **Apache Velocity**     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
+| **Spring Batch Native** | Excellent       | Programmatic       | Native           | Low    |
 
 ### Strategic Recommendations
 

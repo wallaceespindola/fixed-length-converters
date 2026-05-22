@@ -5,7 +5,7 @@ title Deployment Topology
 node "Developer Machine" {
     node "JVM (Java 21)" {
         artifact "fixed-length-converters.jar" as JAR
-        component "Spring Boot 3.4.5\nlocalhost:8080" as APP
+        component "Spring Boot\nlocalhost:8080" as APP
         component "H2 In-Memory DB\nbankingdb" as H2
         component "Web UI (HTML/CSS/JS)\n/static/index.html" as SPA
     }
