@@ -9,6 +9,9 @@ import org.apache.velocity.runtime.RuntimeConstants;
 import org.apache.velocity.runtime.resource.loader.ClasspathResourceLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.batch.item.file.mapping.FieldSetMapper;
+import org.springframework.batch.item.file.transform.FixedLengthTokenizer;
+import org.springframework.batch.item.file.transform.Range;
 import org.springframework.stereotype.Component;
 
 import java.io.StringWriter;
@@ -19,22 +22,29 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Formatter using Apache Velocity 2.4.1 templates for CODA and SWIFT MT serialisation.
- * Write path: merges pre-padded field maps into .vm templates.
- * Read path: delegates to FixedFormat4JFormatter (annotation-based) since Velocity is write-only.
+ * Formatter using Apache Velocity 2.4.1 templates.
+ *
+ * <p>CODA write: pre-pads field maps and merges them into {@code velocity/coda-record.vm}.
+ * CODA read:  Velocity is a write-only engine; the read path uses Spring Batch
+ *             {@link FixedLengthTokenizer} — a framework utility, not another formatter.
+ *
+ * <p>SWIFT write/read: tag-based format rendered/parsed via {@link SwiftMtRecord} helpers,
+ * consistent with every other SWIFT strategy in the codebase.
  */
 @Component
 public class VelocityFormatter {
 
     private static final Logger log = LoggerFactory.getLogger(VelocityFormatter.class);
-    private static final String CODA_TEMPLATE = "velocity/coda-record.vm";
+    private static final String CODA_TEMPLATE  = "velocity/coda-record.vm";
     private static final String SWIFT_TEMPLATE = "velocity/swift-record.vm";
 
-    private final FixedFormat4JFormatter ff4j;
     private VelocityEngine engine;
+    private final FixedLengthTokenizer codaTokenizer;
+    private final FieldSetMapper<CodaRecord> codaFieldSetMapper;
 
-    public VelocityFormatter(FixedFormat4JFormatter ff4j) {
-        this.ff4j = ff4j;
+    public VelocityFormatter() {
+        this.codaTokenizer    = buildTokenizer();
+        this.codaFieldSetMapper = buildFieldSetMapper();
     }
 
     @PostConstruct
@@ -46,34 +56,46 @@ public class VelocityFormatter {
         engine.init();
     }
 
+    // ── CODA ─────────────────────────────────────────────────────────────────
+
     public String formatCoda(List<CodaRecord> records) {
         try {
-            List<Map<String, String>> padded = records.stream()
-                    .map(VelocityFormatter::padCoda)
-                    .toList();
-            VelocityContext context = new VelocityContext();
-            context.put("records", padded);
+            VelocityContext ctx = new VelocityContext();
+            ctx.put("records", records.stream().map(VelocityFormatter::toPaddedMap).toList());
             StringWriter writer = new StringWriter();
-            engine.getTemplate(CODA_TEMPLATE).merge(context, writer);
+            engine.getTemplate(CODA_TEMPLATE).merge(ctx, writer);
             return writer.toString();
         } catch (Exception e) {
-            log.warn("Velocity CODA format failed, delegating to fixedformat4j: {}", e.getMessage());
-            return ff4j.formatCoda(records);
+            log.warn("Velocity CODA format failed: {}", e.getMessage());
+            return "";
         }
     }
 
     public List<CodaRecord> parseCoda(String content) {
-        return ff4j.parseCoda(content);
+        if (content == null || content.isBlank()) return List.of();
+        return Arrays.stream(content.replace("\r\n", "\n").split("\n"))
+                .filter(l -> !l.isBlank())
+                .map(VelocityFormatter::ensureWidth)
+                .map(line -> {
+                    try {
+                        return codaFieldSetMapper.mapFieldSet(codaTokenizer.tokenize(line));
+                    } catch (Exception e) {
+                        log.warn("Velocity CODA tokenize failed for line, skipping: {}", e.getMessage());
+                        return null;
+                    }
+                })
+                .filter(r -> r != null)
+                .toList();
     }
+
+    // ── SWIFT ─────────────────────────────────────────────────────────────────
 
     public String formatSwift(List<SwiftMtRecord> records) {
         try {
-            VelocityContext context = new VelocityContext();
-            context.put("records", records.stream()
-                    .map(VelocityFormatter::swiftFallbacks)
-                    .toList());
+            VelocityContext ctx = new VelocityContext();
+            ctx.put("records", records.stream().map(VelocityFormatter::withDefaults).toList());
             StringWriter writer = new StringWriter();
-            engine.getTemplate(SWIFT_TEMPLATE).merge(context, writer);
+            engine.getTemplate(SWIFT_TEMPLATE).merge(ctx, writer);
             return writer.toString();
         } catch (Exception e) {
             log.warn("Velocity SWIFT format failed: {}", e.getMessage());
@@ -90,7 +112,9 @@ public class VelocityFormatter {
                 .toList();
     }
 
-    private static Map<String, String> padCoda(CodaRecord r) {
+    // ── write helpers ─────────────────────────────────────────────────────────
+
+    private static Map<String, String> toPaddedMap(CodaRecord r) {
         Map<String, String> m = new HashMap<>();
         m.put("recordType",      padRight(r.recordType(), 1));
         m.put("bankId",          padRight(r.bankId(), 3));
@@ -107,7 +131,7 @@ public class VelocityFormatter {
         return m;
     }
 
-    private static SwiftMtRecord swiftFallbacks(SwiftMtRecord r) {
+    private static SwiftMtRecord withDefaults(SwiftMtRecord r) {
         return SwiftMtRecord.builder()
                 .transactionReference(orEmpty(r.transactionReference()))
                 .accountIdentification(orEmpty(r.accountIdentification()))
@@ -122,6 +146,64 @@ public class VelocityFormatter {
                 .information(orEmpty(r.information()))
                 .closingBalance(orEmpty(r.closingBalance()))
                 .build();
+    }
+
+    // ── parse components ──────────────────────────────────────────────────────
+
+    private static FixedLengthTokenizer buildTokenizer() {
+        FixedLengthTokenizer t = new FixedLengthTokenizer();
+        t.setColumns(
+                new Range(1,   1),   // recordType
+                new Range(2,   4),   // bankId
+                new Range(5,   14),  // referenceNumber
+                new Range(15,  51),  // accountNumber
+                new Range(52,  54),  // currency
+                new Range(55,  70),  // amountStr
+                new Range(71,  76),  // entryDate
+                new Range(77,  82),  // valueDate
+                new Range(83,  114), // description
+                new Range(115, 117), // transactionCode
+                new Range(118, 121), // sequenceNumber
+                new Range(122, 128)  // filler
+        );
+        t.setNames("recordType", "bankId", "referenceNumber", "accountNumber",
+                "currency", "amountStr", "entryDate", "valueDate", "description",
+                "transactionCode", "sequenceNumber", "filler");
+        t.setStrict(false);
+        return t;
+    }
+
+    private static FieldSetMapper<CodaRecord> buildFieldSetMapper() {
+        return fs -> {
+            String amountStr = fs.readString("amountStr").trim();
+            BigDecimal amount;
+            try {
+                amount = amountStr.isBlank() ? BigDecimal.ZERO : new BigDecimal(amountStr);
+            } catch (NumberFormatException e) {
+                amount = BigDecimal.ZERO;
+            }
+            return CodaRecord.builder()
+                    .recordType(fs.readString("recordType").trim())
+                    .bankId(fs.readString("bankId").trim())
+                    .referenceNumber(fs.readString("referenceNumber").trim())
+                    .accountNumber(fs.readString("accountNumber").trim())
+                    .currency(fs.readString("currency").trim())
+                    .amount(amount)
+                    .entryDate(fs.readString("entryDate").trim())
+                    .valueDate(fs.readString("valueDate").trim())
+                    .description(fs.readString("description").trim())
+                    .transactionCode(fs.readString("transactionCode").trim())
+                    .sequenceNumber(fs.readString("sequenceNumber").trim())
+                    .filler(fs.readString("filler").trim())
+                    .build();
+        };
+    }
+
+    // ── static helpers ────────────────────────────────────────────────────────
+
+    private static String ensureWidth(String line) {
+        if (line.length() < 128) return line + " ".repeat(128 - line.length());
+        return line.length() > 128 ? line.substring(0, 128) : line;
     }
 
     private static String padRight(String value, int length) {

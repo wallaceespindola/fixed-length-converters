@@ -1,4 +1,4 @@
-# kill-all.ps1 — Stop backend (8080) processes
+# kill-all.ps1 -- Stop backend (8080) processes
 # Platforms: Windows 11+, macOS, Linux  (requires PowerShell Core 7+ on Mac/Linux)
 # Usage: .\kill-all.ps1   or   pwsh ./kill-all.ps1
 
@@ -44,11 +44,11 @@ function Get-PortPIDs([int]$Port) {
     }
 }
 
-function Stop-PID([int]$Pid, [string]$Label) {
+function Stop-PID([int]$ProcId, [string]$Label) {
     try {
-        if ($IsWindows) { Stop-Process -Id $Pid -Force -ErrorAction Stop }
-        else            { & kill -9 $Pid 2>/dev/null }
-        Write-Ok "Stopped $Label (PID $Pid)"
+        if ($IsWindows) { Stop-Process -Id $ProcId -Force -ErrorAction Stop }
+        else            { & kill -9 $ProcId 2>/dev/null }
+        Write-Ok "Stopped $Label (PID $ProcId)"
         return $true
     } catch { return $false }
 }
@@ -59,20 +59,20 @@ Write-Host ""
 
 $killed = 0
 
-# ── 1. PID-file kill ──────────────────────────────────────────────────────────
+# ---- 1. PID-file kill ------------------------------------------------
 $pidFile = Join-Path $LogDir "backend.pid"
 if (Test-Path $pidFile) {
-    $pid = [int]((Get-Content $pidFile -Raw).Trim())
-    $proc = Get-Process -Id $pid -ErrorAction SilentlyContinue
+    $procId = [int]((Get-Content $pidFile -Raw).Trim())
+    $proc = Get-Process -Id $procId -ErrorAction SilentlyContinue
     if ($proc) {
-        if (Stop-PID $pid "backend") { $killed++ }
+        if (Stop-PID $procId "backend") { $killed++ }
     } else {
-        Write-Warn "backend PID $pid not running"
+        Write-Warn "backend PID $procId not running"
     }
     Remove-Item $pidFile -Force -ErrorAction SilentlyContinue
 }
 
-# ── 2. Pattern-based kill (safety net) ───────────────────────────────────────
+# ---- 2. Pattern-based kill (safety net) ------------------------------
 if ($IsWindows) {
     $javaProcs = Get-CimInstance Win32_Process -Filter "Name='java.exe'" -ErrorAction SilentlyContinue |
         Where-Object { $_.CommandLine -match 'spring-boot|FixedLength|fixed-length' }
@@ -86,20 +86,20 @@ if ($IsWindows) {
     }
 }
 
-# ── 3. Port-based cleanup (final safety net) ─────────────────────────────────
+# ---- 3. Port-based cleanup (final safety net) ------------------------
 foreach ($port in $Ports) {
-    $pids = Get-PortPIDs $port
-    foreach ($pid in $pids) {
-        if ($pid -gt 0 -and (Stop-PID $pid "port $port")) { $killed++ }
+    $portPids = Get-PortPIDs $port
+    foreach ($procId in $portPids) {
+        if ($procId -gt 0 -and (Stop-PID $procId "port $port")) { $killed++ }
     }
 }
 
-# ── cleanup PID files ─────────────────────────────────────────────────────────
+# ---- cleanup PID files -----------------------------------------------
 if (Test-Path $LogDir) {
     Remove-Item (Join-Path $LogDir "*.pid") -Force -ErrorAction SilentlyContinue
 }
 
 Write-Host ""
-if ($killed -gt 0) { Write-Ok "Done — $killed process(es) stopped." }
-else               { Write-Warn "No matching processes found — nothing to kill." }
+if ($killed -gt 0) { Write-Ok "Done -- $killed process(es) stopped." }
+else               { Write-Warn "No matching processes found -- nothing to kill." }
 Write-Host ""
