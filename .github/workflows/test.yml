@@ -20,7 +20,7 @@ jobs:
           cache: maven
 
       - name: Run tests with JaCoCo coverage
-        run: mvn verify -Pskip-frontend
+        run: mvn verify
 
       - name: Upload JaCoCo coverage report
         uses: actions/upload-artifact@v7

@@ -19,8 +19,8 @@ jobs:
           distribution: 'temurin'
           cache: maven
 
-      - name: Build without tests and frontend
-        run: mvn clean package -DskipTests -Pskip-frontend -q
+      - name: Build without tests
+        run: mvn clean install -DskipTests -q
 
       - name: Upload JAR artifact
         uses: actions/upload-artifact@v7

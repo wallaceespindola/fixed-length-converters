@@ -2,7 +2,7 @@
 !theme plain
 title Banking Fixed-Length File Generator — Architecture Overview
 
-package "React SPA" {
+package "Web UI (HTML/CSS/JS)" {
     [Dashboard]
     [Batch Runner]
     [Benchmark Dashboard]
@@ -61,7 +61,7 @@ database "H2 In-Memory" {
     [BATCH_JOB_EXECUTION]
 }
 
-[React SPA] --> [REST API]
+[Web UI (HTML/CSS/JS)] --> [REST API]
 [DomainController] --> [H2 In-Memory]
 [BatchController] --> [JobLauncher]
 [JobLauncher] --> [bankingFileGenerationJob]

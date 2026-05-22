@@ -12,8 +12,8 @@
 
 ## Checklist
 
-- [ ] Code compiles with `mvn clean compile -Pskip-frontend`
-- [ ] All tests pass: `mvn test -Pskip-frontend`
+- [ ] Code compiles with `mvn clean compile`
+- [ ] All tests pass: `mvn test`
 - [ ] Test coverage stays above 40% (JaCoCo check)
 - [ ] New strategies implement `FileGenerationStrategy` interface correctly
 - [ ] CODA output lines are exactly 128 characters

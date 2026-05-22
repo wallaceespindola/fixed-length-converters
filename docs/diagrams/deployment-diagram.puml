@@ -7,7 +7,7 @@ node "Developer Machine" {
         artifact "fixed-length-converters.jar" as JAR
         component "Spring Boot 3.4.5\nlocalhost:8080" as APP
         component "H2 In-Memory DB\nbankingdb" as H2
-        component "React SPA\n/static/**" as SPA
+        component "Web UI (HTML/CSS/JS)\n/static/index.html" as SPA
     }
     folder "output/" as OUT
 }
@@ -17,7 +17,7 @@ node "Web Browser" {
 }
 
 node "GitHub Actions" {
-    component "build.yml\nmvn package" as BUILD
+    component "build.yml\nmvn install -DskipTests" as BUILD
     component "test.yml\nmvn verify + JaCoCo" as TEST
     component "benchmark.yml\nJMH benchmarks" as BENCH
     component "codeql.yml\nSecurity scan" as CQL

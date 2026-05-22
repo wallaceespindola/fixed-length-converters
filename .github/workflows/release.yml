@@ -19,7 +19,7 @@ jobs:
           distribution: 'temurin'
           cache: maven
       - name: Build release package
-        run: mvn clean package -DskipTests -Pskip-frontend
+        run: mvn clean install -DskipTests
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:

@@ -21,14 +21,3 @@ updates:
       - dependencies
       - github-actions
     open-pull-requests-limit: 5
-
-  - package-ecosystem: npm
-    directory: "/src/main/frontend"
-    schedule:
-      interval: weekly
-      day: monday
-      time: "08:00"
-    labels:
-      - dependencies
-      - frontend
-    open-pull-requests-limit: 10
