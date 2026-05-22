@@ -59,29 +59,29 @@ function Wait-ForBackend {
         } catch {}
         Start-Sleep -Seconds 1
     }
-    Write-Err "Backend did not start within ${WaitSecs}s — check $BackendLog"
+    Write-Err "Backend did not start within ${WaitSecs}s -- check $BackendLog"
     exit 1
 }
 
 $platform = if ($IsWindows) { "Windows" } elseif ($IsMacOS) { "macOS" } else { "Linux" }
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Magenta
-Write-Host "║  Banking Fixed-Length File Generator — Backend Launcher      ║" -ForegroundColor Magenta
-Write-Host "║  Platform: $($platform.PadRight(50))║" -ForegroundColor Magenta
-Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Magenta
+Write-Host "============================================================" -ForegroundColor Magenta
+Write-Host "  Banking Fixed-Length File Generator -- Backend Launcher" -ForegroundColor Magenta
+Write-Host "  Platform: $platform" -ForegroundColor Magenta
+Write-Host "============================================================" -ForegroundColor Magenta
 Write-Host ""
 
-# ── pre-flight ────────────────────────────────────────────────────────────────
+# ---- pre-flight -------------------------------------------------------
 foreach ($cmd in @("java", "mvn")) {
     if (-not (Get-Command $cmd -ErrorAction SilentlyContinue)) {
         Write-Err "Required command not found: $cmd"; exit 1
     }
 }
-if (Test-PortInUse $BackendPort) { Write-Warn "Port $BackendPort already in use — run kill-all.ps1 first." }
+if (Test-PortInUse $BackendPort) { Write-Warn "Port $BackendPort already in use -- run kill-all.ps1 first." }
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
-# ── 1. Maven build ────────────────────────────────────────────────────────────
+# ---- 1. Maven build ---------------------------------------------------
 Write-Info "Building project (Maven clean install, no tests)..."
 Set-Location $ScriptDir
 $buildLines = & mvn clean install -DskipTests 2>&1
@@ -89,11 +89,11 @@ $buildLines | Out-File -FilePath $BuildLog -Encoding utf8
 $buildLines | Where-Object { $_ -match '(BUILD|ERROR|\[ERROR\])' } | ForEach-Object { Write-Host $_ }
 
 if (-not ($buildLines | Where-Object { $_ -match 'BUILD SUCCESS' })) {
-    Write-Err "Maven build failed — see $BuildLog"; exit 1
+    Write-Err "Maven build failed -- see $BuildLog"; exit 1
 }
 Write-Ok "Build complete"
 
-# ── 2. Start backend ──────────────────────────────────────────────────────────
+# ---- 2. Start backend -------------------------------------------------
 Write-Info "Starting Spring Boot backend (profile: $Profile, port: $BackendPort)..."
 $mvnCmd = "mvn spring-boot:run -Dspring-boot.run.profiles=$Profile"
 $bProc = Start-BackgroundProcess -Command $mvnCmd -WorkDir $ScriptDir -OutLog $BackendLog -ErrLog $BackendErr
@@ -102,14 +102,14 @@ Write-Info "Backend PID: $($bProc.Id)  (log: $BackendLog)"
 
 Wait-ForBackend
 
-# ── summary ───────────────────────────────────────────────────────────────────
+# ---- summary ----------------------------------------------------------
 Write-Host ""
-Write-Host "╔══════════════════════════════════════════════════════════════╗" -ForegroundColor Green
-Write-Host "║  Backend running                                             ║" -ForegroundColor Green
-Write-Host "║  App     →  http://localhost:8080                            ║" -ForegroundColor Green
-Write-Host "║  Swagger →  http://localhost:8080/swagger-ui.html            ║" -ForegroundColor Green
-Write-Host "║  Health  →  http://localhost:8080/actuator/health            ║" -ForegroundColor Green
-Write-Host "║                                                              ║" -ForegroundColor Green
-Write-Host "║  Stop:  pwsh ./kill-all.ps1                                  ║" -ForegroundColor Green
-Write-Host "╚══════════════════════════════════════════════════════════════╝" -ForegroundColor Green
+Write-Host "============================================================" -ForegroundColor Green
+Write-Host "  Backend running" -ForegroundColor Green
+Write-Host "  App     ->  http://localhost:8080" -ForegroundColor Green
+Write-Host "  Swagger ->  http://localhost:8080/swagger-ui.html" -ForegroundColor Green
+Write-Host "  Health  ->  http://localhost:8080/actuator/health" -ForegroundColor Green
+Write-Host "" -ForegroundColor Green
+Write-Host "  Stop:  pwsh ./kill-all.ps1" -ForegroundColor Green
+Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""
