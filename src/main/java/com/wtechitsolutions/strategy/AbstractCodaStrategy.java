@@ -39,7 +39,9 @@ abstract class AbstractCodaStrategy implements FileGenerationStrategy {
         records.add(buildHeader(firstAccount));
         transactions.forEach(t -> records.add(buildMovement(t, accountMap.get(t.getAccountId()))));
         records.add(buildTrailer(transactions));
-        return formatRecords(records);
+        // Normalize to LF so CODA line-length checks pass on Windows (BeanIO and Velocity
+        // use System.lineSeparator() / template file endings which produce CRLF on Windows).
+        return formatRecords(records).replace("\r\n", "\n");
     }
 
     /**

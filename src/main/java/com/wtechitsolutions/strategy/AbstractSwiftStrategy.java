@@ -30,7 +30,7 @@ abstract class AbstractSwiftStrategy implements FileGenerationStrategy {
     public String generate(List<Transaction> transactions, List<Account> accounts) {
         Account account = accounts.isEmpty() ? null : accounts.get(0);
         List<SwiftMtRecord> records = buildSwiftRecords(transactions, account);
-        return formatRecords(records);
+        return formatRecords(records).replace("\r\n", "\n");
     }
 
     @Override
