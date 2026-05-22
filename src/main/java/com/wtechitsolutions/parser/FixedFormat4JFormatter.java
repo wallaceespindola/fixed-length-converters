@@ -33,13 +33,13 @@ public class FixedFormat4JFormatter {
                 sb.append(manager.export(toFf4j(record))).append("\n");
             } catch (Exception e) {
                 log.warn("fixedformat4j export failed for record type={}: {}", record.recordType(), e.getMessage());
-                sb.append(record.toFixedWidth()).append("\n");
             }
         }
         return sb.toString();
     }
 
     public List<CodaRecord> parseCoda(String content) {
+        if (content == null || content.isBlank()) return List.of();
         List<CodaRecord> result = new ArrayList<>();
         for (String line : content.split("\n")) {
             if (line.isBlank()) continue;
@@ -48,7 +48,6 @@ public class FixedFormat4JFormatter {
                 result.add(fromFf4j(manager.load(Ff4jCodaRecord.class, padded)));
             } catch (Exception e) {
                 log.warn("fixedformat4j parse failed for line: {}", e.getMessage());
-                result.add(CodaRecord.fromFixedWidth(padded));
             }
         }
         return result;

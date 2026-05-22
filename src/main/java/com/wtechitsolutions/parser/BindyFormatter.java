@@ -72,7 +72,6 @@ public class BindyFormatter {
                 }
             } catch (Exception e) {
                 log.warn("Bindy CODA format failed for recordType={}: {}", record.recordType(), e.getMessage());
-                sb.append(record.toFixedWidth()).append("\n");
             }
         }
         return sb.toString();
@@ -103,10 +102,7 @@ public class BindyFormatter {
             return List.of();
         } catch (Exception e) {
             log.warn("Bindy CODA parse failed: {}", e.getMessage());
-            return Arrays.stream(content.split("\n"))
-                    .filter(l -> !l.isBlank())
-                    .map(CodaRecord::fromFixedWidth)
-                    .collect(Collectors.toList());
+            return List.of();
         }
     }
 

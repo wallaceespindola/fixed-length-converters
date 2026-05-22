@@ -20,10 +20,8 @@ import java.util.Map;
 
 /**
  * Formatter using Apache Velocity 2.4.1 templates for CODA and SWIFT MT serialisation.
- *
- * Fields are padded in Java before being merged into the template, so templates
- * stay simple ($field concatenation). Parse path delegates to the shared
- * CodaRecord/SwiftMtRecord parsers since Velocity is a one-way template engine.
+ * Write path: merges pre-padded field maps into .vm templates.
+ * Read path: delegates to FixedFormat4JFormatter (annotation-based) since Velocity is write-only.
  */
 @Component
 public class VelocityFormatter {
@@ -32,7 +30,12 @@ public class VelocityFormatter {
     private static final String CODA_TEMPLATE = "velocity/coda-record.vm";
     private static final String SWIFT_TEMPLATE = "velocity/swift-record.vm";
 
+    private final FixedFormat4JFormatter ff4j;
     private VelocityEngine engine;
+
+    public VelocityFormatter(FixedFormat4JFormatter ff4j) {
+        this.ff4j = ff4j;
+    }
 
     @PostConstruct
     public void init() {
@@ -54,18 +57,13 @@ public class VelocityFormatter {
             engine.getTemplate(CODA_TEMPLATE).merge(context, writer);
             return writer.toString();
         } catch (Exception e) {
-            log.warn("Velocity CODA format failed: {}", e.getMessage());
-            return records.stream().map(CodaRecord::toFixedWidth)
-                    .collect(java.util.stream.Collectors.joining("\n")) + "\n";
+            log.warn("Velocity CODA format failed, delegating to fixedformat4j: {}", e.getMessage());
+            return ff4j.formatCoda(records);
         }
     }
 
     public List<CodaRecord> parseCoda(String content) {
-        if (content == null || content.isBlank()) return List.of();
-        return Arrays.stream(content.split("\n"))
-                .filter(l -> !l.isBlank())
-                .map(CodaRecord::fromFixedWidth)
-                .toList();
+        return ff4j.parseCoda(content);
     }
 
     public String formatSwift(List<SwiftMtRecord> records) {
@@ -94,18 +92,18 @@ public class VelocityFormatter {
 
     private static Map<String, String> padCoda(CodaRecord r) {
         Map<String, String> m = new HashMap<>();
-        m.put("recordType", padRight(r.recordType(), 1));
-        m.put("bankId", padRight(r.bankId(), 3));
+        m.put("recordType",      padRight(r.recordType(), 1));
+        m.put("bankId",          padRight(r.bankId(), 3));
         m.put("referenceNumber", padRight(r.referenceNumber(), 10));
-        m.put("accountNumber", padRight(r.accountNumber(), 37));
-        m.put("currency", padRight(r.currency(), 3));
-        m.put("amountStr", padAmount(r.amount(), 16));
-        m.put("entryDate", padRight(r.entryDate(), 6));
-        m.put("valueDate", padRight(r.valueDate(), 6));
-        m.put("description", padRight(r.description(), 32));
+        m.put("accountNumber",   padRight(r.accountNumber(), 37));
+        m.put("currency",        padRight(r.currency(), 3));
+        m.put("amountStr",       padAmount(r.amount(), 16));
+        m.put("entryDate",       padRight(r.entryDate(), 6));
+        m.put("valueDate",       padRight(r.valueDate(), 6));
+        m.put("description",     padRight(r.description(), 32));
         m.put("transactionCode", padRight(r.transactionCode(), 3));
-        m.put("sequenceNumber", padLeft(r.sequenceNumber(), 4));
-        m.put("filler", padRight(r.filler(), 7));
+        m.put("sequenceNumber",  padLeft(r.sequenceNumber(), 4));
+        m.put("filler",          padRight(r.filler(), 7));
         return m;
     }
 

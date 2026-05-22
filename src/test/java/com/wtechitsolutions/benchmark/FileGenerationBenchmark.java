@@ -119,7 +119,7 @@ public class FileGenerationBenchmark {
         CamelBeanIOFormatter camelBeanIO = new CamelBeanIOFormatter();
         camelBeanIO.init();
 
-        VelocityFormatter velocity = new VelocityFormatter();
+        VelocityFormatter velocity = new VelocityFormatter(ff4j);
         velocity.init();
 
         SpringBatchFormatter springBatch = new SpringBatchFormatter();

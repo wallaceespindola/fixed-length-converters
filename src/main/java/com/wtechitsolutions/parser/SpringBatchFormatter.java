@@ -89,10 +89,8 @@ public class SpringBatchFormatter {
                     .map(codaAggregator::aggregate)
                     .collect(Collectors.joining("\n")) + "\n";
         } catch (Exception e) {
-            log.warn("Spring Batch CODA format failed — falling back to CodaRecord.toFixedWidth(): {}", e.getMessage());
-            return records.stream()
-                    .map(CodaRecord::toFixedWidth)
-                    .collect(Collectors.joining("\n")) + "\n";
+            log.warn("Spring Batch CODA format failed: {}", e.getMessage());
+            return "";
         }
     }
 
@@ -115,16 +113,15 @@ public class SpringBatchFormatter {
                         try {
                             return codaFieldSetMapper.mapFieldSet(codaTokenizer.tokenize(line));
                         } catch (Exception e) {
-                            return CodaRecord.fromFixedWidth(line);
+                            log.warn("Spring Batch CODA tokenize failed for line, skipping: {}", e.getMessage());
+                            return null;
                         }
                     })
+                    .filter(r -> r != null)
                     .toList();
         } catch (Exception e) {
-            log.warn("Spring Batch CODA parse failed — falling back to CodaRecord.fromFixedWidth(): {}", e.getMessage());
-            return Arrays.stream(content.split("\n"))
-                    .filter(l -> !l.isBlank())
-                    .map(CodaRecord::fromFixedWidth)
-                    .toList();
+            log.warn("Spring Batch CODA parse failed: {}", e.getMessage());
+            return List.of();
         }
     }
 

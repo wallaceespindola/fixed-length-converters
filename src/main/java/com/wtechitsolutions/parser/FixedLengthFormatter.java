@@ -47,10 +47,7 @@ public class FixedLengthFormatter {
                     .stream().map(this::fromVl).collect(Collectors.toList());
         } catch (Exception e) {
             log.warn("vitaliy fixedlength CODA parse failed: {}", e.getMessage());
-            return Arrays.stream(content.split("\n"))
-                    .filter(l -> !l.isBlank())
-                    .map(CodaRecord::fromFixedWidth)
-                    .collect(Collectors.toList());
+            return List.of();
         }
     }
 

@@ -94,10 +94,8 @@ public class CamelBeanIOFormatter {
                     .replace("\r\n", "\n")
                     .replace("\r", "\n");
         } catch (Exception e) {
-            log.warn("Camel BeanIO CODA format failed, falling back to toFixedWidth: {}", e.getMessage());
-            return records.stream()
-                    .map(CodaRecord::toFixedWidth)
-                    .collect(Collectors.joining("\n")) + "\n";
+            log.warn("Camel BeanIO CODA format failed: {}", e.getMessage());
+            return "";
         }
     }
 
@@ -120,11 +118,8 @@ public class CamelBeanIOFormatter {
             }
             return result;
         } catch (Exception e) {
-            log.warn("Camel BeanIO CODA parse failed, falling back to fromFixedWidth: {}", e.getMessage());
-            return Arrays.stream(content.split("\n"))
-                    .filter(l -> !l.isBlank())
-                    .map(CodaRecord::fromFixedWidth)
-                    .toList();
+            log.warn("Camel BeanIO CODA parse failed: {}", e.getMessage());
+            return List.of();
         }
     }
 

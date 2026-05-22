@@ -4,12 +4,19 @@ import com.wtechitsolutions.parser.model.CodaRecord;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+/**
+ * Verifies fixed-length CODA roundtrip (format → parse) using the annotation-based
+ * fixedformat4j formatter — no manual substring parsing.
+ */
 class CodaRecordTest {
 
-    private CodaRecord sampleRecord() {
+    private final FixedFormat4JFormatter formatter = new FixedFormat4JFormatter();
+
+    private CodaRecord sample() {
         return CodaRecord.builder()
                 .recordType("1")
                 .bankId("310")
@@ -27,51 +34,48 @@ class CodaRecordTest {
     }
 
     @Test
-    void toFixedWidth_produces_128_char_line() {
-        String line = sampleRecord().toFixedWidth();
-        assertThat(line).hasSize(128);
+    void formatCoda_produces_128_char_lines() {
+        String output = formatter.formatCoda(List.of(sample()));
+        assertThat(output.lines().filter(l -> !l.isBlank()))
+                .allSatisfy(line -> assertThat(line).hasSize(128));
     }
 
     @Test
-    void toFixedWidth_starts_with_record_type() {
-        String line = sampleRecord().toFixedWidth();
+    void formatCoda_first_char_is_record_type() {
+        String line = formatter.formatCoda(List.of(sample())).lines()
+                .filter(l -> !l.isBlank()).findFirst().orElseThrow();
         assertThat(line.charAt(0)).isEqualTo('1');
     }
 
     @Test
-    void fromFixedWidth_roundtrip_preserves_record_type() {
-        CodaRecord original = sampleRecord();
-        String line = original.toFixedWidth();
-        CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.recordType()).isEqualTo(original.recordType());
+    void roundtrip_preserves_record_type() {
+        CodaRecord parsed = roundtrip(sample());
+        assertThat(parsed.recordType()).isEqualTo(sample().recordType());
     }
 
     @Test
-    void fromFixedWidth_roundtrip_preserves_currency() {
-        CodaRecord original = sampleRecord();
-        String line = original.toFixedWidth();
-        CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.currency()).isEqualTo(original.currency());
+    void roundtrip_preserves_currency() {
+        assertThat(roundtrip(sample()).currency()).isEqualTo(sample().currency());
     }
 
     @Test
-    void fromFixedWidth_roundtrip_preserves_transaction_code() {
-        CodaRecord original = sampleRecord();
-        String line = original.toFixedWidth();
-        CodaRecord parsed = CodaRecord.fromFixedWidth(line);
-        assertThat(parsed.transactionCode()).isEqualTo(original.transactionCode());
+    void roundtrip_preserves_transaction_code() {
+        assertThat(roundtrip(sample()).transactionCode()).isEqualTo(sample().transactionCode());
     }
 
     @Test
-    void fromFixedWidth_handles_short_input_without_exception() {
-        CodaRecord result = CodaRecord.fromFixedWidth("1310");
-        assertThat(result).isNotNull();
-        assertThat(result.recordType()).isEqualTo("1");
+    void roundtrip_preserves_bank_id() {
+        assertThat(roundtrip(sample()).bankId()).isEqualTo(sample().bankId());
     }
 
     @Test
-    void fromFixedWidth_handles_null_without_exception() {
-        CodaRecord result = CodaRecord.fromFixedWidth(null);
-        assertThat(result).isNotNull();
+    void parseCoda_empty_content_returns_empty_list() {
+        assertThat(formatter.parseCoda("")).isEmpty();
+        assertThat(formatter.parseCoda(null)).isEmpty();
+    }
+
+    private CodaRecord roundtrip(CodaRecord record) {
+        String formatted = formatter.formatCoda(List.of(record));
+        return formatter.parseCoda(formatted).get(0);
     }
 }
