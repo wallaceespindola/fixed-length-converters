@@ -13,7 +13,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Enhanced README architecture diagram with per-layer color theming (Frontend / API / Batch / Strategy / Parsers / Storage) and labeled data-flow arrows
 - Replaced React 18 + Vite + MUI frontend with a self-contained vanilla HTML/CSS/JS single-page UI (`src/main/resources/static/index.html`); Chart.js (CDN) used for benchmark charts — no Node.js, npm, or build step required
 - Removed `frontend-maven-plugin` and `skip-frontend` Maven profile; `mvn clean install` and `mvn spring-boot:run` now work with no flags or profiles
-- Simplified all start/stop scripts (`run-all.*`, `kill-all.*`) and `Makefile` to remove npm/Node/Vite references; only Java and Maven are required
+- Simplified all start/stop scripts (`run.*`, `kill.*`) and `Makefile` to remove npm/Node/Vite references; only Java and Maven are required
 - Updated all documentation to reflect the simplified build and frontend architecture
 
 ### Added

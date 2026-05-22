@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# kill-all.sh — Stop backend (8080) processes
+# kill.sh — Stop backend (8080) processes
 # Platforms: macOS, Ubuntu/Debian Linux
-# Usage: ./kill-all.sh
+# Usage: ./kill.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"

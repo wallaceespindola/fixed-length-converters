@@ -1,7 +1,7 @@
 @echo off
-REM run-all.bat — Build and start backend (port 8080)
+REM run.bat — Build and start backend (port 8080)
 REM Platform: Windows 11+  (CMD)
-REM Usage: run-all.bat
+REM Usage: run.bat
 REM Requires: Java 21+, Maven 3.9+, curl (built-in on Win10+)
 
 setlocal EnableDelayedExpansion
@@ -33,7 +33,7 @@ where curl >nul 2>&1 || (echo [ERROR] curl not found in PATH & exit /b 1)
 REM ── check port ────────────────────────────────────────────────────────────────
 netstat -ano | findstr ":%BACKEND_PORT%\b" | findstr "LISTENING" >nul 2>&1
 if %errorlevel% equ 0 (
-    echo [WARN]  Port %BACKEND_PORT% already in use - run kill-all.bat first.
+    echo [WARN]  Port %BACKEND_PORT% already in use - run kill.bat first.
 )
 
 REM ── 1. Maven build ────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ echo   App      -^>  http://localhost:8080
 echo   Swagger  -^>  http://localhost:8080/swagger-ui.html
 echo   Health   -^>  http://localhost:8080/actuator/health
 echo.
-echo   Stop:  kill-all.bat
+echo   Stop:  kill.bat
 echo ============================================================
 echo.
 

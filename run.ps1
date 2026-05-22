@@ -1,6 +1,6 @@
-# run-all.ps1 — Build and start backend (port 8080)
+# run.ps1 — Build and start backend (port 8080)
 # Platforms: Windows 11+, macOS, Linux  (requires PowerShell Core 7+ on Mac/Linux)
-# Usage: .\run-all.ps1   or   pwsh ./run-all.ps1
+# Usage: .\run.ps1   or   pwsh ./run.ps1
 
 param(
     [int]$BackendPort = 8080,
@@ -77,7 +77,7 @@ foreach ($cmd in @("java", "mvn")) {
         Write-Err "Required command not found: $cmd"; exit 1
     }
 }
-if (Test-PortInUse $BackendPort) { Write-Warn "Port $BackendPort already in use -- run kill-all.ps1 first." }
+if (Test-PortInUse $BackendPort) { Write-Warn "Port $BackendPort already in use -- run kill.ps1 first." }
 
 New-Item -ItemType Directory -Force -Path $LogDir | Out-Null
 
@@ -110,6 +110,6 @@ Write-Host "  App     ->  http://localhost:8080" -ForegroundColor Green
 Write-Host "  Swagger ->  http://localhost:8080/swagger-ui.html" -ForegroundColor Green
 Write-Host "  Health  ->  http://localhost:8080/actuator/health" -ForegroundColor Green
 Write-Host "" -ForegroundColor Green
-Write-Host "  Stop:  pwsh ./kill-all.ps1" -ForegroundColor Green
+Write-Host "  Stop:  pwsh ./kill.ps1" -ForegroundColor Green
 Write-Host "============================================================" -ForegroundColor Green
 Write-Host ""

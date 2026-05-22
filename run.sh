@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# run-all.sh — Build and start backend (port 8080)
+# run.sh — Build and start backend (port 8080)
 # Platforms: macOS, Ubuntu/Debian Linux
-# Usage: ./run-all.sh
+# Usage: ./run.sh
 
 set -euo pipefail
 
@@ -48,7 +48,7 @@ for cmd in java mvn curl; do
 done
 
 if port_in_use "$BACKEND_PORT"; then
-  warn "Port ${BACKEND_PORT} already in use — run ./kill-all.sh first."
+  warn "Port ${BACKEND_PORT} already in use — run ./kill.sh first."
 fi
 
 mkdir -p "$LOG_DIR"
@@ -95,6 +95,6 @@ echo "║  App     →  http://localhost:8080                            ║"
 echo "║  Swagger →  http://localhost:8080/swagger-ui.html            ║"
 echo "║  Health  →  http://localhost:8080/actuator/health            ║"
 echo "║                                                              ║"
-echo "║  Stop:  ./kill-all.sh                                        ║"
+echo "║  Stop:  ./kill.sh                                        ║"
 echo "╚══════════════════════════════════════════════════════════════╝"
 echo ""

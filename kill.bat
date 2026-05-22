@@ -1,7 +1,7 @@
 @echo off
-REM kill-all.bat — Stop backend (8080) processes
+REM kill.bat — Stop backend (8080) processes
 REM Platform: Windows 11+  (CMD)
-REM Usage: kill-all.bat
+REM Usage: kill.bat
 
 setlocal EnableDelayedExpansion
 

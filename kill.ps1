@@ -1,6 +1,6 @@
-# kill-all.ps1 -- Stop backend (8080) processes
+# kill.ps1 -- Stop backend (8080) processes
 # Platforms: Windows 11+, macOS, Linux  (requires PowerShell Core 7+ on Mac/Linux)
-# Usage: .\kill-all.ps1   or   pwsh ./kill-all.ps1
+# Usage: .\kill.ps1   or   pwsh ./kill.ps1
 
 param(
     [int[]]$Ports = @(8080)
