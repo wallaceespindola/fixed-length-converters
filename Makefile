@@ -1,8 +1,8 @@
 .DEFAULT_GOAL := help
-SKIP_FRONTEND := -Pskip-frontend
+
 SKIP_TESTS := -DskipTests
 
-.PHONY: help build run test benchmark clean kill lint docs
+.PHONY: help build run run-prod test test-unit test-integration benchmark clean kill lint docs
 
 help: ## Display all available make commands with descriptions
 	@echo ""
@@ -12,46 +12,40 @@ help: ## Display all available make commands with descriptions
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 
-build: ## Compile and package the project (skips tests)
-	mvn clean package $(SKIP_TESTS)
+build: ## Compile, test and install the project
+	mvn clean install $(SKIP_TESTS)
 
-build-full: ## Compile, package with frontend build
-	mvn clean package $(SKIP_TESTS) -P!skip-frontend
-
-run: ## Start the application locally (dev profile, skips frontend build)
-	mvn spring-boot:run $(SKIP_FRONTEND) -Dspring-boot.run.profiles=dev
+run: ## Start the application locally (dev profile — enables Swagger UI)
+	mvn spring-boot:run -Dspring-boot.run.profiles=dev
 
 run-prod: ## Start the application without dev profile
-	mvn spring-boot:run $(SKIP_FRONTEND)
+	mvn spring-boot:run
 
-test: ## Run all test categories (unit + integration, no frontend build)
-	mvn verify $(SKIP_FRONTEND)
+test: ## Run all tests (unit + integration)
+	mvn verify
 
 test-unit: ## Run only unit tests
-	mvn test $(SKIP_FRONTEND) -Dtest="*Test" -DfailIfNoTests=false
+	mvn test -Dtest="*Test" -DfailIfNoTests=false
 
 test-integration: ## Run integration tests
-	mvn verify $(SKIP_FRONTEND) -Dtest="*IntegrationTest,*IT" -DfailIfNoTests=false
+	mvn verify -Dtest="*IntegrationTest,*IT" -DfailIfNoTests=false
 
 benchmark: ## Run the JMH benchmark suite
-	mvn test $(SKIP_FRONTEND) -Pbenchmark
+	mvn test -Pbenchmark
 
-kill: ## Kill Java and npm/Node processes to free ports (8080, 5173, etc.)
+kill: ## Kill Java processes to free port 8080
 	@echo "Killing Java processes..."
 	@pkill -f 'java.*FixedLengthConvertersApplication' 2>/dev/null && echo "  Spring Boot stopped" || echo "  No Spring Boot process found"
 	@pkill -f 'java.*spring-boot:run' 2>/dev/null && echo "  Maven spring-boot:run stopped" || true
-	@echo "Killing Node/npm processes..."
-	@pkill -f 'node.*vite' 2>/dev/null && echo "  Vite dev server stopped" || echo "  No Vite process found"
-	@pkill -f 'npm.*dev' 2>/dev/null && echo "  npm dev stopped" || true
-	@echo "Done. Ports released."
+	@echo "Done. Port 8080 released."
 
 clean: ## Remove build artifacts and output files
 	mvn clean
 	rm -rf output/*.txt
 
-lint: ## Run static analysis (compiler warnings + checkstyle if configured)
-	mvn compile $(SKIP_FRONTEND) -Xlint:all 2>&1 | grep -E "(warning|error)" | head -50 || true
+lint: ## Run static analysis (compiler warnings)
+	mvn compile -Xlint:all 2>&1 | grep -E "(warning|error)" | head -50 || true
 
 docs: ## Generate documentation artifacts (JaCoCo report)
-	mvn verify $(SKIP_FRONTEND) -DskipTests=false
+	mvn verify -DskipTests=false
 	@echo "JaCoCo report: target/site/jacoco/index.html"

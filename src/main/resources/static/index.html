@@ -1,13 +1,773 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Banking Fixed-Length File Generator</title>
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <script type="module" crossorigin src="/assets/index-B-Y_ZrXl.js"></script>
-  </head>
-  <body>
-    <div id="root"></div>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Banking Fixed-Length File Platform</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --primary: #e65100;
+      --primary-hover: #bf360c;
+      --bg: #f4f4f4;
+      --surface: #ffffff;
+      --text: #1a1a1a;
+      --text-muted: #666666;
+      --border: #ddd;
+      --hover: #f0f0f0;
+      --chip-ok-bg: #e8f5e9; --chip-ok-fg: #2e7d32;
+      --chip-err-bg: #ffebee; --chip-err-fg: #c62828;
+      --chip-run-bg: #e3f2fd; --chip-run-fg: #1565c0;
+      --chip-def-bg: #eeeeee; --chip-def-fg: #555555;
+      --alert-err-bg: #ffebee; --alert-err-fg: #c62828; --alert-err-border: #ffcdd2;
+      --alert-info-bg: #e3f2fd; --alert-info-fg: #1565c0; --alert-info-border: #90caf9;
+      --shadow: 0 1px 3px rgba(0,0,0,.1);
+      --drawer: 210px;
+      --bar: 52px;
+    }
+    [data-theme=dark] {
+      --bg: #111; --surface: #1e1e1e; --text: #e0e0e0; --text-muted: #999;
+      --border: #333; --hover: #2a2a2a; --shadow: 0 1px 4px rgba(0,0,0,.4);
+      --chip-ok-bg: #1b5e20; --chip-ok-fg: #a5d6a7;
+      --chip-err-bg: #b71c1c; --chip-err-fg: #ffcdd2;
+      --chip-run-bg: #0d47a1; --chip-run-fg: #90caf9;
+      --chip-def-bg: #333; --chip-def-fg: #bbb;
+      --alert-err-bg: #b71c1c; --alert-err-fg: #ffcdd2; --alert-err-border: #c62828;
+      --alert-info-bg: #0d47a1; --alert-info-fg: #90caf9; --alert-info-border: #1565c0;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+           background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5;
+           transition: background .2s, color .2s; }
+
+    .bar { position: fixed; top: 0; left: 0; right: 0; height: var(--bar);
+           background: var(--primary); color: #fff; display: flex; align-items: center;
+           padding: 0 16px; z-index: 200; box-shadow: 0 2px 6px rgba(0,0,0,.25); }
+    .bar-title { flex: 1; font-size: 1rem; font-weight: 700; }
+    .bar-btn { background: none; border: none; color: #fff; font-size: 1.25rem;
+               padding: 6px 8px; border-radius: 50%; cursor: pointer; transition: background .15s; }
+    .bar-btn:hover { background: rgba(255,255,255,.18); }
+
+    .layout { display: flex; padding-top: var(--bar); min-height: 100vh; }
+
+    .sidebar { width: var(--drawer); background: var(--surface); border-right: 1px solid var(--border);
+               position: fixed; top: var(--bar); bottom: 0; overflow-y: auto; z-index: 100; }
+    .nav-btn { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 14px;
+               background: none; border: none; cursor: pointer; color: var(--text);
+               font-size: .875rem; text-align: left; transition: background .12s; }
+    .nav-btn:hover { background: var(--hover); }
+    .nav-btn.active { background: rgba(230,81,0,.1); color: var(--primary); font-weight: 600; }
+    .nav-ic { font-size: 1.1rem; width: 22px; text-align: center; flex-shrink: 0; }
+
+    .main { margin-left: var(--drawer); flex: 1; padding: 24px;
+            display: flex; flex-direction: column; min-height: calc(100vh - var(--bar)); }
+    .content { flex: 1; }
+
+    .footer { margin-top: 40px; padding: 14px 0; border-top: 1px solid var(--border);
+               display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+    .footer-links { display: flex; gap: 14px; }
+    .caption { font-size: .72rem; color: var(--text-muted); }
+    a { color: var(--primary); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .view { display: none; }
+    .view.active { display: block; }
+    h1 { font-size: 1.6rem; font-weight: 700; margin-bottom: 6px; }
+    .subtitle { color: var(--text-muted); margin-bottom: 18px; }
+
+    .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px;
+             padding: 16px; box-shadow: var(--shadow); }
+    .card-title { font-weight: 600; margin-bottom: 12px; font-size: .95rem; }
+
+    .g2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .g3 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+    .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px;
+           border-radius: 4px; font-size: .875rem; font-weight: 500; cursor: pointer;
+           border: none; transition: all .12s; white-space: nowrap; text-decoration: none; }
+    .btn-p { background: var(--primary); color: #fff; }
+    .btn-p:hover:not(:disabled) { background: var(--primary-hover); }
+    .btn-o { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
+    .btn-o:hover:not(:disabled) { background: rgba(230,81,0,.07); }
+    .btn-lg { padding: 9px 18px; font-size: 1rem; }
+    .btn:disabled { opacity: .55; cursor: not-allowed; }
+    .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+
+    .fgrp { margin-bottom: 14px; }
+    label { display: block; margin-bottom: 4px; font-size: .8rem; font-weight: 500; color: var(--text-muted); }
+    select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 4px;
+             font-size: .875rem; background: var(--surface); color: var(--text); }
+    select:focus { outline: 2px solid var(--primary); }
+
+    .chip { display: inline-block; padding: 2px 9px; border-radius: 12px; font-size: .72rem; font-weight: 700; }
+    .c-ok  { background: var(--chip-ok-bg);  color: var(--chip-ok-fg); }
+    .c-err { background: var(--chip-err-bg); color: var(--chip-err-fg); }
+    .c-run { background: var(--chip-run-bg); color: var(--chip-run-fg); }
+    .c-def { background: var(--chip-def-bg); color: var(--chip-def-fg); }
+
+    .alert { padding: 10px 14px; border-radius: 4px; margin-bottom: 12px; font-size: .875rem; border: 1px solid; }
+    .a-err  { background: var(--alert-err-bg);  color: var(--alert-err-fg);  border-color: var(--alert-err-border); }
+    .a-info { background: var(--alert-info-bg); color: var(--alert-info-fg); border-color: var(--alert-info-border); }
+
+    .tbl-wrap { overflow-x: auto; }
+    table { width: 100%; border-collapse: collapse; font-size: .875rem; }
+    th { background: var(--hover); padding: 9px 12px; text-align: left; font-weight: 600;
+         border-bottom: 2px solid var(--border); white-space: nowrap; }
+    td { padding: 7px 12px; border-bottom: 1px solid var(--border); }
+    tr:hover td { background: var(--hover); }
+
+    .prog-track { height: 7px; background: var(--border); border-radius: 4px; overflow: hidden; margin-bottom: 14px; }
+    .prog-fill  { height: 100%; background: var(--primary); border-radius: 4px; transition: width .25s; }
+
+    .spin { display: inline-block; width: 16px; height: 16px; border-radius: 50%;
+            border: 2px solid rgba(255,255,255,.35); border-top-color: #fff;
+            animation: rot .65s linear infinite; vertical-align: middle; }
+    .spin-d { border-color: rgba(0,0,0,.12); border-top-color: var(--primary); }
+    @keyframes rot { to { transform: rotate(360deg); } }
+
+    .ra-row { display: flex; align-items: center; gap: 8px; font-family: monospace;
+              font-size: .78rem; padding: 3px 0; }
+    .ra-type { min-width: 54px; }
+    .ra-lib  { min-width: 126px; }
+    .ra-dur  { min-width: 65px; color: var(--text-muted); }
+
+    .preview { background: var(--hover); border-radius: 4px; padding: 10px; font-family: monospace;
+               font-size: .72rem; overflow: auto; max-height: 340px; margin-top: 10px; }
+
+    .chart-box { position: relative; height: 290px; }
+
+    .hidden { display: none !important; }
+    hr.d { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+  </style>
+</head>
+<body data-theme="light">
+
+<header class="bar">
+  <span class="bar-title">Banking Fixed-Length File Platform</span>
+  <button class="bar-btn" id="themeBtn" title="Toggle dark / light mode">🌙</button>
+</header>
+
+<div class="layout">
+  <nav class="sidebar">
+    <button class="nav-btn active" data-view="dashboard"><span class="nav-ic">📊</span>Dashboard</button>
+    <button class="nav-btn" data-view="generate"><span class="nav-ic">🗄️</span>Generate Data</button>
+    <button class="nav-btn" data-view="batch"><span class="nav-ic">▶️</span>Batch Runner</button>
+    <button class="nav-btn" data-view="history"><span class="nav-ic">🕒</span>History</button>
+    <button class="nav-btn" data-view="benchmark"><span class="nav-ic">📈</span>Benchmark</button>
+  </nav>
+
+  <main class="main">
+    <div class="content">
+
+      <!-- Dashboard -->
+      <div class="view active" id="v-dashboard">
+        <h1>Dashboard</h1>
+        <p class="subtitle">Application health and quick actions.</p>
+        <div class="g3" style="margin-bottom:16px">
+          <div class="card">
+            <div class="card-title">Health Status</div>
+            <span id="health-chip" class="chip c-def">Loading…</span>
+          </div>
+          <div class="card" style="grid-column:span 2">
+            <div class="card-title">Application Info</div>
+            <div id="app-info"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Quick Actions</div>
+          <div class="btn-row">
+            <button class="btn btn-p" onclick="go('generate')">Generate Banking Data</button>
+            <button class="btn btn-o" onclick="go('batch')">Run Batch Job</button>
+            <button class="btn btn-o" onclick="go('benchmark')">View Benchmarks</button>
+            <a class="btn btn-o" href="/swagger-ui.html" target="_blank" rel="noopener">Swagger UI</a>
+            <a class="btn btn-o" href="/actuator/health" target="_blank" rel="noopener">Actuator Health</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Generate Data -->
+      <div class="view" id="v-generate">
+        <h1>Generate Banking Data</h1>
+        <p class="subtitle">Seeds the H2 database with sample accounts, transactions, and statements.</p>
+        <div class="btn-row">
+          <button class="btn btn-p btn-lg" id="btn-low"  onclick="genData('LOW')">Low Load (20 accounts, 200 txns)</button>
+          <button class="btn btn-o btn-lg" id="btn-high" onclick="genData('HIGH')">High Load (200 accounts, 2 000 txns)</button>
+        </div>
+        <p class="caption">Low: 20 accounts · 200 transactions · 10 statements.&nbsp;&nbsp;High: 200 accounts · 2 000 transactions · 100 statements.</p>
+        <div id="gen-alert" class="hidden alert"></div>
+        <div id="gen-result" class="hidden card" style="margin-top:16px;max-width:460px">
+          <div class="card-title">Generation Result</div>
+          <table id="gen-table" style="width:auto"><tbody></tbody></table>
+        </div>
+      </div>
+
+      <!-- Batch Runner -->
+      <div class="view" id="v-batch">
+        <h1>Batch Runner</h1>
+        <p class="subtitle">Trigger a Spring Batch job, or run every FileType × Library combination at once.</p>
+        <div class="card" style="max-width:520px;margin-bottom:14px">
+          <div class="fgrp">
+            <label for="sel-ft">File Type</label>
+            <select id="sel-ft">
+              <option value="CODA">CODA</option>
+              <option value="SWIFT">SWIFT</option>
+            </select>
+          </div>
+          <div class="fgrp">
+            <label for="sel-lib">Formatter Library</label>
+            <select id="sel-lib">
+              <option value="BEANIO">BEANIO</option>
+              <option value="FIXFORMAT4J">FIXFORMAT4J</option>
+              <option value="FIXEDLENGTH">FIXEDLENGTH</option>
+              <option value="BINDY">BINDY</option>
+              <option value="CAMEL_BEANIO">CAMEL_BEANIO</option>
+              <option value="VELOCITY">VELOCITY</option>
+              <option value="SPRING_BATCH">SPRING_BATCH</option>
+            </select>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-p btn-lg" id="btn-single" onclick="runSingle()">Generate File</button>
+            <button class="btn btn-o btn-lg" id="btn-all"    onclick="runAll()">Run All Combinations (14)</button>
+          </div>
+        </div>
+        <div id="batch-alert" class="hidden alert"></div>
+        <div id="ra-section" class="hidden card" style="margin-bottom:14px">
+          <div class="card-title">Run All — <span id="ra-ctr">0/14</span> completed</div>
+          <div class="prog-track"><div class="prog-fill" id="ra-prog" style="width:0%"></div></div>
+          <div id="ra-rows"></div>
+        </div>
+        <div id="batch-result" class="hidden card">
+          <table id="batch-table" style="width:auto"><tbody></tbody></table>
+          <div id="batch-preview-wrap" class="hidden">
+            <hr class="d">
+            <div style="font-size:.8rem;font-weight:600;margin-bottom:6px">File Preview</div>
+            <pre id="batch-preview" class="preview"></pre>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="view" id="v-history">
+        <h1>Batch History</h1>
+        <p class="subtitle">Last 50 Spring Batch job executions. Auto-refreshes every 15 s.</p>
+        <div id="hist-alert" class="hidden alert"></div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Job ID</th><th>File Type</th><th>Library</th><th>Status</th><th>Duration (ms)</th><th>Started</th></tr></thead>
+            <tbody id="hist-body"><tr><td colspan="6" style="text-align:center;color:var(--text-muted)">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Benchmark -->
+      <div class="view" id="v-benchmark">
+        <h1>Benchmark Dashboard</h1>
+        <div class="btn-row">
+          <button class="btn btn-o" onclick="window.open('/api/benchmark/export/csv','_blank')">Export CSV</button>
+          <button class="btn btn-o" onclick="window.open('/api/benchmark/export/json','_blank')">Export JSON</button>
+          <button class="btn btn-o" onclick="window.open('/api/benchmark/export/markdown','_blank')">Export Markdown</button>
+        </div>
+        <div id="bench-alert" class="hidden alert"></div>
+        <div id="bench-content" class="hidden">
+          <div class="g2" style="margin-bottom:16px">
+            <div class="card"><div class="card-title">Avg Throughput by Library (ops/s)</div><div class="chart-box"><canvas id="c-tp"></canvas></div></div>
+            <div class="card"><div class="card-title">Avg Duration by Library (ms)</div><div class="chart-box"><canvas id="c-dur"></canvas></div></div>
+            <div class="card"><div class="card-title">Throughput Over Runs</div><div class="chart-box"><canvas id="c-ttp"></canvas></div></div>
+            <div class="card"><div class="card-title">Duration Over Runs (ms)</div><div class="chart-box"><canvas id="c-tdur"></canvas></div></div>
+          </div>
+          <div class="card">
+            <div class="card-title">Library Summary</div>
+            <div id="bench-summary" style="display:flex;flex-wrap:wrap;gap:24px"></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <footer class="footer">
+      <span class="caption" id="footer-ver">Banking Fixed-Length File Platform</span>
+      <div class="footer-links">
+        <span class="caption">By <a href="https://github.com/wallaceespindola" target="_blank" rel="noopener">Wallace Espindola</a></span>
+        <a class="caption" href="https://github.com/wallaceespindola/fixed-length-converters" target="_blank" rel="noopener">GitHub</a>
+        <a class="caption" href="https://www.linkedin.com/in/wallaceespindola/" target="_blank" rel="noopener">LinkedIn</a>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<script>
+'use strict';
+
+// ── Theme ────────────────────────────────────────────────────────────────────
+const themeBtn = document.getElementById('themeBtn');
+let dark = localStorage.getItem('theme') === 'dark';
+(function applyTheme() {
+  document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+})();
+themeBtn.onclick = () => {
+  dark = !dark;
+  localStorage.setItem('theme', dark ? 'dark' : 'light');
+  document.body.setAttribute('data-theme', dark ? 'dark' : 'light');
+  themeBtn.textContent = dark ? '☀️' : '🌙';
+};
+
+// ── Router ───────────────────────────────────────────────────────────────────
+const VIEWS = ['dashboard', 'generate', 'batch', 'history', 'benchmark'];
+const onEnter = { dashboard: loadDash, history: loadHistory, benchmark: loadBench };
+
+function go(name) {
+  if (!VIEWS.includes(name)) name = 'dashboard';
+  VIEWS.forEach(v => {
+    document.getElementById('v-' + v).classList.toggle('active', v === name);
+    document.querySelector('[data-view="' + v + '"]').classList.toggle('active', v === name);
+  });
+  location.hash = name === 'dashboard' ? '' : name;
+  if (onEnter[name]) onEnter[name]();
+}
+document.querySelectorAll('.nav-btn').forEach(b => { b.onclick = () => go(b.dataset.view); });
+window.addEventListener('hashchange', () => {
+  const h = location.hash.replace('#', '').trim();
+  go(VIEWS.includes(h) ? h : 'dashboard');
+});
+
+// ── API ──────────────────────────────────────────────────────────────────────
+async function api(method, url, body) {
+  const opts = { method };
+  if (body !== undefined) {
+    opts.headers = { 'Content-Type': 'application/json' };
+    opts.body = JSON.stringify(body);
+  }
+  const res = await fetch(url, opts);
+  if (!res.ok) {
+    const t = await res.text().catch(() => '');
+    throw new Error(t || 'HTTP ' + res.status);
+  }
+  return (res.headers.get('content-type') || '').includes('json') ? res.json() : res.text();
+}
+
+// ── DOM helpers (no innerHTML with raw API data) ──────────────────────────────
+function setText(el, value) { el.textContent = String(value == null ? '—' : value); }
+
+function setAlert(id, msg, type) {
+  const el = document.getElementById(id);
+  el.className = 'alert a-' + type;
+  setText(el, msg);
+  el.classList.remove('hidden');
+}
+function clearAlert(id) { document.getElementById(id).classList.add('hidden'); }
+
+function chipCls(s) {
+  const u = (s || '').toUpperCase();
+  if (u === 'UP' || u === 'COMPLETED') return 'c-ok';
+  if (u === 'FAILED' || u === 'DOWN')  return 'c-err';
+  if (u === 'RUNNING')                 return 'c-run';
+  return 'c-def';
+}
+function makeChip(status) {
+  const s = document.createElement('span');
+  s.className = 'chip ' + chipCls(status);
+  setText(s, status || '?');
+  return s;
+}
+
+function fmt(ts) { return ts ? new Date(ts).toLocaleString() : '—'; }
+
+function fillTable(tbodyEl, rows) {
+  tbodyEl.textContent = '';
+  rows.forEach(([label, value]) => {
+    const tr = document.createElement('tr');
+    const th = document.createElement('th');
+    setText(th, label);
+    th.style.cssText = 'font-weight:600;padding:4px 12px 4px 0;white-space:nowrap;border:none;background:none';
+    const td = document.createElement('td');
+    td.style.cssText = 'padding:4px 0;border:none';
+    if (value instanceof Node) {
+      td.appendChild(value);
+    } else {
+      setText(td, value);
+    }
+    tr.appendChild(th);
+    tr.appendChild(td);
+    tbodyEl.appendChild(tr);
+  });
+}
+
+function setDisabled(ids, flag) {
+  ids.forEach(id => { const el = document.getElementById(id); if (el) el.disabled = flag; });
+}
+
+// ── Dashboard ────────────────────────────────────────────────────────────────
+let dashTimer;
+function loadDash() {
+  clearInterval(dashTimer);
+  fetchDash();
+  dashTimer = setInterval(fetchDash, 30000);
+}
+async function fetchDash() {
+  try {
+    const [health, info] = await Promise.all([
+      api('GET', '/actuator/health'),
+      api('GET', '/actuator/info'),
+    ]);
+    const status = (health && health.status) ? health.status : 'UNKNOWN';
+    const chip = document.getElementById('health-chip');
+    chip.className = 'chip ' + chipCls(status);
+    setText(chip, status);
+
+    const b = (info && info.build) ? info.build : {};
+    const a = (info && info.app)   ? info.app   : {};
+    const infoEl = document.getElementById('app-info');
+    fillTable(infoEl, [
+      ['Name',        b.name        || a.name        || b.artifact || '—'],
+      ['Version',     b.version     || a.version     || '—'],
+      ['Description', b.description || a.description || '—'],
+    ]);
+
+    const ver = b.version || a.version || '';
+    const fv = document.getElementById('footer-ver');
+    setText(fv, 'Banking Fixed-Length File Platform' + (ver ? ' · v' + ver : ''));
+  } catch (_) {
+    const chip = document.getElementById('health-chip');
+    chip.className = 'chip c-err';
+    setText(chip, 'ERROR');
+  }
+}
+
+// ── Generate Data ─────────────────────────────────────────────────────────────
+async function genData(profile) {
+  setDisabled(['btn-low', 'btn-high'], true);
+  clearAlert('gen-alert');
+  document.getElementById('gen-result').classList.add('hidden');
+  const btn = document.getElementById(profile === 'LOW' ? 'btn-low' : 'btn-high');
+  const origText = btn.textContent;
+  btn.textContent = '';
+  const sp = document.createElement('span');
+  sp.className = 'spin';
+  btn.appendChild(sp);
+  btn.appendChild(document.createTextNode(' Generating…'));
+  try {
+    const d = await api('POST', '/api/domain/generate?loadProfile=' + profile);
+    const tbody = document.querySelector('#gen-table tbody');
+    fillTable(tbody, [
+      ['Operation ID',           d.operationId],
+      ['Accounts generated',     d.accountsGenerated],
+      ['Transactions generated', d.transactionsGenerated],
+      ['Timestamp',              fmt(d.timestamp)],
+    ]);
+    document.getElementById('gen-result').classList.remove('hidden');
+  } catch (e) {
+    setAlert('gen-alert', e.message, 'err');
+  } finally {
+    setDisabled(['btn-low', 'btn-high'], false);
+    btn.textContent = origText;
+  }
+}
+
+// ── Batch Runner ───────────────────────────────────────────────────────────────
+const FTS  = ['CODA', 'SWIFT'];
+const LIBS = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY', 'CAMEL_BEANIO', 'VELOCITY', 'SPRING_BATCH'];
+
+async function runSingle() {
+  setDisabled(['btn-single', 'btn-all'], true);
+  clearAlert('batch-alert');
+  document.getElementById('batch-result').classList.add('hidden');
+  const btn = document.getElementById('btn-single');
+  const origText = btn.textContent;
+  btn.textContent = '';
+  const sp = document.createElement('span');
+  sp.className = 'spin';
+  btn.appendChild(sp);
+  btn.appendChild(document.createTextNode(' Running…'));
+  try {
+    const d = await api('POST', '/api/batch/generate', {
+      fileType: document.getElementById('sel-ft').value,
+      library:  document.getElementById('sel-lib').value,
+    });
+    const tbody = document.querySelector('#batch-table tbody');
+    fillTable(tbody, [
+      ['Job ID',    d.jobExecutionId],
+      ['Status',    makeChip(d.status)],
+      ['File',      d.fileName],
+      ['Timestamp', fmt(d.timestamp)],
+    ]);
+    const pw = document.getElementById('batch-preview-wrap');
+    if (d.fileContent) {
+      const pre = document.getElementById('batch-preview');
+      const content = d.fileContent.length > 4000
+        ? d.fileContent.slice(0, 4000) + '\n…(truncated)'
+        : d.fileContent;
+      setText(pre, content);
+      pw.classList.remove('hidden');
+    } else {
+      pw.classList.add('hidden');
+    }
+    document.getElementById('batch-result').classList.remove('hidden');
+  } catch (e) {
+    setAlert('batch-alert', e.message, 'err');
+  } finally {
+    setDisabled(['btn-single', 'btn-all'], false);
+    btn.textContent = origText;
+  }
+}
+
+let raBusy = false;
+async function runAll() {
+  if (raBusy) return;
+  raBusy = true;
+  setDisabled(['btn-single', 'btn-all'], true);
+  clearAlert('batch-alert');
+  document.getElementById('batch-result').classList.add('hidden');
+  const btn = document.getElementById('btn-all');
+  const origText = btn.textContent;
+  btn.textContent = '';
+  const sp = document.createElement('span');
+  sp.className = 'spin spin-d';
+  btn.appendChild(sp);
+  btn.appendChild(document.createTextNode(' Running all…'));
+
+  const combos = FTS.flatMap(ft => LIBS.map(lib => ({ ft, lib, status: 'PENDING', ms: undefined, fileName: '', err: '' })));
+  document.getElementById('ra-section').classList.remove('hidden');
+  renderRA(combos);
+
+  for (let i = 0; i < combos.length; i++) {
+    combos[i].status = 'RUNNING';
+    renderRA(combos);
+    const t0 = Date.now();
+    try {
+      const d = await api('POST', '/api/batch/generate', { fileType: combos[i].ft, library: combos[i].lib });
+      combos[i].status = d.status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';
+      combos[i].fileName = d.fileName || '';
+    } catch (e) {
+      combos[i].status = 'FAILED';
+      combos[i].err = e.message || 'error';
+    }
+    combos[i].ms = Date.now() - t0;
+    renderRA(combos);
+  }
+  raBusy = false;
+  setDisabled(['btn-single', 'btn-all'], false);
+  btn.textContent = origText;
+}
+
+function renderRA(combos) {
+  const done  = combos.filter(c => c.status === 'COMPLETED' || c.status === 'FAILED').length;
+  const total = combos.length;
+  setText(document.getElementById('ra-ctr'), done + '/' + total);
+  document.getElementById('ra-prog').style.width = (total ? (100 * done / total).toFixed(1) : 0) + '%';
+
+  const container = document.getElementById('ra-rows');
+  container.textContent = '';
+  combos.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'ra-row';
+
+    const chip = makeChip(c.status);
+    chip.style.minWidth = '84px';
+    chip.style.textAlign = 'center';
+
+    const type = document.createElement('span');
+    type.className = 'ra-type';
+    setText(type, c.ft);
+
+    const lib = document.createElement('span');
+    lib.className = 'ra-lib';
+    setText(lib, c.lib);
+
+    row.appendChild(chip);
+    row.appendChild(type);
+    row.appendChild(lib);
+
+    if (c.ms !== undefined) {
+      const dur = document.createElement('span');
+      dur.className = 'ra-dur';
+      setText(dur, c.ms + ' ms');
+      row.appendChild(dur);
+    }
+    if (c.fileName) {
+      const fn = document.createElement('span');
+      fn.style.cssText = 'color:var(--text-muted);overflow:hidden;text-overflow:ellipsis';
+      setText(fn, c.fileName);
+      row.appendChild(fn);
+    }
+    if (c.err) {
+      const er = document.createElement('span');
+      er.style.color = 'var(--chip-err-fg)';
+      setText(er, c.err);
+      row.appendChild(er);
+    }
+    container.appendChild(row);
+  });
+}
+
+// ── History ────────────────────────────────────────────────────────────────────
+let histTimer;
+function loadHistory() {
+  clearInterval(histTimer);
+  fetchHistory();
+  histTimer = setInterval(fetchHistory, 15000);
+}
+async function fetchHistory() {
+  const tbody = document.getElementById('hist-body');
+  try {
+    const data = await api('GET', '/api/batch/history');
+    tbody.textContent = '';
+    if (!data || data.length === 0) {
+      const tr = document.createElement('tr');
+      const td = document.createElement('td');
+      td.colSpan = 6;
+      td.style.cssText = 'text-align:center;color:var(--text-muted)';
+      setText(td, 'No executions yet — run a batch job first.');
+      tr.appendChild(td);
+      tbody.appendChild(tr);
+    } else {
+      data.forEach(r => {
+        const tr = document.createElement('tr');
+        [
+          r.jobExecutionId,
+          r.fileType,
+          r.library,
+          null,  /* chip */
+          r.durationMs != null ? r.durationMs : '—',
+          fmt(r.startTime),
+        ].forEach((val, i) => {
+          const td = document.createElement('td');
+          if (i === 3) {
+            td.appendChild(makeChip(r.status));
+          } else {
+            setText(td, val);
+          }
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+    }
+    clearAlert('hist-alert');
+  } catch (e) {
+    setAlert('hist-alert', 'Failed to load batch history: ' + e.message, 'err');
+  }
+}
+
+// ── Benchmark ──────────────────────────────────────────────────────────────────
+const LIB_COLORS = {
+  BEANIO: '#1976d2', FIXFORMAT4J: '#2e7d32', FIXEDLENGTH: '#e65100',
+  BINDY: '#9c27b0', CAMEL_BEANIO: '#c0392b', VELOCITY: '#16a085', SPRING_BATCH: '#f39c12',
+};
+const charts = {};
+let benchTimer;
+
+function loadBench() {
+  clearInterval(benchTimer);
+  fetchBench();
+  benchTimer = setInterval(fetchBench, 30000);
+}
+async function fetchBench() {
+  try {
+    const data = await api('GET', '/api/benchmark/results');
+    if (!data || data.length === 0) {
+      document.getElementById('bench-content').classList.add('hidden');
+      setAlert('bench-alert', 'No benchmark data yet. Run some batch jobs to populate metrics.', 'info');
+    } else {
+      clearAlert('bench-alert');
+      document.getElementById('bench-content').classList.remove('hidden');
+      renderBench(data);
+    }
+  } catch (e) {
+    setAlert('bench-alert', 'Failed to load benchmark results: ' + e.message, 'err');
+  }
+}
+
+function aggByLib(data) {
+  const m = {};
+  data.forEach(d => {
+    if (!m[d.library]) m[d.library] = { tp: 0, gen: 0, batch: 0, n: 0 };
+    m[d.library].tp    += d.throughputRps;
+    m[d.library].gen   += d.generationDurationMs;
+    m[d.library].batch += d.batchDurationMs;
+    m[d.library].n++;
+  });
+  return Object.entries(m)
+    .map(([lib, v]) => ({ lib, tp: +(v.tp/v.n).toFixed(2), gen: +(v.gen/v.n).toFixed(0), batch: +(v.batch/v.n).toFixed(0) }))
+    .sort((a, b) => b.tp - a.tp);
+}
+
+function chartOpts() {
+  const style = getComputedStyle(document.body);
+  const fg = style.getPropertyValue('--text').trim();
+  const mg = style.getPropertyValue('--text-muted').trim();
+  return {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: fg } } },
+    scales: { x: { ticks: { color: mg } }, y: { ticks: { color: mg } } },
+  };
+}
+
+function mkChart(id, type, data) {
+  if (charts[id]) charts[id].destroy();
+  charts[id] = new Chart(document.getElementById(id), { type, data, options: chartOpts() });
+}
+
+function renderBench(data) {
+  const agg      = aggByLib(data);
+  const labels   = agg.map(d => d.lib);
+  const timeline = data.slice(0, 20).reverse().map((r, i) => ({ i: i + 1, tp: r.throughputRps, batch: r.batchDurationMs, gen: r.generationDurationMs }));
+
+  mkChart('c-tp', 'bar', {
+    labels,
+    datasets: [{ label: 'Avg Throughput (ops/s)', data: agg.map(d => d.tp), backgroundColor: '#e65100' }],
+  });
+  mkChart('c-dur', 'bar', {
+    labels,
+    datasets: [
+      { label: 'Avg Batch Duration (ms)', data: agg.map(d => d.batch), backgroundColor: '#ed6c02' },
+      { label: 'Avg Gen Duration (ms)',   data: agg.map(d => d.gen),   backgroundColor: '#9c27b0' },
+    ],
+  });
+  mkChart('c-ttp', 'line', {
+    labels: timeline.map(d => d.i),
+    datasets: [{ label: 'Throughput (ops/s)', data: timeline.map(d => d.tp), borderColor: LIB_COLORS.BEANIO, tension: .3, pointRadius: 2 }],
+  });
+  mkChart('c-tdur', 'line', {
+    labels: timeline.map(d => d.i),
+    datasets: [
+      { label: 'Batch Duration (ms)', data: timeline.map(d => d.batch), borderColor: LIB_COLORS.FIXFORMAT4J, tension: .3, pointRadius: 2 },
+      { label: 'Gen Duration (ms)',   data: timeline.map(d => d.gen),   borderColor: LIB_COLORS.BINDY,       tension: .3, pointRadius: 2 },
+    ],
+  });
+
+  const summary = document.getElementById('bench-summary');
+  summary.textContent = '';
+  agg.forEach(d => {
+    const block = document.createElement('div');
+    block.style.marginBottom = '10px';
+
+    const name = document.createElement('div');
+    name.style.cssText = 'font-size:.78rem;font-weight:700;margin-bottom:2px';
+    name.style.color = LIB_COLORS[d.lib] || '#e65100';
+    setText(name, d.lib);
+
+    [['Avg throughput', d.tp + ' ops/s'], ['Avg batch', d.batch + ' ms'], ['Avg gen', d.gen + ' ms']].forEach(([k, v]) => {
+      const line = document.createElement('div');
+      line.style.cssText = 'font-size:.78rem;color:var(--text-muted)';
+      const b = document.createElement('b');
+      setText(b, v);
+      line.textContent = k + ': ';
+      line.appendChild(b);
+      block.appendChild(line);
+    });
+
+    block.insertBefore(name, block.firstChild);
+    summary.appendChild(block);
+  });
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+(function init() {
+  const h = location.hash.replace('#', '').trim();
+  go(VIEWS.includes(h) ? h : 'dashboard');
+})();
+</script>
+</body>
 </html>

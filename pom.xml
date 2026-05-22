@@ -49,9 +49,7 @@
         <velocity-tools.version>3.1</velocity-tools.version>
         <jmh.version>1.37</jmh.version>
         <jacoco.version>0.8.14</jacoco.version>
-        <node.version>v22.15.0</node.version>
-        <npm.version>10.9.2</npm.version>
-        <frontend-maven-plugin.version>2.0.0</frontend-maven-plugin.version>
+
     </properties>
 
     <dependencies>
@@ -238,44 +236,6 @@
                 </executions>
             </plugin>
 
-            <!-- Frontend Maven Plugin -->
-            <plugin>
-                <groupId>com.github.eirslett</groupId>
-                <artifactId>frontend-maven-plugin</artifactId>
-                <version>${frontend-maven-plugin.version}</version>
-                <configuration>
-                    <workingDirectory>src/main/frontend</workingDirectory>
-                    <nodeVersion>${node.version}</nodeVersion>
-                    <npmVersion>${npm.version}</npmVersion>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>install-node-and-npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm-install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install --legacy-peer-deps</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>npm-build</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-                        <configuration>
-                            <arguments>run build</arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
             <!-- Surefire: exclude JMH benchmark classes and generated JMH types from normal test runs -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -304,31 +264,6 @@
                                 <include>**/*Benchmark.java</include>
                             </includes>
                         </configuration>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-        <profile>
-            <id>skip-frontend</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <executions>
-                            <execution>
-                                <id>install-node-and-npm</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>npm-install</id>
-                                <phase>none</phase>
-                            </execution>
-                            <execution>
-                                <id>npm-build</id>
-                                <phase>none</phase>
-                            </execution>
-                        </executions>
                     </plugin>
                 </plugins>
             </build>
