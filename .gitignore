@@ -131,3 +131,4 @@ src/main/frontend/package-lock.json
 *.swo
 .mvn/wrapper/maven-wrapper.jar
 package-lock.json
+.superpowers/
