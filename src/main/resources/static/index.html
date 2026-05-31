@@ -145,9 +145,9 @@
     .hidden { display: none !important; }
     hr.d { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 
-    .diag-wrap { overflow: auto; display: block; min-height: 60px; margin-top: 8px; }
-    .diag-wrap svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
-    pre.mermaid { margin: 0; background: none; font-size: 0; width: 100%; }
+    .diag-wrap { overflow: auto; display: flex; justify-content: center; min-height: 60px; margin-top: 8px; }
+    .diag-wrap svg { max-width: 100% !important; height: auto !important; }
+    pre.mermaid { margin: 0; background: none; font-size: 0; }
   </style>
 </head>
 <body data-theme="light">
@@ -833,6 +833,12 @@ async function loadDiagrams() {
   } catch (e) {
     console.error('mermaid.run error:', e);
   }
+  // Mermaid injects style="max-width: Npx" on each SVG, overriding CSS.
+  // Remove it so CSS max-width:100% can constrain wide diagrams without
+  // stretching narrow ones (diagrams size to their natural width, not 100%).
+  container.querySelectorAll('.diag-wrap svg').forEach(function(svg) {
+    svg.style.removeProperty('max-width');
+  });
 }
 
 // Diagram definitions — kept at bottom so the view logic above stays readable.
