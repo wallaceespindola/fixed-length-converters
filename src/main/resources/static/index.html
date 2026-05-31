@@ -145,9 +145,9 @@
     .hidden { display: none !important; }
     hr.d { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 
-    .diag-wrap { overflow: auto; display: flex; justify-content: center; min-height: 60px; margin-top: 8px; }
-    .diag-wrap svg { max-width: 100%; height: auto; }
-    pre.mermaid { margin: 0; background: none; font-size: 0; }
+    .diag-wrap { overflow: auto; display: block; min-height: 60px; margin-top: 8px; }
+    .diag-wrap svg { width: 100% !important; max-width: 100% !important; height: auto !important; }
+    pre.mermaid { margin: 0; background: none; font-size: 0; width: 100%; }
   </style>
 </head>
 <body data-theme="light">
@@ -815,8 +815,14 @@ async function loadDiagrams() {
   }
 
   if (!mermaidOn) {
-    mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose',
-      themeVariables: { primaryColor: '#e65100', primaryTextColor: '#fff', lineColor: '#546e7a', fontSize: '13px' } });
+    mermaid.initialize({
+      startOnLoad: false, theme: 'base', securityLevel: 'loose',
+      flowchart:  { useMaxWidth: true, htmlLabels: true },
+      sequence:   { useMaxWidth: true },
+      classDiagram: { useMaxWidth: true },
+      er:         { useMaxWidth: true },
+      themeVariables: { primaryColor: '#e65100', primaryTextColor: '#fff', lineColor: '#546e7a', fontSize: '14px' }
+    });
     mermaidOn = true;
   }
 
