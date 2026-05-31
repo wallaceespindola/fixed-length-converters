@@ -821,7 +821,14 @@ async function loadDiagrams() {
       sequence:   { useMaxWidth: true },
       classDiagram: { useMaxWidth: true },
       er:         { useMaxWidth: true },
-      themeVariables: { primaryColor: '#e65100', primaryTextColor: '#fff', lineColor: '#546e7a', fontSize: '14px' }
+      themeVariables: {
+        primaryColor: '#e65100', primaryTextColor: '#fff',
+        primaryBorderColor: '#bf360c', lineColor: '#546e7a', fontSize: '14px',
+        // ER diagram: attribute rows default to near-white; make them dark so
+        // the white primaryTextColor remains readable on both row types.
+        attributeBackgroundColorEven: '#455a64',
+        attributeBackgroundColorOdd:  '#37474f'
+      }
     });
     mermaidOn = true;
   }
