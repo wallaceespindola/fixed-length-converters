@@ -824,9 +824,7 @@ async function loadDiagrams() {
       themeVariables: {
         primaryColor: '#e65100', primaryTextColor: '#fff',
         primaryBorderColor: '#bf360c', lineColor: '#546e7a', fontSize: '14px',
-        // ER diagram: dark attribute rows so white primaryTextColor stays readable
-        attributeBackgroundColorEven: '#455a64',
-        attributeBackgroundColorOdd:  '#37474f'
+        // ER diagram colours are self-contained in the d-db %%{init}%% block
       }
     });
     mermaidOn = true;
@@ -1064,7 +1062,13 @@ const DIAGRAMS = [
     id: 'd-db',
     title: '6. Database Schema',
     desc: 'H2 in-memory tables: accounts, transactions, banking_statements, benchmark_metrics',
-    chart: 'erDiagram\n' +
+    chart: "%%{init: {'theme': 'base', 'themeVariables': {" +
+      "'primaryColor': '#e65100', 'primaryTextColor': '#1a1a1a'," +
+      "'primaryBorderColor': '#bf360c', 'lineColor': '#546e7a'," +
+      "'secondaryColor': '#fff3e0', 'tertiaryColor': '#eceff1'," +
+      "'attributeBackgroundColorEven': '#fff3e0', 'attributeBackgroundColorOdd': '#eceff1'" +
+      "}}}%%\n" +
+      'erDiagram\n' +
       '  accounts {\n' +
       '    bigint id PK\n' +
       '    varchar accountNumber\n' +
