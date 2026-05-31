@@ -50,22 +50,22 @@ skinparam sequence {
     BoxBorderColor #546e7a
 }
 
-actor Frontend #e65100/#bf360c
+actor Frontend #e65100
 
-participant DomainController #1565c0/#0d47a1
-participant DomainDataGenerator #1565c0/#0d47a1
-participant BatchController #1565c0/#0d47a1
-participant BatchJobService #2e7d32/#1b5e20
-participant JobLauncher #2e7d32/#1b5e20
-participant "bankingFileGenerationJob" as Job #2e7d32/#1b5e20
-participant DomainEntityItemReader as Reader #2e7d32/#1b5e20
-participant FileGenerationItemProcessor as Processor #2e7d32/#1b5e20
-participant StrategyResolver #6a1b9a/#4a148c
-participant "FileGenerationStrategy\n(e.g. CodaBeanIOStrategy)" as Strategy #006064/#004d40
-participant FileOutputItemWriter as Writer #2e7d32/#1b5e20
-participant BatchMetricsListener as Listener #2e7d32/#1b5e20
-database "H2 Database" as DB #37474f/#263238
-collections "output/ (filesystem)" as FS #37474f/#263238
+participant DomainController #1565c0
+participant DomainDataGenerator #1565c0
+participant BatchController #1565c0
+participant BatchJobService #2e7d32
+participant JobLauncher #2e7d32
+participant "bankingFileGenerationJob" as Job #2e7d32
+participant DomainEntityItemReader as Reader #2e7d32
+participant FileGenerationItemProcessor as Processor #2e7d32
+participant StrategyResolver #6a1b9a
+participant "FileGenerationStrategy\n(e.g. CodaBeanIOStrategy)" as Strategy #006064
+participant FileOutputItemWriter as Writer #2e7d32
+participant BatchMetricsListener as Listener #2e7d32
+database "H2 Database" as DB #37474f
+collections "output/ (filesystem)" as FS #37474f
 
 == Step 1: seed sample data (LOW or HIGH load profile) ==
 Frontend -> DomainController : POST /api/domain/generate\n?loadProfile=LOW|HIGH
