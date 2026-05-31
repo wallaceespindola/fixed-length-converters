@@ -1,16 +1,18 @@
 #!/usr/bin/env bash
-# kill.sh — Stop backend (8080) processes
+# kill.sh — Stop backend (port 8080)
 # Platforms: macOS, Ubuntu/Debian Linux
 # Usage: ./kill.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
+PID_FILE="$LOG_DIR/backend.pid"
 
 GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 info()    { echo -e "${CYAN}[INFO]${NC}  $*"; }
 success() { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 
+# ── port → PIDs helper — lsof → ss → fuser → netstat fallback ────────────────
 get_port_pids() {
   local port="$1"
   if command -v lsof &>/dev/null; then
@@ -29,15 +31,14 @@ get_port_pids() {
 }
 
 echo ""
-info "Stopping Banking Fixed-Length File Generator services..."
+info "Stopping Banking Fixed-Length File Generator backend..."
 echo ""
 
 killed=0
 
-# ── 1. PID-file kill ──────────────────────────────────────────────────────────
-pf="$LOG_DIR/backend.pid"
-if [ -f "$pf" ]; then
-  pid=$(cat "$pf" | tr -d '[:space:]')
+# ── 1. PID-file kill ─────────────────────────────────────────────────────────
+if [ -f "$PID_FILE" ]; then
+  pid=$(cat "$PID_FILE" | tr -d '[:space:]')
   if [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null; then
     kill "$pid" 2>/dev/null
     sleep 1
@@ -45,21 +46,23 @@ if [ -f "$pf" ]; then
     success "Stopped backend process (PID $pid)"
     killed=$((killed + 1))
   else
-    warn "Backend PID ${pid:-?} not running"
+    warn "PID ${pid:-?} not running"
   fi
-  rm -f "$pf"
+  rm -f "$PID_FILE"
 fi
 
 # ── 2. Pattern-based kill (safety net) ───────────────────────────────────────
-if pkill -f 'java.*FixedLengthConvertersApplication' 2>/dev/null; then
-  success "Stopped FixedLengthConvertersApplication"; killed=$((killed + 1))
+if pkill -f 'FixedLengthConvertersApplication' 2>/dev/null; then
+  success "Stopped FixedLengthConvertersApplication"
+  killed=$((killed + 1))
 fi
 if pkill -f 'spring-boot:run' 2>/dev/null; then
-  success "Stopped Maven spring-boot:run"; killed=$((killed + 1))
+  success "Stopped Maven spring-boot:run"
+  killed=$((killed + 1))
 fi
 
-# ── 3. Port-based cleanup (final safety net) ─────────────────────────────────
-pids=$(get_port_pids "8080")
+# ── 3. Port-based kill (final safety net) ────────────────────────────────────
+pids=$(get_port_pids 8080)
 if [ -n "$pids" ]; then
   echo "$pids" | while IFS= read -r pid; do
     [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null && \

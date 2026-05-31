@@ -4,11 +4,14 @@ package com.wtechitsolutions.domain;
  * Load profile for domain data generation. Controls the size of the generated dataset.
  */
 public enum LoadProfile {
-    /** Light dataset: 20 accounts, 200 transactions (10/account), 10 statements. */
-    LOW(20, 10, 10),
+    /** Light dataset: 10 accounts, 100 transactions (10/account), 5 statements. */
+    LOW(10, 10, 5),
 
-    /** Heavy dataset: 200 accounts, 2000 transactions (10/account), 100 statements. */
-    HIGH(200, 10, 100);
+    /** Medium dataset: 100 accounts, 1000 transactions (10/account), 50 statements. */
+    MEDIUM(100, 10, 50),
+
+    /** Heavy dataset: 1000 accounts, 10000 transactions (10/account), 500 statements. */
+    HIGH(1000, 10, 500);
 
     private final int accountCount;
     private final int transactionsPerAccount;

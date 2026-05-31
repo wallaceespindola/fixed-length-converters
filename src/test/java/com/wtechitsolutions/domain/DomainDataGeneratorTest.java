@@ -41,9 +41,9 @@ class DomainDataGeneratorTest {
 
         DomainDataGenerator.GenerationResult result = generator.generate();
 
-        assertThat(result.accounts()).isEqualTo(20);
-        assertThat(result.transactions()).isEqualTo(200);
-        assertThat(result.statements()).isEqualTo(10);
+        assertThat(result.accounts()).isEqualTo(LoadProfile.LOW.accountCount());
+        assertThat(result.transactions()).isEqualTo(LoadProfile.LOW.accountCount() * LoadProfile.LOW.transactionsPerAccount());
+        assertThat(result.statements()).isEqualTo(LoadProfile.LOW.statementCount());
         assertThat(result.operationId()).isPositive();
     }
 

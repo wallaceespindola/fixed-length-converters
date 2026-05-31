@@ -30,7 +30,7 @@ public class DomainController {
 
     @PostMapping("/generate")
     @Operation(summary = "Generate sample banking domain data and persist to H2",
-            description = "Pass loadProfile=LOW (20 accounts/200 txns) or HIGH (200 accounts/2000 txns). Defaults to LOW.")
+            description = "Pass loadProfile=LOW (10 accounts/100 txns), MEDIUM (100 accounts/1000 txns), or HIGH (1000 accounts/10000 txns). Defaults to LOW.")
     public ResponseEntity<GenerateDomainResponse> generate(
             @RequestParam(name = "loadProfile", required = false, defaultValue = "LOW") LoadProfile loadProfile) {
         log.info("Generating banking domain data, profile={}", loadProfile);

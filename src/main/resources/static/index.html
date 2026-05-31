@@ -4,7 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Banking Fixed-Length File Platform</title>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
+          integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF"
+          crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.15.0/dist/mermaid.min.js"
+          integrity="sha384-yQ4mmBBT+vhTAwjFH0toJXNYJ6O4usWnt6EPIdWwrRvx2V/n5lXuDZQwQFeSFydF"
+          crossorigin="anonymous"></script>
   <style>
     :root {
       --primary: #e65100;
@@ -139,6 +144,10 @@
 
     .hidden { display: none !important; }
     hr.d { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+
+    .diag-wrap { overflow: auto; display: flex; justify-content: center; min-height: 60px; margin-top: 8px; }
+    .diag-wrap svg { max-width: 100%; height: auto; }
+    pre.mermaid { margin: 0; background: none; font-size: 0; }
   </style>
 </head>
 <body data-theme="light">
@@ -155,6 +164,7 @@
     <button class="nav-btn" data-view="batch"><span class="nav-ic">▶️</span>Batch Runner</button>
     <button class="nav-btn" data-view="history"><span class="nav-ic">🕒</span>History</button>
     <button class="nav-btn" data-view="benchmark"><span class="nav-ic">📈</span>Benchmark</button>
+    <button class="nav-btn" data-view="diagrams"><span class="nav-ic">🔀</span>Diagrams</button>
   </nav>
 
   <main class="main">
@@ -191,10 +201,11 @@
         <h1>Generate Banking Data</h1>
         <p class="subtitle">Seeds the H2 database with sample accounts, transactions, and statements.</p>
         <div class="btn-row">
-          <button class="btn btn-p btn-lg" id="btn-low"  onclick="genData('LOW')">Low Load (20 accounts, 200 txns)</button>
-          <button class="btn btn-o btn-lg" id="btn-high" onclick="genData('HIGH')">High Load (200 accounts, 2 000 txns)</button>
+          <button class="btn btn-p btn-lg" id="btn-low"    onclick="genData('LOW')">Low Load (10 accounts, 100 txns)</button>
+          <button class="btn btn-p btn-lg" id="btn-medium" onclick="genData('MEDIUM')">Medium Load (100 accounts, 1 000 txns)</button>
+          <button class="btn btn-o btn-lg" id="btn-high"   onclick="genData('HIGH')">High Load (1 000 accounts, 10 000 txns)</button>
         </div>
-        <p class="caption">Low: 20 accounts · 200 transactions · 10 statements.&nbsp;&nbsp;High: 200 accounts · 2 000 transactions · 100 statements.</p>
+        <p class="caption">Low: 10 accounts · 100 transactions · 5 statements.&nbsp;&nbsp;Medium: 100 accounts · 1 000 transactions · 50 statements.&nbsp;&nbsp;High: 1 000 accounts · 10 000 transactions · 500 statements.</p>
         <div id="gen-alert" class="hidden alert"></div>
         <div id="gen-result" class="hidden card" style="margin-top:16px;max-width:460px">
           <div class="card-title">Generation Result</div>
@@ -283,6 +294,9 @@
         </div>
       </div>
 
+      <!-- Diagrams (content injected dynamically by loadDiagrams) -->
+      <div class="view" id="v-diagrams"></div>
+
     </div>
 
     <footer class="footer">
@@ -314,8 +328,8 @@ themeBtn.onclick = () => {
 };
 
 // ── Router ───────────────────────────────────────────────────────────────────
-const VIEWS = ['dashboard', 'generate', 'batch', 'history', 'benchmark'];
-const onEnter = { dashboard: loadDash, history: loadHistory, benchmark: loadBench };
+const VIEWS = ['dashboard', 'generate', 'batch', 'history', 'benchmark', 'diagrams'];
+const onEnter = { dashboard: loadDash, history: loadHistory, benchmark: loadBench, diagrams: loadDiagrams };
 
 function go(name) {
   if (!VIEWS.includes(name)) name = 'dashboard';
@@ -437,10 +451,11 @@ async function fetchDash() {
 
 // ── Generate Data ─────────────────────────────────────────────────────────────
 async function genData(profile) {
-  setDisabled(['btn-low', 'btn-high'], true);
+  setDisabled(['btn-low', 'btn-medium', 'btn-high'], true);
   clearAlert('gen-alert');
   document.getElementById('gen-result').classList.add('hidden');
-  const btn = document.getElementById(profile === 'LOW' ? 'btn-low' : 'btn-high');
+  const btnId = profile === 'LOW' ? 'btn-low' : profile === 'MEDIUM' ? 'btn-medium' : 'btn-high';
+  const btn = document.getElementById(btnId);
   const origText = btn.textContent;
   btn.textContent = '';
   const sp = document.createElement('span');
@@ -460,7 +475,7 @@ async function genData(profile) {
   } catch (e) {
     setAlert('gen-alert', e.message, 'err');
   } finally {
-    setDisabled(['btn-low', 'btn-high'], false);
+    setDisabled(['btn-low', 'btn-medium', 'btn-high'], false);
     btn.textContent = origText;
   }
 }
@@ -762,6 +777,295 @@ function renderBench(data) {
     summary.appendChild(block);
   });
 }
+
+// ── Diagrams ──────────────────────────────────────────────────────────────────
+let mermaidOn = false;
+
+async function loadDiagrams() {
+  const view = document.getElementById('v-diagrams');
+
+  // Build header
+  view.innerHTML =
+    '<h1>Architecture Diagrams</h1>' +
+    '<p class="subtitle" style="margin-bottom:16px">Architecture, component layout, batch flow, strategy hierarchy, benchmark pipeline, and DB schema.</p>' +
+    '<div id="diag-cards" style="display:flex;flex-direction:column;gap:16px"></div>';
+
+  const container = document.getElementById('diag-cards');
+
+  // Build cards using DOM methods so mermaid source goes via textContent,
+  // avoiding HTML-parser mangling of <|.., <<interface>>, etc.
+  DIAGRAMS.forEach(function(d) {
+    const card  = document.createElement('div');   card.className = 'card';
+    const title = document.createElement('b');     title.style.color = 'var(--primary)'; title.textContent = d.title;
+    const desc  = document.createElement('p');     desc.className = 'caption'; desc.style.cssText = 'margin:4px 0 10px'; desc.textContent = d.desc;
+    const hr    = document.createElement('hr');    hr.className = 'd';
+    const wrap  = document.createElement('div');   wrap.className = 'diag-wrap';
+    const pre   = document.createElement('pre');   pre.className = 'mermaid'; pre.textContent = d.chart;
+    wrap.appendChild(pre);
+    card.appendChild(title); card.appendChild(desc); card.appendChild(hr); card.appendChild(wrap);
+    container.appendChild(card);
+  });
+
+  if (typeof mermaid === 'undefined') {
+    container.querySelectorAll('.mermaid').forEach(function(el) {
+      el.textContent = 'Mermaid CDN unavailable — check network connection.';
+      el.style.color = '#c62828';
+    });
+    return;
+  }
+
+  if (!mermaidOn) {
+    mermaid.initialize({ startOnLoad: false, theme: 'base', securityLevel: 'loose',
+      themeVariables: { primaryColor: '#e65100', primaryTextColor: '#fff', lineColor: '#546e7a', fontSize: '13px' } });
+    mermaidOn = true;
+  }
+
+  // mermaid.run() is the v10+ API: finds .mermaid elements, reads textContent as source,
+  // replaces with rendered SVG in-place — no ID conflicts, no manual SVG injection.
+  try {
+    await mermaid.run({ nodes: container.querySelectorAll('.mermaid') });
+  } catch (e) {
+    console.error('mermaid.run error:', e);
+  }
+}
+
+// Diagram definitions — kept at bottom so the view logic above stays readable.
+const DIAGRAMS = [
+  {
+    id: 'd-arch',
+    title: '1. System Architecture',
+    desc: 'Web UI → REST API → Spring Batch pipeline → Strategy Pattern (14 strategies) → Parser libraries → H2 + output files',
+    chart: 'graph TB\n' +
+      '  subgraph FE["Web UI (HTML/CSS/JS)"]\n' +
+      '    UI["Dashboard · Generate · Batch · History · Benchmark · Diagrams"]\n' +
+      '  end\n' +
+      '  subgraph API["REST API Layer"]\n' +
+      '    DC[DomainController]\n' +
+      '    BC[BatchController]\n' +
+      '    BNC[BenchmarkController]\n' +
+      '    ACT[Spring Actuator]\n' +
+      '  end\n' +
+      '  subgraph Batch["Spring Batch Pipeline"]\n' +
+      '    JL[JobLauncher] --> JOB[bankingFileGenerationJob] --> STEP[fileGenerationStep]\n' +
+      '    STEP --> READER[DomainEntityItemReader] --> DB[(H2)]\n' +
+      '    STEP --> PROC[FileGenerationItemProcessor] --> SR[StrategyResolver]\n' +
+      '    STEP --> WRITER[FileOutputItemWriter] --> OUT[output/]\n' +
+      '  end\n' +
+      '  SR --> CODA["7 CODA Strategies"]\n' +
+      '  SR --> SWIFT["7 SWIFT MT940 Strategies"]\n' +
+      '  CODA & SWIFT --> LIBS["BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity · SpringBatch"]\n' +
+      '  UI --> API\n' +
+      '  DC --> DB\n' +
+      '  BC --> JL\n' +
+      '  BNC --> DB\n' +
+      '  classDef fe fill:#e65100,stroke:#bf360c,color:#fff\n' +
+      '  classDef api fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
+      '  classDef batch fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
+      '  classDef strat fill:#6a1b9a,stroke:#4a148c,color:#fff\n' +
+      '  class UI fe\n' +
+      '  class DC,BC,BNC,ACT api\n' +
+      '  class JL,JOB,STEP,READER,PROC,WRITER,SR batch\n' +
+      '  class CODA,SWIFT,LIBS strat'
+  },
+  {
+    id: 'd-component',
+    title: '2. Component Diagram',
+    desc: 'API, Batch, Strategy, Parser, Domain layers and their dependencies',
+    chart: 'graph LR\n' +
+      '  subgraph API["REST API"]\n' +
+      '    DC[DomainController]\n' +
+      '    BC[BatchController]\n' +
+      '    BNC[BenchmarkController]\n' +
+      '  end\n' +
+      '  subgraph Batch["Spring Batch"]\n' +
+      '    JS[BatchJobService]\n' +
+      '    JOB[bankingFileGenerationJob]\n' +
+      '    IR[ItemReader]\n' +
+      '    IP[ItemProcessor]\n' +
+      '    IW[ItemWriter]\n' +
+      '    BML[MetricsListener]\n' +
+      '  end\n' +
+      '  subgraph Strategy["Strategy Layer"]\n' +
+      '    SR[StrategyResolver]\n' +
+      '    CS["7x CodaStrategy"]\n' +
+      '    SS["7x SwiftStrategy"]\n' +
+      '  end\n' +
+      '  subgraph Parser["Parser Wrappers"]\n' +
+      '    BIO[BeanIO]\n' +
+      '    FF4J[FixedFormat4J]\n' +
+      '    VL[FixedLength]\n' +
+      '    BINDY[Bindy]\n' +
+      '    CBIO[CamelBeanIO]\n' +
+      '    VEL[Velocity]\n' +
+      '    SBF[SpringBatch]\n' +
+      '  end\n' +
+      '  subgraph Domain["Domain Layer"]\n' +
+      '    DDG[DomainDataGenerator]\n' +
+      '    AR[AccountRepository]\n' +
+      '    TR[TransactionRepository]\n' +
+      '  end\n' +
+      '  DC --> DDG\n' +
+      '  BC --> JS --> JOB\n' +
+      '  JOB --> IR & IP & IW & BML\n' +
+      '  IP --> SR --> CS & SS\n' +
+      '  CS & SS --> BIO & FF4J & VL & BINDY & CBIO & VEL & SBF\n' +
+      '  IR --> TR\n' +
+      '  DDG --> AR & TR\n' +
+      '  classDef api fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
+      '  classDef batch fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
+      '  classDef strat fill:#6a1b9a,stroke:#4a148c,color:#fff\n' +
+      '  classDef parser fill:#006064,stroke:#004d40,color:#fff\n' +
+      '  classDef domain fill:#e65100,stroke:#bf360c,color:#fff\n' +
+      '  class DC,BC,BNC api\n' +
+      '  class JS,JOB,IR,IP,IW,BML batch\n' +
+      '  class SR,CS,SS strat\n' +
+      '  class BIO,FF4J,VL,BINDY,CBIO,VEL,SBF parser\n' +
+      '  class DDG,AR,TR domain'
+  },
+  {
+    id: 'd-seq',
+    title: '3. Batch Sequence',
+    desc: 'Message flow from frontend through Spring Batch to file output, including the chunk-processing loop',
+    chart: 'sequenceDiagram\n' +
+      '  participant FE as Frontend\n' +
+      '  participant DC as DomainController\n' +
+      '  participant BC as BatchController\n' +
+      '  participant JL as JobLauncher\n' +
+      '  participant IR as ItemReader\n' +
+      '  participant IP as ItemProcessor\n' +
+      '  participant SR as StrategyResolver\n' +
+      '  participant IW as ItemWriter\n' +
+      '  participant DB as H2\n' +
+      '  participant FS as output/\n' +
+      '  Note over FE,DC: Step 1 — seed domain data\n' +
+      '  FE->>DC: POST /api/domain/generate?loadProfile=LOW|MEDIUM|HIGH\n' +
+      '  DC->>DB: save accounts + transactions + statements\n' +
+      '  DC-->>FE: GenerateDomainResponse\n' +
+      '  Note over FE,FS: Step 2 — trigger batch job\n' +
+      '  FE->>BC: POST /api/batch/generate {fileType, library}\n' +
+      '  BC->>JL: launch job\n' +
+      '  loop chunks of 100\n' +
+      '    JL->>IR: read transactions\n' +
+      '    IR->>DB: findAll\n' +
+      '    JL->>IP: process chunk\n' +
+      '    IP->>SR: resolve strategy\n' +
+      '    SR-->>IP: FileGenerationStrategy\n' +
+      '    IP->>IW: write formatted output\n' +
+      '    IW->>FS: write file\n' +
+      '  end\n' +
+      '  JL-->>BC: JobExecution\n' +
+      '  BC-->>FE: BatchJobResponse'
+  },
+  {
+    id: 'd-strategy',
+    title: '4. Strategy Class Diagram',
+    desc: 'FileGenerationStrategy interface, two abstract bases, 14 concrete implementations, and StrategyResolver',
+    chart: 'classDiagram\n' +
+      '  class FileGenerationStrategy {\n' +
+      '    <<interface>>\n' +
+      '    +generate(transactions, accounts) String\n' +
+      '    +parse(content) List~Transaction~\n' +
+      '    +getFileType() FileType\n' +
+      '    +getLibrary() Library\n' +
+      '    +strategyKey() String\n' +
+      '  }\n' +
+      '  class AbstractCodaStrategy {\n' +
+      '    <<abstract>>\n' +
+      '    +getFileType() CODA\n' +
+      '  }\n' +
+      '  class AbstractSwiftStrategy {\n' +
+      '    <<abstract>>\n' +
+      '    +getFileType() SWIFT\n' +
+      '  }\n' +
+      '  class StrategyResolver {\n' +
+      '    +resolve(fileType, library) FileGenerationStrategy\n' +
+      '  }\n' +
+      '  FileGenerationStrategy <|.. AbstractCodaStrategy\n' +
+      '  FileGenerationStrategy <|.. AbstractSwiftStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaBeanIOStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaFixedFormat4JStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaFixedLengthStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaBindyStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaVelocityStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaSpringBatchStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftBeanIOStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftBindyStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftVelocityStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy\n' +
+      '  StrategyResolver --> FileGenerationStrategy'
+  },
+  {
+    id: 'd-benchmark',
+    title: '5. Benchmark Flow',
+    desc: 'How metrics are captured after each batch job and exported as CSV, Markdown, JSON, or HTML',
+    chart: 'flowchart TD\n' +
+      '  A([Batch Job Completes]) --> B[BatchMetricsListener.afterJob]\n' +
+      '  B --> C[(Save BenchmarkMetrics to H2)]\n' +
+      '  C --> D{Client Request}\n' +
+      '  D -->|GET /results| E[JSON list]\n' +
+      '  D -->|GET /export/csv| F[exportAsCsv]\n' +
+      '  D -->|GET /export/markdown| G[exportAsMarkdown]\n' +
+      '  D -->|GET /export/json| H[exportAsJson]\n' +
+      '  D -->|GET /export/html| Q[exportAsHtml via Velocity]\n' +
+      '  F --> I([benchmark.csv])\n' +
+      '  G --> J([benchmark.md])\n' +
+      '  H --> K([benchmark.json])\n' +
+      '  Q --> R([benchmark.html])\n' +
+      '  classDef trigger fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
+      '  classDef db fill:#e65100,stroke:#bf360c,color:#fff\n' +
+      '  classDef export fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
+      '  class A,B trigger\n' +
+      '  class C db\n' +
+      '  class F,G,H,Q export'
+  },
+  {
+    id: 'd-db',
+    title: '6. Database Schema',
+    desc: 'H2 in-memory tables: accounts, transactions, banking_statements, benchmark_metrics',
+    chart: 'erDiagram\n' +
+      '  accounts {\n' +
+      '    bigint id PK\n' +
+      '    varchar accountNumber\n' +
+      '    varchar iban\n' +
+      '    varchar bankCode\n' +
+      '    varchar currency\n' +
+      '    decimal balance\n' +
+      '    varchar holderName\n' +
+      '  }\n' +
+      '  transactions {\n' +
+      '    bigint id PK\n' +
+      '    bigint accountId FK\n' +
+      '    varchar reference\n' +
+      '    decimal amount\n' +
+      '    varchar type\n' +
+      '    varchar description\n' +
+      '    date valueDate\n' +
+      '  }\n' +
+      '  banking_statements {\n' +
+      '    bigint id PK\n' +
+      '    bigint accountId FK\n' +
+      '    decimal openingBalance\n' +
+      '    decimal closingBalance\n' +
+      '    date statementDate\n' +
+      '  }\n' +
+      '  benchmark_metrics {\n' +
+      '    bigint id PK\n' +
+      '    varchar library\n' +
+      '    varchar fileType\n' +
+      '    double throughputRps\n' +
+      '    bigint generationDurationMs\n' +
+      '    bigint batchDurationMs\n' +
+      '    double successRate\n' +
+      '    bigint recordsProcessed\n' +
+      '  }\n' +
+      '  accounts ||--o{ transactions : "has"\n' +
+      '  accounts ||--o{ banking_statements : "has"'
+  }
+];
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 (function init() {
