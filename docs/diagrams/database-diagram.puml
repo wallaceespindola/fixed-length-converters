@@ -9,9 +9,9 @@ skinparam defaultFontName Arial
 skinparam defaultFontSize 12
 
 skinparam entity {
-    BackgroundColor #eceff1
-    BorderColor #37474f
-    FontColor #263238
+    BackgroundColor #455a64
+    BorderColor #263238
+    FontColor #ffffff
     HeaderBackgroundColor #e65100
     HeaderFontColor #ffffff
     HeaderFontStyle bold
