@@ -1,8 +1,6 @@
 .DEFAULT_GOAL := help
 
-SKIP_TESTS := -DskipTests
-
-.PHONY: help build run run-prod test test-unit test-integration benchmark clean kill lint docs
+.PHONY: help build run test test-unit test-integration benchmark clean kill lint docs
 
 help: ## Display all available make commands with descriptions
 	@echo ""
@@ -12,16 +10,13 @@ help: ## Display all available make commands with descriptions
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 
-build: ## Compile, test and install the project
-	mvn clean install $(SKIP_TESTS)
+build: ## Compile, run all tests and install (full pipeline)
+	mvn clean install
 
-run: ## Start the application locally (dev profile — enables Swagger UI)
-	mvn spring-boot:run -Dspring-boot.run.profiles=dev
-
-run-prod: ## Start the application without dev profile
+run: ## Start the application locally (Swagger UI at /swagger-ui.html)
 	mvn spring-boot:run
 
-test: ## Run all tests (unit + integration)
+test: ## Run all tests with coverage (unit + integration + JaCoCo)
 	mvn verify
 
 test-unit: ## Run only unit tests
@@ -46,6 +41,6 @@ clean: ## Remove build artifacts and output files
 lint: ## Run static analysis (compiler warnings)
 	mvn compile -Xlint:all 2>&1 | grep -E "(warning|error)" | head -50 || true
 
-docs: ## Generate documentation artifacts (JaCoCo report)
-	mvn verify -DskipTests=false
+docs: ## Generate JaCoCo coverage report
+	mvn verify
 	@echo "JaCoCo report: target/site/jacoco/index.html"
