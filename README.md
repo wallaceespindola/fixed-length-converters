@@ -26,7 +26,7 @@ Enterprise-grade banking file experimentation and benchmarking platform. Generat
 This platform is a technical laboratory for evaluating Java fixed-length parser frameworks across correctness,
 performance, and Spring Batch compatibility. Engineers can:
 
-- Generate realistic banking transaction datasets (configurable LOW or HIGH load profiles)
+- Generate realistic banking transaction datasets (configurable LOW, MEDIUM, or HIGH load profiles)
 - Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 7 libraries
 - Compare library outputs side-by-side through benchmark dashboards
 - Export benchmark results as CSV, JSON, Markdown, or styled HTML
@@ -388,7 +388,7 @@ python tools/python/report_generator.py target/jmh-result.json docs/benchmark-re
 
 | Method | Endpoint                         | Description                                                   |
 |--------|----------------------------------|---------------------------------------------------------------|
-| `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|HIGH` |
+| `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|MEDIUM\|HIGH` |
 | `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                |
 | `GET`  | `/api/batch/history`             | Last 50 batch job executions                                  |
 | `GET`  | `/api/benchmark/results`         | All benchmark metrics                                         |
@@ -403,14 +403,18 @@ python tools/python/report_generator.py target/jmh-result.json docs/benchmark-re
 
 `POST /api/domain/generate` accepts an optional `loadProfile` query parameter:
 
-| Profile | Accounts | Transactions | Statements | Notes       |
-|---------|----------|--------------|------------|-------------|
-| `LOW`   | 20       | 200          | 10         | Default     |
-| `HIGH`  | 200      | 2 000        | 100        | Stress test |
+| Profile  | Accounts | Transactions | Statements | Notes        |
+|----------|----------|--------------|------------|--------------|
+| `LOW`    | 10       | 100          | 5          | Default      |
+| `MEDIUM` | 100      | 1 000        | 50         | Moderate     |
+| `HIGH`   | 1 000    | 10 000       | 500        | Stress test  |
 
 ```bash
 # Default (LOW) profile
 curl -s -X POST http://localhost:8080/api/domain/generate | jq .
+
+# MEDIUM load profile
+curl -s -X POST 'http://localhost:8080/api/domain/generate?loadProfile=MEDIUM' | jq .
 
 # HIGH load profile
 curl -s -X POST 'http://localhost:8080/api/domain/generate?loadProfile=HIGH' | jq .
@@ -503,12 +507,14 @@ mvn test -Dtest="DomainControllerTest,BatchControllerTest"
 The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src/main/resources/static/`) provides:
 
 - **Dashboard** — health status, actuator info, quick-action buttons
-- **Data Generator** — trigger domain data generation with "Low Load" or "High Load" buttons, display results
+- **Data Generator** — trigger domain data generation with Low / Medium / High load buttons, display results
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
   all 14 fileType × library combinations sequentially with live per-row progress.
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.
+- **Diagrams** — 7 live architecture diagrams rendered by Mermaid@11 (system arch, component, batch sequence,
+  strategy class hierarchy, benchmark flow, database schema, deployment topology).
 
 No build step is needed. To modify the UI, edit `src/main/resources/static/index.html` directly — `mvn spring-boot:run`
 serves the latest version immediately. No Node.js or npm required.

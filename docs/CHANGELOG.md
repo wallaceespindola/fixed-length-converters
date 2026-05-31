@@ -7,7 +7,31 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+- **Diagrams view** — 7th nav tab in the frontend SPA rendering live Mermaid@11.15.0 diagrams:
+  system architecture, component diagram, batch sequence, strategy class hierarchy,
+  benchmark flow, database schema, and deployment topology
+- **MEDIUM load profile** (`LoadProfile.MEDIUM`) — 100 accounts / 1 000 transactions / 50 statements,
+  available via `?loadProfile=MEDIUM`; Generate Data view now shows three buttons (Low / Medium / High)
+- `run.sh --skip-build` flag — skip Maven build and start from existing JAR
+- Separate `backend-err.log` for Spring Boot stderr in `run.sh`
+- `AGENTS.md` — project guidance file for Codex / OpenAI coding agents
+
 ### Changed
+- **Load profiles rescaled** — LOW: 10 accounts / 100 txns / 5 statements (was 20/200/10);
+  HIGH: 1 000 accounts / 10 000 txns / 500 statements (was 200/2 000/100)
+- `run.sh` banner switched from `╔══╗` box to open `════` style; port-conflict now exits with error;
+  process-died detection added to health-wait loop; summary links include UI, API, H2 DB, Health
+- `kill.sh` uses `PID_FILE` variable; fuser fallback added; pattern match updated to `FixedLengthConvertersApplication`
+- `DomainDataGeneratorTest` now uses `LoadProfile.LOW.*()` accessors instead of hardcoded counts
+
+### Fixed
+- `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer
+  matched the updated `LoadProfile.LOW` values
+
+---
+
+### Changed (prior session)
 - Upgraded `velocity-engine-core` from 2.3 to 2.4.1 (backward-compatible; includes bug fixes and performance improvements)
 - Added CODA (Febelfin) and SWIFT MT940 shields.io badges to README header
 - Enhanced README architecture diagram with per-layer color theming (Frontend / API / Batch / Strategy / Parsers / Storage) and labeled data-flow arrows

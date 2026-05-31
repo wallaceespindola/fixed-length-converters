@@ -86,7 +86,7 @@ src/main/java/com/wtechitsolutions/
 
 ### Core Flow
 
-1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2; supports `?loadProfile=LOW` (default: 20 accounts, 200 transactions, 10 statements) or `?loadProfile=HIGH` (200 accounts, 2 000 transactions, 100 statements)
+1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2; supports `?loadProfile=LOW` (default: 10 accounts, 100 transactions, 5 statements), `?loadProfile=MEDIUM` (100 accounts, 1 000 transactions, 50 statements), or `?loadProfile=HIGH` (1 000 accounts, 10 000 transactions, 500 statements)
 2. `POST /api/batch/generate` → `BatchJobService.launch(fileType, library)` → Spring Batch job
 3. Spring Batch: `DomainEntityItemReader` (H2) → `FileGenerationItemProcessor` (StrategyResolver) → `FileOutputItemWriter` (writes to `/output/`)
 4. `BatchMetricsListener.afterJob()` → saves `BenchmarkMetrics` row
@@ -114,7 +114,7 @@ src/main/java/com/wtechitsolutions/
 ## REST API Endpoints
 
 ```
-POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|HIGH
+POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|MEDIUM|HIGH
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
 GET  /api/benchmark/results      → all benchmark metrics
