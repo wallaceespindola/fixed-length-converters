@@ -145,8 +145,8 @@
     .hidden { display: none !important; }
     hr.d { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
 
-    .diag-wrap { overflow: auto; display: flex; justify-content: center; min-height: 60px; margin-top: 8px; }
-    .diag-wrap svg { max-width: 100% !important; height: auto !important; }
+    .diag-wrap { overflow: auto; display: block; min-height: 60px; margin-top: 8px; }
+    .diag-wrap svg { display: block; width: 100% !important; height: auto !important; }
     pre.mermaid { margin: 0; background: none; font-size: 0; }
   </style>
 </head>
@@ -840,10 +840,12 @@ async function loadDiagrams() {
   } catch (e) {
     console.error('mermaid.run error:', e);
   }
-  // Mermaid injects style="max-width: Npx" on each SVG, overriding CSS.
-  // Remove it so CSS max-width:100% can constrain wide diagrams without
-  // stretching narrow ones (diagrams size to their natural width, not 100%).
+  // Mermaid sets width/height as fixed pixels and style="max-width:Npx".
+  // Override: width="100%" + remove height so viewBox scales the diagram
+  // to fill the full card width at correct aspect ratio on every diagram type.
   container.querySelectorAll('.diag-wrap svg').forEach(function(svg) {
+    svg.setAttribute('width', '100%');
+    svg.removeAttribute('height');
     svg.style.removeProperty('max-width');
   });
 }
