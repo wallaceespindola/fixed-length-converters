@@ -39,8 +39,8 @@ skinparam component<<parser>> {
 }
 
 skinparam component<<domain>> {
-    BackgroundColor #37474f
-    BorderColor #263238
+    BackgroundColor #e65100
+    BorderColor #bf360c
     FontColor #ffffff
 }
 

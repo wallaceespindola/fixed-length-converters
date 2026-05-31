@@ -33,26 +33,26 @@ skinparam folder {
     FontColor #263238
 }
 
-node "Developer Machine" #e8f5e9 ##2e7d32 {
-    node "JVM (Java 21)" #e8f5e9 ##2e7d32 {
-        artifact "fixed-length-converters.jar" as JAR #2e7d32 ##1b5e20
-        component "Spring Boot\nlocalhost:8080" as APP #2e7d32 ##1b5e20
-        component "H2 In-Memory DB\nbankingdb" as H2 #37474f ##263238
-        component "Web UI (HTML/CSS/JS)\n/static/index.html" as SPA #e65100 ##bf360c
+node "Developer Machine" #e8f5e9 {
+    node "JVM (Java 21)" #e8f5e9 {
+        artifact "fixed-length-converters.jar" as JAR
+        component "Spring Boot\nlocalhost:8080" as APP
+        component "H2 In-Memory DB\nbankingdb" as H2 #37474f
+        component "Web UI (HTML/CSS/JS)\n/static/index.html" as SPA #e65100
     }
-    folder "output/" as OUT #eceff1 ##37474f
+    folder "output/" as OUT
 }
 
-node "Web Browser" #e3f2fd ##1565c0 {
-    component "Browser" as BR #1565c0 ##0d47a1
+node "Web Browser" #e3f2fd {
+    component "Browser" as BR #1565c0
 }
 
-node "GitHub Actions" #e8f5e9 ##2e7d32 {
-    component "build.yml\nmvn install -DskipTests" as BUILD #2e7d32 ##1b5e20
-    component "test.yml\nmvn verify + JaCoCo" as TEST #2e7d32 ##1b5e20
-    component "benchmark.yml\nJMH benchmarks" as BENCH #2e7d32 ##1b5e20
-    component "codeql.yml\nSecurity scan" as CQL #2e7d32 ##1b5e20
-    component "release.yml\nGitHub Release" as REL #2e7d32 ##1b5e20
+node "GitHub Actions" #e8f5e9 {
+    component "build.yml\nmvn install -DskipTests" as BUILD
+    component "test.yml\nmvn verify + JaCoCo" as TEST
+    component "benchmark.yml\nJMH benchmarks" as BENCH
+    component "codeql.yml\nSecurity scan" as CQL
+    component "release.yml\nGitHub Release" as REL
 }
 
 JAR --> APP
