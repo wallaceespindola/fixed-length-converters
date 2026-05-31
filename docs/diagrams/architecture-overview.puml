@@ -1,64 +1,115 @@
 @startuml architecture-overview
-!theme plain
 title Banking Fixed-Length File Generator — Architecture Overview
 
-package "Web UI (HTML/CSS/JS)" {
-    [Dashboard]
-    [Batch Runner]
-    [Benchmark Dashboard]
-    [Batch History]
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam RoundCorner 6
+skinparam ArrowColor #546e7a
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam component {
+    BackgroundColor #f5f5f5
+    BorderColor #546e7a
+    FontColor #263238
 }
 
-package "REST API" {
-    [DomainController]
-    [BatchController]
-    [BenchmarkController]
-    [Actuator /health /info]
+skinparam component<<frontend>> {
+    BackgroundColor #e65100
+    BorderColor #bf360c
+    FontColor #ffffff
 }
 
-package "Spring Batch" {
-    [JobLauncher]
-    [bankingFileGenerationJob]
-    [DomainEntityItemReader]
-    [FileGenerationItemProcessor]
-    [FileOutputItemWriter]
-    [BatchMetricsListener]
+skinparam component<<api>> {
+    BackgroundColor #1565c0
+    BorderColor #0d47a1
+    FontColor #ffffff
 }
 
-package "Strategy Pattern" {
-    [StrategyResolver]
-    [CodaBeanIOStrategy]
-    [CodaFixedFormat4JStrategy]
-    [CodaFixedLengthStrategy]
-    [CodaBindyStrategy]
-    [CodaCamelBeanIOStrategy]
-    [CodaVelocityStrategy]
-    [CodaSpringBatchStrategy]
-    [SwiftBeanIOStrategy]
-    [SwiftFixedFormat4JStrategy]
-    [SwiftFixedLengthStrategy]
-    [SwiftBindyStrategy]
-    [SwiftCamelBeanIOStrategy]
-    [SwiftVelocityStrategy]
-    [SwiftSpringBatchStrategy]
+skinparam component<<batch>> {
+    BackgroundColor #2e7d32
+    BorderColor #1b5e20
+    FontColor #ffffff
 }
 
-package "Parser Wrappers" {
-    [BeanIOFormatter]
-    [FixedFormat4JFormatter]
-    [FixedLengthFormatter]
-    [BindyFormatter]
-    [CamelBeanIOFormatter]
-    [VelocityFormatter]
-    [SpringBatchFormatter]
+skinparam component<<strategy>> {
+    BackgroundColor #6a1b9a
+    BorderColor #4a148c
+    FontColor #ffffff
 }
 
-database "H2 In-Memory" {
-    [accounts]
-    [transactions]
-    [banking_statements]
-    [benchmark_metrics]
-    [BATCH_JOB_EXECUTION]
+skinparam component<<parser>> {
+    BackgroundColor #006064
+    BorderColor #004d40
+    FontColor #ffffff
+}
+
+skinparam component<<storage>> {
+    BackgroundColor #37474f
+    BorderColor #263238
+    FontColor #ffffff
+}
+
+skinparam packageBackgroundColor #fafafa
+skinparam packageBorderColor #546e7a
+
+package "Web UI (HTML/CSS/JS)" #fff8f5 {
+    [Dashboard] <<frontend>>
+    [Batch Runner] <<frontend>>
+    [Benchmark Dashboard] <<frontend>>
+    [Batch History] <<frontend>>
+}
+
+package "REST API" #e3f2fd {
+    [DomainController] <<api>>
+    [BatchController] <<api>>
+    [BenchmarkController] <<api>>
+    [Actuator /health /info] <<api>>
+}
+
+package "Spring Batch" #e8f5e9 {
+    [JobLauncher] <<batch>>
+    [bankingFileGenerationJob] <<batch>>
+    [DomainEntityItemReader] <<batch>>
+    [FileGenerationItemProcessor] <<batch>>
+    [FileOutputItemWriter] <<batch>>
+    [BatchMetricsListener] <<batch>>
+}
+
+package "Strategy Pattern" #f3e5f5 {
+    [StrategyResolver] <<strategy>>
+    [CodaBeanIOStrategy] <<strategy>>
+    [CodaFixedFormat4JStrategy] <<strategy>>
+    [CodaFixedLengthStrategy] <<strategy>>
+    [CodaBindyStrategy] <<strategy>>
+    [CodaCamelBeanIOStrategy] <<strategy>>
+    [CodaVelocityStrategy] <<strategy>>
+    [CodaSpringBatchStrategy] <<strategy>>
+    [SwiftBeanIOStrategy] <<strategy>>
+    [SwiftFixedFormat4JStrategy] <<strategy>>
+    [SwiftFixedLengthStrategy] <<strategy>>
+    [SwiftBindyStrategy] <<strategy>>
+    [SwiftCamelBeanIOStrategy] <<strategy>>
+    [SwiftVelocityStrategy] <<strategy>>
+    [SwiftSpringBatchStrategy] <<strategy>>
+}
+
+package "Parser Wrappers" #e0f2f1 {
+    [BeanIOFormatter] <<parser>>
+    [FixedFormat4JFormatter] <<parser>>
+    [FixedLengthFormatter] <<parser>>
+    [BindyFormatter] <<parser>>
+    [CamelBeanIOFormatter] <<parser>>
+    [VelocityFormatter] <<parser>>
+    [SpringBatchFormatter] <<parser>>
+}
+
+database "H2 In-Memory" #eceff1 {
+    [accounts] <<storage>>
+    [transactions] <<storage>>
+    [banking_statements] <<storage>>
+    [benchmark_metrics] <<storage>>
+    [BATCH_JOB_EXECUTION] <<storage>>
 }
 
 [Web UI (HTML/CSS/JS)] --> [REST API]

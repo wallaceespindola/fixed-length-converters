@@ -1,22 +1,71 @@
 @startuml batch-sequence
-!theme plain
 title Spring Batch File Generation — Execution Sequence
 
-actor Frontend
-participant DomainController
-participant DomainDataGenerator
-participant BatchController
-participant BatchJobService
-participant JobLauncher
-participant "bankingFileGenerationJob" as Job
-participant DomainEntityItemReader as Reader
-participant FileGenerationItemProcessor as Processor
-participant StrategyResolver
-participant "FileGenerationStrategy\n(e.g. CodaBeanIOStrategy)" as Strategy
-participant FileOutputItemWriter as Writer
-participant BatchMetricsListener as Listener
-database "H2 Database" as DB
-collections "output/ (filesystem)" as FS
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #546e7a
+
+skinparam actor {
+    BackgroundColor #e65100
+    BorderColor #bf360c
+    FontColor #ffffff
+}
+
+skinparam participant {
+    BackgroundColor #f5f5f5
+    BorderColor #546e7a
+    FontColor #263238
+}
+
+skinparam database {
+    BackgroundColor #37474f
+    BorderColor #263238
+    FontColor #ffffff
+}
+
+skinparam collections {
+    BackgroundColor #37474f
+    BorderColor #263238
+    FontColor #ffffff
+}
+
+skinparam note {
+    BackgroundColor #fff8f5
+    BorderColor #e65100
+    FontColor #263238
+}
+
+skinparam sequence {
+    GroupBackgroundColor #e8f5e9
+    GroupBorderColor #2e7d32
+    GroupFontColor #1b5e20
+    DividerBackgroundColor #1565c0
+    DividerFontColor #ffffff
+    DividerBorderColor #0d47a1
+    LifeLineBorderColor #546e7a
+    LifeLineBackgroundColor #f5f5f5
+    BoxBackgroundColor #fafafa
+    BoxBorderColor #546e7a
+}
+
+actor Frontend #e65100
+
+participant DomainController #1565c0 ##0d47a1
+participant DomainDataGenerator #1565c0 ##0d47a1
+participant BatchController #1565c0 ##0d47a1
+participant BatchJobService #2e7d32 ##1b5e20
+participant JobLauncher #2e7d32 ##1b5e20
+participant "bankingFileGenerationJob" as Job #2e7d32 ##1b5e20
+participant DomainEntityItemReader as Reader #2e7d32 ##1b5e20
+participant FileGenerationItemProcessor as Processor #2e7d32 ##1b5e20
+participant StrategyResolver #6a1b9a ##4a148c
+participant "FileGenerationStrategy\n(e.g. CodaBeanIOStrategy)" as Strategy #006064 ##004d40
+participant FileOutputItemWriter as Writer #2e7d32 ##1b5e20
+participant BatchMetricsListener as Listener #2e7d32 ##1b5e20
+database "H2 Database" as DB #37474f ##263238
+collections "output/ (filesystem)" as FS #37474f ##263238
 
 == Step 1: seed sample data (LOW or HIGH load profile) ==
 Frontend -> DomainController : POST /api/domain/generate\n?loadProfile=LOW|HIGH

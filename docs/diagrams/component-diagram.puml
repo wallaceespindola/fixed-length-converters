@@ -1,62 +1,113 @@
 @startuml component-diagram
-!theme plain
 title Banking Platform — Component Diagram
 
-package "REST API Layer" {
-    [DomainController]
-    [BatchController]
-    [BenchmarkController]
-    [Actuator /health /info]
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam RoundCorner 6
+skinparam ArrowColor #546e7a
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam component {
+    BackgroundColor #f5f5f5
+    BorderColor #546e7a
+    FontColor #263238
 }
 
-package "Spring Batch" {
-    [BatchJobService]
-    [bankingFileGenerationJob]
-    [DomainEntityItemReader]
-    [FileGenerationItemProcessor]
-    [FileOutputItemWriter]
-    [BatchMetricsListener]
+skinparam component<<api>> {
+    BackgroundColor #1565c0
+    BorderColor #0d47a1
+    FontColor #ffffff
 }
 
-package "Strategy Layer" {
-    [StrategyResolver]
-    [CodaBeanIOStrategy]
-    [CodaFixedFormat4JStrategy]
-    [CodaFixedLengthStrategy]
-    [CodaBindyStrategy]
-    [CodaCamelBeanIOStrategy]
-    [CodaVelocityStrategy]
-    [CodaSpringBatchStrategy]
-    [SwiftBeanIOStrategy]
-    [SwiftFixedFormat4JStrategy]
-    [SwiftFixedLengthStrategy]
-    [SwiftBindyStrategy]
-    [SwiftCamelBeanIOStrategy]
-    [SwiftVelocityStrategy]
-    [SwiftSpringBatchStrategy]
+skinparam component<<batch>> {
+    BackgroundColor #2e7d32
+    BorderColor #1b5e20
+    FontColor #ffffff
 }
 
-package "Parser Wrappers" {
-    [BeanIOFormatter]
-    [FixedFormat4JFormatter]
-    [FixedLengthFormatter]
-    [BindyFormatter]
-    [CamelBeanIOFormatter]
-    [VelocityFormatter]
-    [SpringBatchFormatter]
+skinparam component<<strategy>> {
+    BackgroundColor #6a1b9a
+    BorderColor #4a148c
+    FontColor #ffffff
 }
 
-package "Domain Layer" {
-    [DomainDataGenerator]
-    [AccountRepository]
-    [TransactionRepository]
-    [BenchmarkMetricsRepository]
+skinparam component<<parser>> {
+    BackgroundColor #006064
+    BorderColor #004d40
+    FontColor #ffffff
 }
 
-package "Configuration" {
-    [BatchConfig]
-    [OpenApiConfig]
-    [WebConfig]
+skinparam component<<domain>> {
+    BackgroundColor #37474f
+    BorderColor #263238
+    FontColor #ffffff
+}
+
+skinparam component<<config>> {
+    BackgroundColor #1565c0
+    BorderColor #0d47a1
+    FontColor #ffffff
+}
+
+skinparam packageBackgroundColor #fafafa
+skinparam packageBorderColor #546e7a
+
+package "REST API Layer" #e3f2fd {
+    [DomainController] <<api>>
+    [BatchController] <<api>>
+    [BenchmarkController] <<api>>
+    [Actuator /health /info] <<api>>
+}
+
+package "Spring Batch" #e8f5e9 {
+    [BatchJobService] <<batch>>
+    [bankingFileGenerationJob] <<batch>>
+    [DomainEntityItemReader] <<batch>>
+    [FileGenerationItemProcessor] <<batch>>
+    [FileOutputItemWriter] <<batch>>
+    [BatchMetricsListener] <<batch>>
+}
+
+package "Strategy Layer" #f3e5f5 {
+    [StrategyResolver] <<strategy>>
+    [CodaBeanIOStrategy] <<strategy>>
+    [CodaFixedFormat4JStrategy] <<strategy>>
+    [CodaFixedLengthStrategy] <<strategy>>
+    [CodaBindyStrategy] <<strategy>>
+    [CodaCamelBeanIOStrategy] <<strategy>>
+    [CodaVelocityStrategy] <<strategy>>
+    [CodaSpringBatchStrategy] <<strategy>>
+    [SwiftBeanIOStrategy] <<strategy>>
+    [SwiftFixedFormat4JStrategy] <<strategy>>
+    [SwiftFixedLengthStrategy] <<strategy>>
+    [SwiftBindyStrategy] <<strategy>>
+    [SwiftCamelBeanIOStrategy] <<strategy>>
+    [SwiftVelocityStrategy] <<strategy>>
+    [SwiftSpringBatchStrategy] <<strategy>>
+}
+
+package "Parser Wrappers" #e0f2f1 {
+    [BeanIOFormatter] <<parser>>
+    [FixedFormat4JFormatter] <<parser>>
+    [FixedLengthFormatter] <<parser>>
+    [BindyFormatter] <<parser>>
+    [CamelBeanIOFormatter] <<parser>>
+    [VelocityFormatter] <<parser>>
+    [SpringBatchFormatter] <<parser>>
+}
+
+package "Domain Layer" #eceff1 {
+    [DomainDataGenerator] <<domain>>
+    [AccountRepository] <<domain>>
+    [TransactionRepository] <<domain>>
+    [BenchmarkMetricsRepository] <<domain>>
+}
+
+package "Configuration" #e3f2fd {
+    [BatchConfig] <<config>>
+    [OpenApiConfig] <<config>>
+    [WebConfig] <<config>>
 }
 
 [DomainController] --> [DomainDataGenerator]

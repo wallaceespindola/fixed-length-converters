@@ -1,6 +1,27 @@
 @startuml database-diagram
-!theme plain
 title H2 In-Memory Database Schema
+
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam RoundCorner 6
+skinparam ArrowColor #546e7a
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam entity {
+    BackgroundColor #eceff1
+    BorderColor #37474f
+    FontColor #263238
+    HeaderBackgroundColor #e65100
+    HeaderFontColor #ffffff
+    HeaderFontStyle bold
+}
+
+skinparam note {
+    BackgroundColor #fff8f5
+    BorderColor #e65100
+    FontColor #263238
+}
 
 entity accounts {
   * id : BIGINT <<PK, generated>>

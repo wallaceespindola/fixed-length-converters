@@ -1,8 +1,59 @@
 @startuml strategy-class-diagram
-!theme plain
 title Strategy Pattern — Class Hierarchy
 
-interface FileGenerationStrategy {
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam RoundCorner 6
+skinparam ArrowColor #546e7a
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+
+skinparam classBackgroundColor #f5f5f5
+skinparam classBorderColor #546e7a
+skinparam classFontColor #263238
+skinparam classHeaderBackgroundColor #f5f5f5
+
+skinparam class<<interface>> {
+    BackgroundColor #1565c0
+    BorderColor #0d47a1
+    FontColor #ffffff
+    HeaderBackgroundColor #1565c0
+    HeaderFontColor #ffffff
+}
+
+skinparam class<<abstract>> {
+    BackgroundColor #004A97
+    BorderColor #003580
+    FontColor #ffffff
+    HeaderBackgroundColor #004A97
+    HeaderFontColor #ffffff
+}
+
+skinparam class<<coda>> {
+    BackgroundColor #006064
+    BorderColor #004d40
+    FontColor #ffffff
+    HeaderBackgroundColor #006064
+    HeaderFontColor #ffffff
+}
+
+skinparam class<<swift>> {
+    BackgroundColor #2e7d32
+    BorderColor #1b5e20
+    FontColor #ffffff
+    HeaderBackgroundColor #2e7d32
+    HeaderFontColor #ffffff
+}
+
+skinparam class<<resolver>> {
+    BackgroundColor #6a1b9a
+    BorderColor #4a148c
+    FontColor #ffffff
+    HeaderBackgroundColor #6a1b9a
+    HeaderFontColor #ffffff
+}
+
+interface FileGenerationStrategy <<interface>> {
   +generate(transactions : List<Transaction>, accounts : List<Account>) : String
   +parse(fileContent : String) : List<Transaction>
   +getFileType() : FileType
@@ -10,7 +61,7 @@ interface FileGenerationStrategy {
   +strategyKey() : String
 }
 
-abstract class AbstractCodaStrategy {
+abstract class AbstractCodaStrategy <<abstract>> {
   +getFileType() : FileType.CODA
   +generate(transactions, accounts) : String
   +parse(fileContent) : List<Transaction>
@@ -22,7 +73,7 @@ abstract class AbstractCodaStrategy {
   #toTransaction(r : CodaRecord) : Transaction
 }
 
-abstract class AbstractSwiftStrategy {
+abstract class AbstractSwiftStrategy <<abstract>> {
   +getFileType() : FileType.SWIFT
   +generate(transactions, accounts) : String
   +parse(fileContent) : List<Transaction>
@@ -31,77 +82,77 @@ abstract class AbstractSwiftStrategy {
   #toTransaction(r : SwiftMtRecord) : Transaction
 }
 
-class CodaBeanIOStrategy {
+class CodaBeanIOStrategy <<coda>> {
   -formatter : BeanIOFormatter
   +getLibrary() : Library.BEANIO
 }
 
-class CodaFixedFormat4JStrategy {
+class CodaFixedFormat4JStrategy <<coda>> {
   -formatter : FixedFormat4JFormatter
   +getLibrary() : Library.FIXFORMAT4J
 }
 
-class CodaFixedLengthStrategy {
+class CodaFixedLengthStrategy <<coda>> {
   -formatter : FixedLengthFormatter
   +getLibrary() : Library.FIXEDLENGTH
 }
 
-class CodaBindyStrategy {
+class CodaBindyStrategy <<coda>> {
   -formatter : BindyFormatter
   +getLibrary() : Library.BINDY
 }
 
-class CodaCamelBeanIOStrategy {
+class CodaCamelBeanIOStrategy <<coda>> {
   -formatter : CamelBeanIOFormatter
   +getLibrary() : Library.CAMEL_BEANIO
 }
 
-class CodaVelocityStrategy {
+class CodaVelocityStrategy <<coda>> {
   -formatter : VelocityFormatter
   +getLibrary() : Library.VELOCITY
 }
 
-class CodaSpringBatchStrategy {
+class CodaSpringBatchStrategy <<coda>> {
   -formatter : SpringBatchFormatter
   +getLibrary() : Library.SPRING_BATCH
 }
 
-class SwiftBeanIOStrategy {
+class SwiftBeanIOStrategy <<swift>> {
   -formatter : BeanIOFormatter
   +getLibrary() : Library.BEANIO
 }
 
-class SwiftFixedFormat4JStrategy {
+class SwiftFixedFormat4JStrategy <<swift>> {
   -formatter : FixedFormat4JFormatter
   +getLibrary() : Library.FIXFORMAT4J
 }
 
-class SwiftFixedLengthStrategy {
+class SwiftFixedLengthStrategy <<swift>> {
   -formatter : FixedLengthFormatter
   +getLibrary() : Library.FIXEDLENGTH
 }
 
-class SwiftBindyStrategy {
+class SwiftBindyStrategy <<swift>> {
   -formatter : BindyFormatter
   +getLibrary() : Library.BINDY
 }
 
-class SwiftCamelBeanIOStrategy {
+class SwiftCamelBeanIOStrategy <<swift>> {
   -formatter : CamelBeanIOFormatter
   +getLibrary() : Library.CAMEL_BEANIO
 }
 
-class SwiftVelocityStrategy {
+class SwiftVelocityStrategy <<swift>> {
   -formatter : VelocityFormatter
   +getLibrary() : Library.VELOCITY
 }
 
-class SwiftSpringBatchStrategy {
+class SwiftSpringBatchStrategy <<swift>> {
   -formatter : SpringBatchFormatter
   +getLibrary() : Library.SPRING_BATCH
 }
 
-class StrategyResolver {
+class StrategyResolver <<resolver>> {
   -strategies : Map<String, FileGenerationStrategy>
   +StrategyResolver(strategyList : List<FileGenerationStrategy>)
   +resolve(fileType : FileType, library : Library) : FileGenerationStrategy

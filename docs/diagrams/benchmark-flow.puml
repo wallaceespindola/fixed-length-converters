@@ -1,6 +1,44 @@
 @startuml benchmark-flow
-!theme plain
 title Benchmark Data Collection and Reporting Flow
+
+skinparam backgroundColor #fafafa
+skinparam ShadowingEnabled false
+skinparam defaultFontName Arial
+skinparam defaultFontSize 12
+skinparam ArrowColor #546e7a
+
+skinparam activity {
+    BackgroundColor #e3f2fd
+    BorderColor #1565c0
+    FontColor #1a237e
+    StartColor #e65100
+    EndColor #e65100
+    BarColor #1565c0
+    DiamondBackgroundColor #e3f2fd
+    DiamondBorderColor #1565c0
+    DiamondFontColor #1a237e
+}
+
+skinparam activityStart {
+    Color #e65100
+}
+
+skinparam activityEnd {
+    Color #e65100
+}
+
+skinparam partition {
+    BackgroundColor #f3e5f5
+    BorderColor #6a1b9a
+    FontColor #4a148c
+    FontStyle bold
+}
+
+skinparam note {
+    BackgroundColor #fff8f5
+    BorderColor #e65100
+    FontColor #263238
+}
 
 start
 
