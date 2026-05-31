@@ -802,7 +802,7 @@ async function loadDiagrams() {
     const title = document.createElement('b');     title.style.color = 'var(--primary)'; title.textContent = d.title;
     const desc  = document.createElement('p');     desc.className = 'caption'; desc.style.cssText = 'margin:4px 0 10px'; desc.textContent = d.desc;
     const hr    = document.createElement('hr');    hr.className = 'd';
-    const wrap  = document.createElement('div');   wrap.className = 'diag-wrap';
+    const wrap  = document.createElement('div');   wrap.className = 'diag-wrap'; wrap.id = d.id;
     const pre   = document.createElement('pre');   pre.className = 'mermaid'; pre.textContent = d.chart;
     wrap.appendChild(pre);
     card.appendChild(title); card.appendChild(desc); card.appendChild(hr); card.appendChild(wrap);
@@ -1087,6 +1087,44 @@ const DIAGRAMS = [
       '  }\n' +
       '  accounts ||--o{ transactions : "has"\n' +
       '  accounts ||--o{ banking_statements : "has"'
+  },
+  {
+    id: 'd-deploy',
+    title: '7. Deployment Diagram',
+    desc: 'Developer machine, browser, GitHub Actions CI/CD pipeline, and Dependabot automation',
+    chart: 'graph TB\n' +
+      '  classDef appStyle     fill:#e65100,stroke:#bf360c,color:#fff\n' +
+      '  classDef browserStyle fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
+      '  classDef ciStyle      fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
+      '  classDef depsStyle    fill:#6a1b9a,stroke:#4a148c,color:#fff\n' +
+      '  classDef storageStyle fill:#37474f,stroke:#263238,color:#fff\n' +
+      '  subgraph Dev["Developer Machine"]\n' +
+      '    APP["Spring Boot App - localhost:8080"]\n' +
+      '    H2[("H2 In-Memory DB")]\n' +
+      '    OUT["output/ files"]\n' +
+      '    APP <-->|JDBC| H2\n' +
+      '    APP -->|write| OUT\n' +
+      '  end\n' +
+      '  subgraph Browser["Web Browser"]\n' +
+      '    SPA["Web UI served from JAR"]\n' +
+      '  end\n' +
+      '  subgraph CI["GitHub Actions CI/CD"]\n' +
+      '    BUILD["build.yml"]\n' +
+      '    TEST["test.yml + JaCoCo"]\n' +
+      '    BENCH["benchmark.yml - JMH"]\n' +
+      '    CQL["codeql.yml - Security"]\n' +
+      '    REL["release.yml - GitHub Release"]\n' +
+      '  end\n' +
+      '  subgraph Deps["Dependency Automation"]\n' +
+      '    DBOT["Dependabot - weekly PRs"]\n' +
+      '  end\n' +
+      '  SPA -->|HTTP REST| APP\n' +
+      '  SPA -->|actuator| APP\n' +
+      '  class APP,H2 appStyle\n' +
+      '  class OUT storageStyle\n' +
+      '  class SPA browserStyle\n' +
+      '  class BUILD,TEST,BENCH,CQL,REL ciStyle\n' +
+      '  class DBOT depsStyle'
   }
 ];
 
