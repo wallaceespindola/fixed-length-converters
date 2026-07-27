@@ -285,28 +285,29 @@ but the risk class remains: `.vm` templates must be version-controlled and never
 
 | Approach | CODA write | CODA read | SWIFT write | SWIFT read |
 |---|---:|---:|---:|---:|
-| **fixedformat4j** | **8 463** | **16 106** | 11 418 | 14 496 |
-| fixedlength | 6 452 | 7 810 | 11 616 | 13 819 |
-| Velocity | 5 562 | 8 947 | 4 162 | 14 079 |
-| BeanIO | 5 306 | 2 632 | 11 373 | 14 499 |
-| Camel BeanIO | 4 900 | 2 907 | 10 146 | 14 450 |
-| Spring Batch native | 4 642 | 9 351 | 11 595 | 14 558 |
-| Spring Batch + fixedlength | 4 502 | 9 216 | 11 519 | 14 486 |
-| Spring Batch + ff4j | 4 371 | 8 656 | 11 510 | 14 587 |
-| Camel Bindy | 3 186 | 2 298 | 11 384 | 14 291 |
+| **fixedformat4j** | **8 261** | **14 198** | 11 418 | 14 433 |
+| fixedlength | 6 374 | 7 810 | **11 616** | 13 819 |
+| Velocity | 5 473 | 8 947 | 4 110 | 14 121 |
+| BeanIO | 5 228 | 2 818 | 11 373 | **14 499** |
+| Camel BeanIO | 4 942 | 2 889 | 11 416 | 14 267 |
+| Spring Batch native | 4 642 | 9 188 | 11 615 | 13 009 |
+| Spring Batch + ff4j | 4 320 | 8 656 | 11 510 | 14 217 |
+| Spring Batch + fixedlength | 4 218 | 8 956 | 11 497 | 14 117 |
+| Camel Bindy | 3 186 | 2 179 | 11 384 | 14 291 |
 
 Throughput in ops/s (one op = 20 transactions × 5 accounts). Highest per column in bold.
 
-- **fixedformat4j wins CODA outright** — 1.8× the write throughput and 1.7× the read throughput of the next best
-- **Annotation-derived layout is free at runtime** — the two hybrids sit within noise of native Spring Batch;
-  reflection happens once at bean construction, never per record
-- **SWIFT converges (~11k write / ~14k read)** — all approaches share `SwiftMtRecord`; only Velocity's
-  template rendering (4 162 ops/s) stands out
-- Error bars are wide on some runs (1 fork × 3 iterations) — treat gaps under ~20 % as noise
+- **fixedformat4j leads CODA** — ~1.3× the write throughput and ~1.5× the read throughput of the next best
+- **Annotation-derived layout costs nothing at runtime** — both hybrids sit within noise of native Spring Batch;
+  reflection runs once at bean construction, never per record
+- **SWIFT converges (~11k write / ~13–14k read)** — all approaches share `SwiftMtRecord`; only Velocity's
+  template rendering (4 110 ops/s) separates from the pack
+- Median of 3 runs. A run taken while the machine had heavy background load produced numbers up to 75 % lower
+  on the allocation-heavy CODA paths — measure on a quiet machine, and treat gaps under ~20 % as noise
 
 Method: JMH throughput mode, 1 fork, 2×1 s warm-up, 3×2 s measurement, 5 accounts / 20 transactions per op,
-Java 21 on Apple Silicon. Re-run with `mvn test -Pbenchmark` — absolute values are machine-specific,
-the **ranking** is what transfers.
+Java 21 on Apple Silicon, **median of 3 runs**. Re-run with `mvn test -Pbenchmark` — absolute values are
+machine-specific, the **ranking** is what transfers.
 
 ---
 

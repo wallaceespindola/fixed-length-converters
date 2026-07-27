@@ -70,6 +70,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Stray `.DS_Store` files across the working tree
 
 ### Fixed
+- **`mvn test -Pbenchmark` ran zero benchmarks.** The `benchmark` profile added an `<includes>` for
+  `**/*Benchmark.java`, but the base surefire config's `<excludes>` for the same pattern still applied
+  (profile plugin config merges with the base), so the CI Benchmark job completed in ~37 s, ran nothing
+  and uploaded no `jmh-result.json`. The profile now overrides the excludes; a full run takes ~5.5 min
+  and produces all 36 results
+- Benchmark numbers republished as the **median of 3 runs**. A run taken while macOS background indexing
+  saturated the CPU reported up to 75 % lower throughput on the allocation-heavy CODA paths; the
+  fixedformat4j CODA lead is ~1.3× write / ~1.5× read (was quoted as 1.8× / 1.7× from a single run)
+- Stale `-Pskip-frontend` flag removed from the `FileGenerationBenchmark` javadoc — that profile no longer exists
 - `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer
   matched the updated `LoadProfile.LOW` values
 

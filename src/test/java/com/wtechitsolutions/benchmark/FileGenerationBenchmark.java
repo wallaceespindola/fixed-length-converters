@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * (9 libraries x 2 formats), covering both generate and parse operations.
  * 36 @Benchmark methods total.
  *
- * <p>Run via: mvn test -Pbenchmark -Pskip-frontend
+ * <p>Run via: mvn test -Pbenchmark
  *
  * <p>Results are written to target/jmh-result.json.
  *

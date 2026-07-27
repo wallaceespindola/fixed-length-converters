@@ -257,6 +257,13 @@
                             <includes>
                                 <include>**/*Benchmark.java</include>
                             </includes>
+                            <!-- Overrides the base <excludes>, which excludes **/*Benchmark.java and would
+                                 otherwise still apply here (profile plugin config merges with the base),
+                                 leaving this profile running zero tests. Generated JMH classes stay excluded. -->
+                            <excludes>
+                                <exclude>**/*_jmhType*.java</exclude>
+                                <exclude>**/*_jmhTest*.java</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>
