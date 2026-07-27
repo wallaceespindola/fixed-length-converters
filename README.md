@@ -606,7 +606,6 @@ fixed-length-converters/
 │   ├── domain/                 JPA entities + repositories + DomainDataGenerator + LoadProfile enum
 │   ├── parser/                 9 formatter wrappers + annotated model classes
 │   └── strategy/               FileGenerationStrategy + 18 implementations
-├── src/main/frontend/          React source (kept for reference; UI now served from static/)
 ├── src/main/resources/static/  Vanilla HTML/CSS/JS UI (index.html — served directly)
 ├── docs/
 │   ├── benchmark-results.md    Library health, adoption, suitability, JMH + pipeline numbers

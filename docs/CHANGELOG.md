@@ -57,6 +57,18 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `tools/python/report_generator.py` now recognises all 9 approaches (was 4) and defaults to
   `docs/jmh-report.md` — it no longer overwrites the hand-curated `docs/benchmark-results.md`
 
+### Removed
+- **Retired React frontend** (`src/main/frontend/` — 13 tracked files: Vite config, TSX views, API client).
+  Nothing referenced it: no `frontend-maven-plugin`, no Makefile or CI target, no script. The UI has been
+  the vanilla `src/main/resources/static/index.html` since the frontend refactor. Also drops the
+  now-obsolete `src/main/frontend/*` entries from `.gitignore` (and 439 MB of local `node_modules`)
+- `BeanIoSwiftRecord` — unreferenced model class; the BeanIO SWIFT path uses `SwiftMtRecord` like every
+  other SWIFT formatter
+- `org.apache.velocity.tools:velocity-tools-generic` dependency and its version property — no import of
+  `org.apache.velocity.tools` anywhere in main or test code; the HTML benchmark report renders through
+  `velocity-engine-core` alone (verified live: `GET /api/benchmark/export/html` still returns a rendered report)
+- Stray `.DS_Store` files across the working tree
+
 ### Fixed
 - `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer
   matched the updated `LoadProfile.LOW` values
