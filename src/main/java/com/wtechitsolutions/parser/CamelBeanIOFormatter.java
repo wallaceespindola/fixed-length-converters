@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * Formatter wrapping Apache Camel BeanIO data format (4.20.0) for CODA serialisation.
+ * Formatter wrapping Apache Camel BeanIO data format (4.21.0) for CODA serialisation.
  * Injects a pre-configured BeanIO {@link StreamFactory} (programmatic builder — no XML)
  * directly into {@link BeanIODataFormat#setFactory}, routing marshal/unmarshal calls
  * through a standalone {@link CamelContext}.

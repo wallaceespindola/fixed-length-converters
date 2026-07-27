@@ -4,13 +4,14 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 7 Java fixed-length parser libraries via the Strategy Pattern and Spring Batch.
+**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 9 Java fixed-length formatter approaches (7 libraries + 2 Spring Batch hybrids driven by annotation-derived layouts) via the Strategy Pattern and Spring Batch.
 
 **PRD:** `docs/PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
+**Library analysis:** `docs/benchmark-results.md` (health, adoption, bank suitability, JMH numbers) | **Slides:** `docs/slides/` (Marp `.md` + 22-slide PPTX)
 
 ## Implementation Status: COMPLETE
 
-All 118 tests pass. Application starts and runs end-to-end.
+All 149 tests pass. Application starts and runs end-to-end.
 
 Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required. Includes a Diagrams view with 7 live Mermaid diagrams rendered via Mermaid@11.15.0 CDN.
 
@@ -25,15 +26,15 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
-| Testing | JUnit 5 + Mockito, 118 tests |
-| Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0, Camel BeanIO 4.20.0, Velocity 2.4.1, Spring Batch 5.x |
+| Testing | JUnit 5 + Mockito, 149 tests |
+| Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
 ## Build & Run Commands
 
 ```bash
-# Full pipeline (Java compile + 118 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 149 tests + JaCoCo + repackage + install)
 mvn clean install
 
 # Quick build (no tests)
@@ -72,16 +73,20 @@ src/main/java/com/wtechitsolutions/
 ├── config/            BatchConfig (no @EnableBatchProcessing!), OpenApiConfig, WebConfig, VersionHealthIndicator
 ├── domain/            JPA entities (Account, Transaction, BankingStatement, BenchmarkMetrics)
 │                       Repositories, DomainDataGenerator, enums (FileType, Library, LoadProfile, TransactionType)
-├── parser/            7 formatter wrappers (annotation-based, template-based, or programmatic):
+├── parser/            9 formatter wrappers (annotation-based, template-based, or programmatic):
 │   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter,
-│   │                   CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter
+│   │                   CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter,
+│   │                   SpringBatchFf4jFormatter, SpringBatchFixedLengthFormatter
+│   │                   (both extend AnnotatedSpringBatchFormatter; layout read via AnnotatedLayout)
 │   └── model/         Annotated model classes per library (CodaRecord, BeanIoCodaRecord, etc.)
-└── strategy/          FileGenerationStrategy interface, StrategyResolver, 14 implementations:
+└── strategy/          FileGenerationStrategy interface, StrategyResolver, 18 implementations:
                         AbstractCodaStrategy, AbstractSwiftStrategy (base classes)
                         CodaBeanIOStrategy, CodaFixedFormat4JStrategy, CodaFixedLengthStrategy, CodaBindyStrategy
                         CodaCamelBeanIOStrategy, CodaVelocityStrategy, CodaSpringBatchStrategy
                         SwiftBeanIOStrategy, SwiftFixedFormat4JStrategy, SwiftFixedLengthStrategy, SwiftBindyStrategy
                         SwiftCamelBeanIOStrategy, SwiftVelocityStrategy, SwiftSpringBatchStrategy
+                        CodaSpringBatchFf4jStrategy, CodaSpringBatchFixedLengthStrategy
+                        SwiftSpringBatchFf4jStrategy, SwiftSpringBatchFixedLengthStrategy
 ```
 
 ### Core Flow
@@ -95,6 +100,18 @@ src/main/java/com/wtechitsolutions/
 
 `StrategyResolver` maps all `FileGenerationStrategy` beans by `strategyKey()` = `"FILETYPE_LIBRARY"`. Resolution is O(1) map lookup, no if/switch chains.
 
+### Annotation-Derived Layouts (SPRING_BATCH_FF4J / SPRING_BATCH_FIXEDLENGTH)
+
+- `AnnotatedLayout` reflects over a model's field annotations — fixedformat4j `@Field` or fixedlength
+  `@FixedField` — and generates the Spring Batch `FixedLengthTokenizer` ranges **and** the
+  `FormatterLineAggregator` printf format string. No hand-written `Range(1,1), Range(2,4), ...` list
+- Layout is validated at construction: gaps/overlaps throw, total width must be 128
+- printf pads with spaces only, so columns whose annotation declares a non-space padding char
+  (the zero-padded amount) are pre-filled by `AnnotatedSpringBatchFormatter.pad()`
+- `@FixedField` defaults to `Align.RIGHT` — `VlCodaRecord` therefore declares `align = Align.LEFT`
+  explicitly on every text field; the annotations are now the single source of truth for that layout
+- Output is byte-identical to the hand-sliced `SPRING_BATCH` strategy (asserted by `AnnotatedLayoutTest`)
+
 ### CODA Format Notes
 
 - Each record: **exactly 128 characters** per Febelfin spec
@@ -107,7 +124,7 @@ src/main/java/com/wtechitsolutions/
 
 ### SWIFT Format Notes
 
-- All 7 formatters serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters between messages
+- All 9 formatters serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters between messages
 - The `---\n` separator is standardized across all formatters; previously `BindyFormatter` used `###` and `FixedLengthFormatter` used `===`
 - BeanIO previously used CSV format; fixed to be consistent with the other strategies
 
@@ -140,22 +157,36 @@ GET  /actuator/info              → app name, version, description
 - **Line endings**: `.gitattributes` enforces LF for all source files; `.ps1`/`.bat` keep CRLF; `.ps1` files must use **ASCII-only** characters (no Unicode box-drawing) — PowerShell 5.x on Windows reads scripts as the system code page and misinterprets multibyte UTF-8
 - **Actuator health includes version**: `VersionHealthIndicator` in `config/` exposes `version`, `artifact`, `description` as a `version` component alongside `db`, `diskSpace`, `ping`
 
+## Docs & Slides
+
+- `docs/benchmark-results.md` — library health (versions, release dates, repo activity), adoption/governance,
+  supply-chain weight, bank-suitability matrix, JMH throughput and batch-pipeline throughput.
+  **Facts verified 2026-07-27** from Maven Central `maven-metadata.xml` + artifact `Last-Modified`,
+  GitHub REST API, deps.dev. Re-verify dates/stars before reusing them
+- **Maven Central publishes no public download counts** — never quote download numbers; use dependents
+  (deps.dev, pinned version only), stars and release cadence instead
+- `docs/slides/banking-parser-comparison.md` — Marp deck (22 slides); `banking-parser-platform.pptx` — PowerPoint
+- The PPTX is **generated**: edit `tools/python/generate_pptx.py`, then `python3 tools/python/generate_pptx.py`.
+  Never hand-edit the `.pptx`. `TOTAL` in that script must match the number of `slide_*()` calls in `main()`
+- Keep the Marp deck, the generator and `docs/slides/google-slides-export.md` slide list in sync
+
 ## Testing Strategy
 
 | Category | Test Class | What it tests |
 |---|---|---|
 | Unit | `DomainDataGeneratorTest` | Mock repos, counts |
 | Unit | `CodaRecordTest` | toFixedWidth/fromFixedWidth, 128-char lines |
-| Integration | `StrategyResolverTest` | All 14 strategies resolve by key |
+| Integration | `StrategyResolverTest` | All 18 strategies resolve by key |
 | Integration | `CodaStrategyTest` | Each CODA library: 128-char lines, header/trailer |
-| Integration | `SwiftStrategyTest` | All 7 SWIFT libraries: MT940 tag assertions |
+| Integration | `SwiftStrategyTest` | All 9 SWIFT libraries: MT940 tag assertions |
 | Integration | `SymmetryTest` | Round-trip: generate→parse preserves amount+type |
 | Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate |
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
 | Integration | `ActuatorTest` | TestRestTemplate: /actuator/health, /actuator/info |
 | Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |
 | Integration | `GoldenFileTest` | 128-char CODA lines, required record types and MT940 tags |
-| Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 14 strategies (run with -Pbenchmark) |
+| Unit | `AnnotatedLayoutTest` | Annotation-derived layout matches hand-written Ranges, byte-identical output |
+| Benchmark | `FileGenerationBenchmark` | JMH: throughput for all 18 strategies (run with -Pbenchmark) |
 
 Run specific test: `mvn test -Dtest=SymmetryTest`
 

@@ -280,7 +280,7 @@ Spring Batch 5.2.2 is what Spring Boot 3.4.5 resolves — 6.x requires Boot 4.x.
 
 ¹ deps.dev dependent packages for the pinned version only — a directional proxy.
 **Maven Central publishes no public download counts**, so no download figures are quoted here.
-All seven libraries are Apache-2.0.
+All seven third-party libraries are Apache-2.0; the two Spring Batch hybrids add no new dependency.
 
 > **Security note:** Velocity < 2.3 carried CVE-2020-13936 (template → RCE). The pinned 2.4.1 is not affected,
 > but the risk class remains: `.vm` templates must be version-controlled and never user-supplied.
@@ -448,7 +448,7 @@ python tools/python/benchmark_aggregator.py target/jmh-result.json
 # Generate a Markdown + HTML report from JMH results
 python tools/python/report_generator.py
 # or with explicit paths:
-python tools/python/report_generator.py target/jmh-result.json docs/benchmark-results.md
+python tools/python/report_generator.py target/jmh-result.json docs/jmh-report.md
 ```
 
 ---
@@ -544,10 +544,12 @@ curl http://localhost:8080/actuator/info
 | Category            | Test Class                                    | Tools              |
 |---------------------|-----------------------------------------------|--------------------|
 | Unit                | `DomainDataGeneratorTest`, `CodaRecordTest`   | JUnit 5 + Mockito  |
+| Annotation layouts  | `AnnotatedLayoutTest`                         | JUnit 5 + AssertJ  |
 | Strategy resolution | `StrategyResolverTest`                        | `@SpringBootTest`  |
 | CODA correctness    | `CodaStrategyTest`                            | `@SpringBootTest`  |
 | SWIFT correctness   | `SwiftStrategyTest`                           | `@SpringBootTest`  |
 | Round-trip symmetry | `SymmetryTest`                                | `@SpringBootTest`  |
+| Golden file         | `GoldenFileTest`                              | `@SpringBootTest`  |
 | REST API            | `DomainControllerTest`, `BatchControllerTest` | MockMvc            |
 | Actuator            | `ActuatorTest`                                | `TestRestTemplate` |
 | Swagger             | `SwaggerAvailabilityTest`                     | `TestRestTemplate` |

@@ -85,6 +85,8 @@ package "Strategy Pattern" #f3e5f5 {
     [CodaCamelBeanIOStrategy] <<strategy>>
     [CodaVelocityStrategy] <<strategy>>
     [CodaSpringBatchStrategy] <<strategy>>
+    [CodaSpringBatchFf4jStrategy] <<strategy>>
+    [CodaSpringBatchFixedLengthStrategy] <<strategy>>
     [SwiftBeanIOStrategy] <<strategy>>
     [SwiftFixedFormat4JStrategy] <<strategy>>
     [SwiftFixedLengthStrategy] <<strategy>>
@@ -92,6 +94,8 @@ package "Strategy Pattern" #f3e5f5 {
     [SwiftCamelBeanIOStrategy] <<strategy>>
     [SwiftVelocityStrategy] <<strategy>>
     [SwiftSpringBatchStrategy] <<strategy>>
+    [SwiftSpringBatchFf4jStrategy] <<strategy>>
+    [SwiftSpringBatchFixedLengthStrategy] <<strategy>>
 }
 
 package "Parser Wrappers" #e0f2f1 {
@@ -102,6 +106,8 @@ package "Parser Wrappers" #e0f2f1 {
     [CamelBeanIOFormatter] <<parser>>
     [VelocityFormatter] <<parser>>
     [SpringBatchFormatter] <<parser>>
+    [SpringBatchFf4jFormatter] <<parser>>
+    [SpringBatchFixedLengthFormatter] <<parser>>
 }
 
 database "H2 In-Memory" #eceff1 {

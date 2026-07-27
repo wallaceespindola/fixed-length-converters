@@ -124,7 +124,7 @@ src/main/java/com/wtechitsolutions/
 
 ### SWIFT Format Notes
 
-- All 7 formatters serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters between messages
+- All 9 formatters serialise as MT940 tag format (`:20:`, `:25:`, `:28C:`, `:60F:`, `:61:`, `:86:`, `:62F:`) with `---` record delimiters between messages
 - The `---\n` separator is standardized across all formatters; previously `BindyFormatter` used `###` and `FixedLengthFormatter` used `===`
 - BeanIO previously used CSV format; fixed to be consistent with the other strategies
 

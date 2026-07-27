@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Formatter wrapping Apache Camel Bindy (4.20.0) for CODA and SWIFT MT serialisation.
+ * Formatter wrapping Apache Camel Bindy (4.21.0) for CODA and SWIFT MT serialisation.
  * Field layout, padding and alignment are declared via @FixedLengthRecord/@DataField
  * annotations on BindyCodaRecord — no manual string padding in conversion methods.
  */

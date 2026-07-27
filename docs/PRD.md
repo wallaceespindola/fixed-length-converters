@@ -134,38 +134,46 @@ All examples and file structures shall be derived from:
 
 ### Library Versions
 
-| Library | Latest Version | Last Release | Risk |
-|---|---|---|---|
-| BeanIO | 3.2.1 | 2025-02-07 | Low |
-| fixedformat4j | 1.7.2 | 2026-04-20 | Low |
-| fixedlength | 0.15 | 2026-02-26 | Medium |
-| Apache Camel Bindy | 4.20.0 | 2026-04-23 | Medium |
-| Apache Camel BeanIO | 4.20.0 | 2026-04-23 | Medium |
-| Apache Velocity | 2.4 | 2024-11-01 | Low |
-| Spring Batch (native flat-file) | 5.x | 2026-04-23 | Low |
+> Verified 2026-07-27 against Maven Central metadata and the GitHub REST API.
+> Full analysis — adoption, governance, supply-chain weight, bank suitability — in `docs/benchmark-results.md`.
+
+| Library | Pinned | Latest | Latest Release | Risk |
+|---|---|---|---|---|
+| BeanIO | 3.2.1 | 3.2.1 | 2025-02-07 | Medium (dormant since 2025-02) |
+| fixedformat4j | 1.9.1 | 1.9.1 | 2026-06-17 | Low |
+| fixedlength | 0.15 | 0.15 | 2026-02-26 | Medium (single maintainer, 0.x) |
+| Apache Camel Bindy | 4.21.0 | 4.21.0 | 2026-06-27 | Medium (icu4j 14 MB transitive) |
+| Apache Camel BeanIO | 4.21.0 | 4.21.0 | 2026-06-27 | Medium |
+| Apache Velocity | 2.4.1 | 2.4.1 | 2024-10-14 | Low (CVE-2020-13936 fixed in 2.3) |
+| Spring Batch (native flat-file) | 5.2.2 | 6.0.4 | 2026-06-10 | Low (6.x needs Boot 4.x) |
 
 ### Comparison Matrix
 
-| Library | Grammar Support | Annotation Quality | Spring Batch Fit | Operational Risk |
+| Approach | Grammar Support | Layout Auditability | Spring Batch Fit | Operational Risk |
 |---|---|---|---|---|
-| BeanIO | Excellent | Good | Good | Low |
-| fixedformat4j | Limited | Excellent | Excellent | Low |
-| fixedlength | Limited | Good | Good | Medium |
-| Apache Camel Bindy | Limited | Good | Medium | Medium |
-| Apache Camel BeanIO | Excellent | Good | Medium | Medium |
-| Apache Velocity | Template-based | N/A | Good | Low |
-| Spring Batch (native) | Limited | Good | Excellent | Low |
+| BeanIO | Excellent | Programmatic builder | Good | Medium |
+| fixedformat4j | Limited | Annotations | Excellent | Low |
+| fixedlength | Limited | Annotations | Good | Medium |
+| Apache Camel Bindy | Limited | Annotations | Medium | Medium |
+| Apache Camel BeanIO | Excellent | XML mappings | Medium | Medium |
+| Apache Velocity | Template-based | Templates | Low (write-only) | Low |
+| Spring Batch (native) | Limited | Code (`Range` list) | Native | Low |
+| Spring Batch + fixedformat4j | Limited | Annotations (derived) | Native | Low |
+| Spring Batch + fixedlength | Limited | Annotations (derived) | Native | Low |
 
 ### Strategic Recommendations
 
-| Scenario | Recommended Library |
+| Scenario | Recommended Approach |
 |---|---|
+| New Spring Batch job in a bank | Spring Batch + fixedformat4j |
+| Minimal dependency footprint | Spring Batch + fixedlength |
 | Maximum CODA grammar correctness | BeanIO |
 | Simplicity, maintainability, modern annotations | fixedformat4j |
 | Existing Apache Camel ecosystem | Apache Camel Bindy |
+| Layout auditable outside the code | Apache Camel BeanIO (XML mappings) |
 | Lightweight experimentation | fixedlength |
 | Template-driven report generation | Apache Velocity |
-| Native Spring Batch integration | Spring Batch flat-file |
+| No new dependency allowed | Spring Batch flat-file (native) |
 
 ---
 
@@ -334,7 +342,7 @@ All examples and file structures shall be derived from:
 ### Comparisons
 
 ### FR-037
-- [ ] The benchmark dashboard shall support pairwise comparisons across all 7 libraries and all libraries combined.
+- [ ] The benchmark dashboard shall support pairwise comparisons across all 9 formatter approaches and all libraries combined.
 
 ### Export
 
@@ -369,7 +377,7 @@ The `ItemReader` loads domain entities from H2. The `ItemProcessor` resolves and
 com.wtechitsolutions/
 ├── api/          REST controllers and DTOs
 ├── batch/        Spring Batch jobs, readers, processors, writers
-├── strategy/     Strategy interface and all 14 implementations
+├── strategy/     Strategy interface and all 18 implementations
 ├── domain/       Banking domain entities (Account, Transaction, Statement)
 ├── parser/       Low-level formatter library wrappers (7 total)
 └── config/       Spring and batch configuration
@@ -516,7 +524,7 @@ The `ItemProcessor` resolves the correct strategy at runtime based on job parame
 - [ ] **Spring Batch tests** — job launch, step execution, restartability, parameter binding.
 
 ### TS-007
-- [ ] **Strategy resolution tests** — all 14 strategy classes resolve correctly for their `fileType` × `library` combination.
+- [ ] **Strategy resolution tests** — all 18 strategy classes resolve correctly for their `fileType` × `library` combination.
 
 ### TS-008
 - [ ] **Parser compatibility tests** — each library generates valid output for both CODA and SWIFT MT.
@@ -532,10 +540,10 @@ Domain Object → generate file → parse file → rebuild Domain Object → ass
 ```
 
 ### TS-011
-- [ ] **Cross-library comparison tests** — output of all 7 libraries for the same input produces semantically equivalent results.
+- [ ] **Cross-library comparison tests** — output of all 9 approaches for the same input produces semantically equivalent results.
 
 ### TS-012
-- [ ] **Benchmark tests** — JMH micro-benchmarks (28 `@Benchmark` methods) for all 14 strategy classes measuring throughput and latency.
+- [ ] **Benchmark tests** — JMH micro-benchmarks (36 `@Benchmark` methods) for all 18 strategy classes measuring throughput and latency.
 
 ---
 
@@ -805,8 +813,8 @@ The project is considered complete only when all of the following are satisfied:
 
 ### Functional
 - [ ] All FR-001 through FR-038 implemented and verified.
-- [ ] All 7 formatter libraries (BeanIO, fixedformat4j, fixedlength, Camel Bindy, Camel BeanIO, Velocity, Spring Batch native) generate valid CODA and SWIFT MT files end-to-end.
-- [ ] All 14 Strategy classes (§13) are implemented and resolve correctly.
+- [ ] All 9 formatter approaches (BeanIO, fixedformat4j, fixedlength, Camel Bindy, Camel BeanIO, Velocity, Spring Batch native, Spring Batch + fixedformat4j, Spring Batch + fixedlength) generate valid CODA and SWIFT MT files end-to-end.
+- [ ] All 18 Strategy classes (§13) are implemented and resolve correctly.
 - [ ] REST API endpoints (FR-015 through FR-020) return correct responses with `timestamp` fields.
 - [ ] Swagger UI accessible in `dev` profile; all endpoints documented.
 - [ ] Spring Actuator `/health` and `/info` operational with H2 and Batch indicators.
@@ -819,7 +827,7 @@ The project is considered complete only when all of the following are satisfied:
 
 ### Testing
 - [ ] All TS-001 through TS-012 passing.
-- [ ] Parser symmetry tests (TS-010) pass for all 14 strategy/format combinations.
+- [ ] Parser symmetry tests (TS-010) pass for all 18 strategy/format combinations.
 - [ ] Golden file tests (TS-009) pass against `docs/examples/`.
 
 ### Operations and DevEx

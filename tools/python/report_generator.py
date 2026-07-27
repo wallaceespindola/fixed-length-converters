@@ -5,6 +5,10 @@ Generates Markdown and HTML benchmark reports from JMH JSON results.
 Usage:
     python report_generator.py [path/to/jmh-result.json] [output.md]
     python report_generator.py                              # defaults
+
+Writes the raw JMH numbers to docs/jmh-report.md. The curated analysis in
+docs/benchmark-results.md (library health, adoption, bank suitability) is
+maintained by hand and is deliberately NOT overwritten by this script.
 """
 
 import json
@@ -27,7 +31,10 @@ def group_by_library(data: list) -> dict:
     for entry in data:
         name = entry.get("benchmark", "")
         # Extract library name from benchmark class name
-        for lib in ("BeanIO", "FixedFormat4J", "FixedLength", "Bindy"):
+        # Longest names first so "SpringBatchFf4j" is not swallowed by "SpringBatch"
+        for lib in ("SpringBatchFixedLength", "SpringBatchFf4j", "SpringBatch",
+                    "CamelBeanIO", "FixedFormat4J", "FixedLength",
+                    "BeanIO", "Bindy", "Velocity"):
             if lib.lower() in name.lower():
                 groups.setdefault(lib, []).append(entry)
                 break
@@ -77,23 +84,11 @@ def generate_markdown(data: list, output_path: str = "docs/benchmark-results.md"
 
     lines += [
         "",
-        "## Parser Library Comparison",
+        "---",
         "",
-        "| Metric | BeanIO | fixedformat4j | fixedlength | Camel Bindy |",
-        "|--------|--------|--------------|------------|-------------|",
-        "| Grammar support | Excellent | Limited | Limited | Limited |",
-        "| Annotation quality | Good | Excellent | Good | Good |",
-        "| Spring Batch fit | Good | Excellent | Good | Medium |",
-        "| Operational risk | Low | Low | Medium | Medium |",
-        "",
-        "## Recommendations",
-        "",
-        "| Scenario | Recommended Library |",
-        "|----------|-------------------|",
-        "| Maximum CODA grammar correctness | BeanIO |",
-        "| Simplicity, maintainability, annotations | fixedformat4j |",
-        "| Existing Apache Camel ecosystem | Camel Bindy |",
-        "| Lightweight experimentation | fixedlength |",
+        "Library health, adoption, supply-chain weight, the bank-suitability matrix and the curated",
+        "recommendations live in [`benchmark-results.md`](benchmark-results.md) — maintained by hand,",
+        "not generated from JMH output.",
     ]
 
     Path(output_path).parent.mkdir(parents=True, exist_ok=True)
@@ -103,7 +98,7 @@ def generate_markdown(data: list, output_path: str = "docs/benchmark-results.md"
 
 def main() -> None:
     json_path = sys.argv[1] if len(sys.argv) > 1 else "target/jmh-result.json"
-    output_path = sys.argv[2] if len(sys.argv) > 2 else "docs/benchmark-results.md"
+    output_path = sys.argv[2] if len(sys.argv) > 2 else "docs/jmh-report.md"
     data = load_jmh(json_path)
     generate_markdown(data, output_path)
 

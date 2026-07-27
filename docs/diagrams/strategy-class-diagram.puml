@@ -117,6 +117,16 @@ class CodaSpringBatchStrategy <<coda>> {
   +getLibrary() : Library.SPRING_BATCH
 }
 
+class CodaSpringBatchFf4jStrategy <<coda>> {
+  -formatter : SpringBatchFf4jFormatter
+  +getLibrary() : Library.SPRING_BATCH_FF4J
+}
+
+class CodaSpringBatchFixedLengthStrategy <<coda>> {
+  -formatter : SpringBatchFixedLengthFormatter
+  +getLibrary() : Library.SPRING_BATCH_FIXEDLENGTH
+}
+
 class SwiftBeanIOStrategy <<swift>> {
   -formatter : BeanIOFormatter
   +getLibrary() : Library.BEANIO
@@ -152,6 +162,16 @@ class SwiftSpringBatchStrategy <<swift>> {
   +getLibrary() : Library.SPRING_BATCH
 }
 
+class SwiftSpringBatchFf4jStrategy <<swift>> {
+  -formatter : SpringBatchFf4jFormatter
+  +getLibrary() : Library.SPRING_BATCH_FF4J
+}
+
+class SwiftSpringBatchFixedLengthStrategy <<swift>> {
+  -formatter : SpringBatchFixedLengthFormatter
+  +getLibrary() : Library.SPRING_BATCH_FIXEDLENGTH
+}
+
 class StrategyResolver <<resolver>> {
   -strategies : Map<String, FileGenerationStrategy>
   +StrategyResolver(strategyList : List<FileGenerationStrategy>)
@@ -167,6 +187,8 @@ AbstractCodaStrategy <|-- CodaBindyStrategy
 AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy
 AbstractCodaStrategy <|-- CodaVelocityStrategy
 AbstractCodaStrategy <|-- CodaSpringBatchStrategy
+AbstractCodaStrategy <|-- CodaSpringBatchFf4jStrategy
+AbstractCodaStrategy <|-- CodaSpringBatchFixedLengthStrategy
 AbstractSwiftStrategy <|-- SwiftBeanIOStrategy
 AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy
 AbstractSwiftStrategy <|-- SwiftFixedLengthStrategy
@@ -174,5 +196,7 @@ AbstractSwiftStrategy <|-- SwiftBindyStrategy
 AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy
 AbstractSwiftStrategy <|-- SwiftVelocityStrategy
 AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy
+AbstractSwiftStrategy <|-- SwiftSpringBatchFf4jStrategy
+AbstractSwiftStrategy <|-- SwiftSpringBatchFixedLengthStrategy
 StrategyResolver o--> FileGenerationStrategy : resolves
 @enduml

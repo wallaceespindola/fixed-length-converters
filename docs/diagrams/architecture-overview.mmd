@@ -28,10 +28,10 @@ graph TB
         WRITER[FileOutputItemWriter]
     end
 
-    subgraph Strategy["🔀 Strategy Pattern x14"]
+    subgraph Strategy["🔀 Strategy Pattern x18"]
         SR[StrategyResolver]
-        CODA7[7 CODA Strategies]
-        SWIFT7[7 SWIFT MT940 Strategies]
+        CODA7[9 CODA Strategies]
+        SWIFT7[9 SWIFT MT940 Strategies]
     end
 
     subgraph Parsers["📦 Parser Library Wrappers"]
@@ -42,6 +42,8 @@ graph TB
         CBIO[CamelBeanIOFormatter]
         VEL[VelocityFormatter]
         SBF[SpringBatchFormatter]
+        SBFF[SpringBatchFf4jFormatter]
+        SBVL[SpringBatchFixedLengthFormatter]
     end
 
     subgraph Data["🗄 Data Layer — H2 In-Memory"]
@@ -74,6 +76,8 @@ graph TB
     CODA7 --> CBIO
     CODA7 --> VEL
     CODA7 --> SBF
+    CODA7 --> SBFF
+    CODA7 --> SBVL
     SWIFT7 --> BIO
     SWIFT7 --> FF4J
     SWIFT7 --> VL
@@ -81,6 +85,8 @@ graph TB
     SWIFT7 --> CBIO
     SWIFT7 --> VEL
     SWIFT7 --> SBF
+    SWIFT7 --> SBFF
+    SWIFT7 --> SBVL
     STEP --> WRITER
     WRITER -->|write| OUTPUT
     BNC -->|query| BENCH

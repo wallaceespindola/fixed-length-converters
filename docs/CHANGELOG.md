@@ -37,6 +37,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Slide deck grown from 15 to 22 slides — new slides for annotation-derived layouts, library health,
   adoption & governance, supply-chain weight, bank suitability, and both performance views
 - README gained a Presentation section linking the Marp deck, the PPTX and the regeneration command
+- Documentation sweep for the two new strategies: `AGENTS.md` regenerated from `CLAUDE.md`,
+  `docs/architecture.md`, `docs/PRD.md` and `docs/specs/design-spec.md` updated to 9 approaches /
+  18 strategies / 36 JMH methods, and the strategy, architecture and component diagrams
+  (`.mmd` + `.puml` + the frontend Mermaid copy) now include the four new classes and two new formatters
+- PRD library table replaced with verified versions (pinned + latest + release date + risk)
+- Camel 4.20.0 → 4.21.0 references synced across docs and formatter Javadoc after Dependabot #29
 
 ### Changed
 - **Load profiles rescaled** — LOW: 10 accounts / 100 txns / 5 statements (was 20/200/10);
@@ -48,6 +54,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `VlCodaRecord` now declares `align` explicitly on every field — `@FixedField` defaults to
   `Align.RIGHT` while CODA text fields are left-aligned, so the annotations, not the formatter code,
   are the authoritative layout
+- `tools/python/report_generator.py` now recognises all 9 approaches (was 4) and defaults to
+  `docs/jmh-report.md` — it no longer overwrites the hand-curated `docs/benchmark-results.md`
 
 ### Fixed
 - `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer

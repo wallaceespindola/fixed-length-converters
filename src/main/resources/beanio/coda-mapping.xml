@@ -14,7 +14,7 @@
 -->
 <!--
     BeanIO fixed-length mapping for CODA records.
-    Used by CamelBeanIOFormatter via Apache Camel BeanIO data format (4.20.0).
+    Used by CamelBeanIOFormatter via Apache Camel BeanIO data format (4.21.0).
     Total record length: 128 characters per Febelfin CODA specification.
 
     Field lengths (positions are 0-based in BeanIO fixed-length):

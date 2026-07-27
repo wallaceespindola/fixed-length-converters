@@ -6,7 +6,7 @@
 
 ## 1. System Overview
 
-The platform is a single-module Spring Boot 3.4.5 application that generates, parses, and benchmarks CODA and SWIFT MT940 fixed-length banking files using seven distinct Java formatter libraries. It is designed as a technical laboratory for comparing library correctness, performance, and Spring Batch compatibility.
+The platform is a single-module Spring Boot 3.4.5 application that generates, parses, and benchmarks CODA and SWIFT MT940 fixed-length banking files using nine distinct Java formatter approaches (seven third-party libraries plus two Spring Batch hybrids whose column layout is derived from library annotations). It is designed as a technical laboratory for comparing library correctness, performance, and Spring Batch compatibility.
 
 One command starts the full platform: `mvn spring-boot:run`.
 
@@ -22,9 +22,9 @@ One command starts the full platform: `mvn spring-boot:run`.
 ├─────────────────────────────────────────────────────────┤
 │  Spring Batch Pipeline (reader → processor → writer)    │
 ├─────────────────────────────────────────────────────────┤
-│  Strategy Layer (14 FileGenerationStrategy impls)       │
+│  Strategy Layer (18 FileGenerationStrategy impls)       │
 ├─────────────────────────────────────────────────────────┤
-│  Parser Wrappers (7 formatter libraries; XML for Camel  │
+│  Parser Wrappers (9 formatter approaches; XML for Camel │
 │  BeanIO, .vm templates for Velocity)                    │
 ├─────────────────────────────────────────────────────────┤
 │  Domain Layer (JPA entities + H2 in-memory DB)          │
@@ -45,9 +45,9 @@ com.wtechitsolutions/
 ├── benchmark/      BenchmarkService (CSV/JSON/Markdown/HTML export)
 ├── config/         Spring configuration (BatchConfig, OpenApiConfig, WebConfig)
 ├── domain/         JPA entities, JPA repositories, DomainDataGenerator, enums (incl. LoadProfile)
-├── parser/         7 formatter wrappers + library-specific annotated model classes
+├── parser/         9 formatter wrappers + library-specific annotated model classes
 │   └── model/      CodaRecord, SwiftMtRecord, and library-annotated variants
-└── strategy/       FileGenerationStrategy interface, StrategyResolver, 14 implementations
+└── strategy/       FileGenerationStrategy interface, StrategyResolver, 18 implementations
 ```
 
 ---
@@ -83,12 +83,13 @@ public interface FileGenerationStrategy {
     String generate(List<Transaction> transactions, List<Account> accounts);
     List<Transaction> parse(String fileContent);
     FileType getFileType();   // CODA or SWIFT
-    Library getLibrary();     // BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY, SPRING_BATCH
+    Library getLibrary();     // BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY,
+                              // SPRING_BATCH, SPRING_BATCH_FF4J, SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }
 ```
 
-`StrategyResolver` receives all 14 strategy beans via Spring injection and maps them into a `Map<String, FileGenerationStrategy>` keyed by `strategyKey()`. Resolution is O(1) — no `if`/`switch` chains anywhere.
+`StrategyResolver` receives all 18 strategy beans via Spring injection and maps them into a `Map<String, FileGenerationStrategy>` keyed by `strategyKey()`. Resolution is O(1) — no `if`/`switch` chains anywhere.
 
 Two abstract base classes share domain-mapping logic:
 - `AbstractCodaStrategy` — builds `CodaRecord` list (header, movements, trailer), delegates format/parse to subclass
@@ -98,23 +99,31 @@ Two abstract base classes share domain-mapping logic:
 
 ## 6. Parser Library Wrappers
 
-Seven wrappers in `com.wtechitsolutions.parser`:
+Nine wrappers in `com.wtechitsolutions.parser`:
 
 | Wrapper | Library | Mechanism |
 |---|---|---|
 | `BeanIOFormatter` | BeanIO 3.2.1 | `StreamBuilder` + `FieldBuilder` (0-based positions) |
-| `FixedFormat4JFormatter` | fixedformat4j 1.7.0 | `@Record(length=128)` + `@Field(offset=X, length=Y)` on `Ff4jCodaRecord` |
+| `FixedFormat4JFormatter` | fixedformat4j 1.9.1 | `@Record(length=128)` + `@Field(offset=X, length=Y)` on `Ff4jCodaRecord` |
 | `FixedLengthFormatter` | fixedlength 0.15 | `@FixedLine(startsWith="")` + `@FixedField(offset=X, length=Y)` on `VlCodaRecord` |
-| `BindyFormatter` | Camel Bindy 4.20.0 | `@FixedLengthRecord(length=128)` + `@DataField(pos=X, length=Y)` on `BindyCodaRecord` |
-| `CamelBeanIOFormatter` | Apache Camel BeanIO 4.20.0 | Camel BeanIO DataFormat with XML stream mapping |
-| `VelocityFormatter` | Apache Velocity 2.4 | `.vm` template files; `VelocityEngine` renders records to string |
+| `BindyFormatter` | Camel Bindy 4.21.0 | `@FixedLengthRecord(length=128)` + `@DataField(pos=X, length=Y)` on `BindyCodaRecord` |
+| `CamelBeanIOFormatter` | Apache Camel BeanIO 4.21.0 | Camel BeanIO DataFormat with XML stream mapping |
+| `VelocityFormatter` | Apache Velocity 2.4.1 | `.vm` template files; `VelocityEngine` renders records to string |
 | `SpringBatchFormatter` | Spring Batch 5.x native | `LineAggregator` + `FixedLengthTokenizer` + `FieldSetMapper` applied directly per record (refactored away from `FlatFileItemWriter`/`FlatFileItemReader` to avoid transactional buffering issues in nested batch contexts) |
+| `SpringBatchFf4jFormatter` | Spring Batch 5.x + fixedformat4j 1.9.1 | Spring Batch components; tokenizer ranges and aggregator format string derived by reflection from `Ff4jCodaRecord`'s `@Field` annotations via `AnnotatedLayout` |
+| `SpringBatchFixedLengthFormatter` | Spring Batch 5.x + fixedlength 0.15 | Same, from `VlCodaRecord`'s `@FixedField` annotations |
+
+**Annotation-derived layouts:** `AnnotatedLayout` reads offsets, widths, alignment and padding characters off an
+annotated model and generates both the `FixedLengthTokenizer` ranges (read path) and the `FormatterLineAggregator`
+format string (write path), so the CODA layout is declared exactly once. Gaps, overlaps and a total width other
+than 128 throw at construction. Both formatters extend `AnnotatedSpringBatchFormatter` and produce output
+byte-identical to the hand-sliced `SpringBatchFormatter`.
 
 **CODA amount encoding:** Amounts are stored as plain integers (scale stripped via `setScale(0, ROUND_HALF_UP)`) in a 16-character zero-padded field. BeanIO `FieldBuilder` positions are 0-based; XML would use 1-based (different convention).
 
 **CODA Bindy alignment:** `BindyCodaRecord` text fields carry explicit `align="L"` annotations. Camel Bindy defaults to right-alignment; without this, text like "TOTAL" in trailer description fields was pushed to the far end of the field rather than left-padded.
 
-**SWIFT inter-message separator:** All 7 formatters emit `---\n` between MT940 records. `BindyFormatter` previously used `###` and `FixedLengthFormatter` previously used `===`; both are now aligned to `---`.
+**SWIFT inter-message separator:** All 9 formatters emit `---\n` between MT940 records. `BindyFormatter` previously used `###` and `FixedLengthFormatter` previously used `===`; both are now aligned to `---`.
 
 ---
 
