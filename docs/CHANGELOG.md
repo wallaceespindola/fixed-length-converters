@@ -16,6 +16,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `run.sh --skip-build` flag — skip Maven build and start from existing JAR
 - Separate `backend-err.log` for Spring Boot stderr in `run.sh`
 - `AGENTS.md` — project guidance file for Codex / OpenAI coding agents
+- **Two new formatter strategies** — `SPRING_BATCH_FF4J` and `SPRING_BATCH_FIXEDLENGTH`
+  (18 strategies total, 9 per file type). Both use Spring Batch's `FormatterLineAggregator` /
+  `FixedLengthTokenizer`, but the column layout is derived by reflection from the model annotations
+  (`@Field` of fixedformat4j, `@FixedField` of fixedlength) instead of hand-written `Range(1,1), Range(2,4), ...`
+  slicing — one source of truth for read path, write path and column widths
+- `AnnotatedLayout` — reflects annotated models into Spring Batch columns; validates offsets for
+  gaps/overlaps and total record width (128 chars) at construction
+- `AnnotatedSpringBatchFormatter` base class plus `SpringBatchFf4jFormatter` and
+  `SpringBatchFixedLengthFormatter` beans; four new strategy classes (CODA + SWIFT per approach)
+- `AnnotatedLayoutTest` — asserts both annotation-derived layouts match the hand-written ranges and
+  produce byte-identical CODA output; total test count 118 → 149
 
 ### Changed
 - **Load profiles rescaled** — LOW: 10 accounts / 100 txns / 5 statements (was 20/200/10);
@@ -24,6 +35,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   process-died detection added to health-wait loop; summary links include UI, API, H2 DB, Health
 - `kill.sh` uses `PID_FILE` variable; fuser fallback added; pattern match updated to `FixedLengthConvertersApplication`
 - `DomainDataGeneratorTest` now uses `LoadProfile.LOW.*()` accessors instead of hardcoded counts
+- `VlCodaRecord` now declares `align` explicitly on every field — `@FixedField` defaults to
+  `Align.RIGHT` while CODA text fields are left-aligned, so the annotations, not the formatter code,
+  are the authoritative layout
 
 ### Fixed
 - `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer

@@ -235,16 +235,18 @@
               <option value="CAMEL_BEANIO">CAMEL_BEANIO</option>
               <option value="VELOCITY">VELOCITY</option>
               <option value="SPRING_BATCH">SPRING_BATCH</option>
+              <option value="SPRING_BATCH_FF4J">SPRING_BATCH_FF4J</option>
+              <option value="SPRING_BATCH_FIXEDLENGTH">SPRING_BATCH_FIXEDLENGTH</option>
             </select>
           </div>
           <div class="btn-row">
             <button class="btn btn-p btn-lg" id="btn-single" onclick="runSingle()">Generate File</button>
-            <button class="btn btn-o btn-lg" id="btn-all"    onclick="runAll()">Run All Combinations (14)</button>
+            <button class="btn btn-o btn-lg" id="btn-all"    onclick="runAll()">Run All Combinations (18)</button>
           </div>
         </div>
         <div id="batch-alert" class="hidden alert"></div>
         <div id="ra-section" class="hidden card" style="margin-bottom:14px">
-          <div class="card-title">Run All — <span id="ra-ctr">0/14</span> completed</div>
+          <div class="card-title">Run All — <span id="ra-ctr">0/18</span> completed</div>
           <div class="prog-track"><div class="prog-fill" id="ra-prog" style="width:0%"></div></div>
           <div id="ra-rows"></div>
         </div>
@@ -482,7 +484,8 @@ async function genData(profile) {
 
 // ── Batch Runner ───────────────────────────────────────────────────────────────
 const FTS  = ['CODA', 'SWIFT'];
-const LIBS = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY', 'CAMEL_BEANIO', 'VELOCITY', 'SPRING_BATCH'];
+const LIBS = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY', 'CAMEL_BEANIO', 'VELOCITY', 'SPRING_BATCH',
+              'SPRING_BATCH_FF4J', 'SPRING_BATCH_FIXEDLENGTH'];
 
 async function runSingle() {
   setDisabled(['btn-single', 'btn-all'], true);
@@ -668,6 +671,7 @@ async function fetchHistory() {
 const LIB_COLORS = {
   BEANIO: '#1976d2', FIXFORMAT4J: '#2e7d32', FIXEDLENGTH: '#e65100',
   BINDY: '#9c27b0', CAMEL_BEANIO: '#c0392b', VELOCITY: '#16a085', SPRING_BATCH: '#f39c12',
+  SPRING_BATCH_FF4J: '#8d6e63', SPRING_BATCH_FIXEDLENGTH: '#455a64',
 };
 const charts = {};
 let benchTimer;
@@ -852,7 +856,7 @@ const DIAGRAMS = [
   {
     id: 'd-arch',
     title: '1. System Architecture',
-    desc: 'Web UI → REST API → Spring Batch pipeline → Strategy Pattern (14 strategies) → Parser libraries → H2 + output files',
+    desc: 'Web UI → REST API → Spring Batch pipeline → Strategy Pattern (18 strategies) → Parser libraries → H2 + output files',
     chart: 'graph TB\n' +
       '  subgraph FE["Web UI (HTML/CSS/JS)"]\n' +
       '    UI["Dashboard · Generate · Batch · History · Benchmark · Diagrams"]\n' +
@@ -869,9 +873,9 @@ const DIAGRAMS = [
       '    STEP --> PROC[FileGenerationItemProcessor] --> SR[StrategyResolver]\n' +
       '    STEP --> WRITER[FileOutputItemWriter] --> OUT[output/]\n' +
       '  end\n' +
-      '  SR --> CODA["7 CODA Strategies"]\n' +
-      '  SR --> SWIFT["7 SWIFT MT940 Strategies"]\n' +
-      '  CODA & SWIFT --> LIBS["BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity · SpringBatch"]\n' +
+      '  SR --> CODA["9 CODA Strategies"]\n' +
+      '  SR --> SWIFT["9 SWIFT MT940 Strategies"]\n' +
+      '  CODA & SWIFT --> LIBS["BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity · SpringBatch · SpringBatch+FF4J · SpringBatch+FixedLength"]\n' +
       '  UI --> API\n' +
       '  DC --> DB\n' +
       '  BC --> JL\n' +
@@ -977,7 +981,7 @@ const DIAGRAMS = [
   {
     id: 'd-strategy',
     title: '4. Strategy Class Diagram',
-    desc: 'FileGenerationStrategy interface, two abstract bases, 14 concrete implementations, and StrategyResolver',
+    desc: 'FileGenerationStrategy interface, two abstract bases, 18 concrete implementations, and StrategyResolver',
     chart: 'classDiagram\n' +
       '  class FileGenerationStrategy {\n' +
       '    <<interface>>\n' +

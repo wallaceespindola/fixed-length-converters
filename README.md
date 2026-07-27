@@ -16,7 +16,7 @@
 [![SWIFT MT940](https://img.shields.io/badge/SWIFT-MT940-003087)](https://www.swift.com/standards/data-standards/mt)
 
 Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and
-**SWIFT MT940** fixed-length banking files using **7 Java formatter libraries**, all orchestrated through **Spring Batch
+**SWIFT MT940** fixed-length banking files using **9 Java formatter approaches**, all orchestrated through **Spring Batch
 ** and the **Strategy Pattern**.
 
 ---
@@ -27,7 +27,7 @@ This platform is a technical laboratory for evaluating Java fixed-length parser 
 performance, and Spring Batch compatibility. Engineers can:
 
 - Generate realistic banking transaction datasets (configurable LOW, MEDIUM, or HIGH load profiles)
-- Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 7 libraries
+- Trigger Spring Batch jobs to produce CODA or SWIFT MT files via any of 9 formatter approaches
 - Compare library outputs side-by-side through benchmark dashboards
 - Export benchmark results as CSV, JSON, Markdown, or styled HTML
 
@@ -57,10 +57,10 @@ graph TB
         PROC[FileGenerationItemProcessor]
         WRITER[FileOutputItemWriter]
     end
-    subgraph Strategy["🔀 Strategy Pattern × 14"]
+    subgraph Strategy["🔀 Strategy Pattern × 18"]
         SR[StrategyResolver]
-        C7[7 CODA Strategies]
-        S7[7 SWIFT MT940 Strategies]
+        C7[9 CODA Strategies]
+        S7[9 SWIFT MT940 Strategies]
     end
     subgraph Parsers["📦 Parser Library Wrappers"]
         BIO[BeanIO]
@@ -94,12 +94,12 @@ ItemReader (H2) → ItemProcessor (StrategyResolver) → ItemWriter (output/)
 ```
 
 Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (
-BEANIO/FIXEDFORMAT4J/FIXEDLENGTH/BINDY/CAMELBEANIO/VELOCITY/SPRINGBATCH). Jobs are **restartable** from the last
+BEANIO/FIXFORMAT4J/FIXEDLENGTH/BINDY/CAMEL_BEANIO/VELOCITY/SPRING_BATCH/SPRING_BATCH_FF4J/SPRING_BATCH_FIXEDLENGTH). Jobs are **restartable** from the last
 checkpoint.
 
 ### Strategy Pattern
 
-14 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
+18 strategy implementations — one per `FileType × Library` combination — all behind a single `FileGenerationStrategy`
 interface:
 
 | Class                        | Format      | Library             |
@@ -111,6 +111,8 @@ interface:
 | `CodaCamelBeanIOStrategy`    | CODA        | Apache Camel BeanIO |
 | `CodaVelocityStrategy`       | CODA        | Apache Velocity     |
 | `CodaSpringBatchStrategy`    | CODA        | Spring Batch Native |
+| `CodaSpringBatchFf4jStrategy` | CODA        | Spring Batch + fixedformat4j annotations |
+| `CodaSpringBatchFixedLengthStrategy` | CODA | Spring Batch + fixedlength annotations |
 | `SwiftBeanIOStrategy`        | SWIFT MT940 | BeanIO              |
 | `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j       |
 | `SwiftFixedLengthStrategy`   | SWIFT MT940 | fixedlength         |
@@ -118,6 +120,8 @@ interface:
 | `SwiftCamelBeanIOStrategy`   | SWIFT MT940 | Apache Camel BeanIO |
 | `SwiftVelocityStrategy`      | SWIFT MT940 | Apache Velocity     |
 | `SwiftSpringBatchStrategy`   | SWIFT MT940 | Spring Batch Native |
+| `SwiftSpringBatchFf4jStrategy` | SWIFT MT940 | Spring Batch + fixedformat4j annotations |
+| `SwiftSpringBatchFixedLengthStrategy` | SWIFT MT940 | Spring Batch + fixedlength annotations |
 
 `StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch`
 chains.
@@ -255,6 +259,8 @@ as a reference for teams validating parsers before migration.
 | **Apache Camel BeanIO** | Excellent       | XML-based          | Medium           | Medium |
 | **Apache Velocity**     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
 | **Spring Batch Native** | Excellent       | Programmatic       | Native           | Low    |
+| **Spring Batch + fixedformat4j** | Excellent | Annotation-derived | Native | Low |
+| **Spring Batch + fixedlength**   | Excellent | Annotation-derived | Native | Low |
 
 ### Strategic Recommendations
 
@@ -264,6 +270,7 @@ as a reference for teams validating parsers before migration.
 | Simplicity and modern annotations | fixedformat4j       |
 | Existing Apache Camel ecosystem   | Apache Camel Bindy  |
 | Lightweight experimentation       | fixedlength         |
+| Spring Batch jobs without hand-written `Range` slicing | Spring Batch + fixedformat4j |
 
 ---
 
@@ -304,7 +311,7 @@ Verify with: `make --version`
 Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
-# Full pipeline — Java compile + 118 tests + JaCoCo coverage + install
+# Full pipeline — Java compile + 149 tests + JaCoCo coverage + install
 mvn clean install
 
 # Compile and package (skip tests)
@@ -509,7 +516,7 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
 - **Dashboard** — health status, actuator info, quick-action buttons
 - **Data Generator** — trigger domain data generation with Low / Medium / High load buttons, display results
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
-  all 14 fileType × library combinations sequentially with live per-row progress.
+  all 18 fileType × library combinations sequentially with live per-row progress.
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.
@@ -533,8 +540,8 @@ fixed-length-converters/
 │   ├── benchmark/              BenchmarkService (CSV/JSON/MD/HTML export)
 │   ├── config/                 Spring, Batch, OpenAPI, Web config
 │   ├── domain/                 JPA entities + repositories + DomainDataGenerator + LoadProfile enum
-│   ├── parser/                 7 formatter wrappers + annotated model classes
-│   └── strategy/               FileGenerationStrategy + 14 implementations
+│   ├── parser/                 9 formatter wrappers + annotated model classes
+│   └── strategy/               FileGenerationStrategy + 18 implementations
 ├── src/main/frontend/          React source (kept for reference; UI now served from static/)
 ├── src/main/resources/static/  Vanilla HTML/CSS/JS UI (index.html — served directly)
 ├── docs/

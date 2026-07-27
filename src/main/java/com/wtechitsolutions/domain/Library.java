@@ -7,5 +7,9 @@ public enum Library {
     BINDY,
     CAMEL_BEANIO,
     VELOCITY,
-    SPRING_BATCH
+    SPRING_BATCH,
+    /** Spring Batch flat-file components, column layout derived from fixedformat4j annotations. */
+    SPRING_BATCH_FF4J,
+    /** Spring Batch flat-file components, column layout derived from fixedlength annotations. */
+    SPRING_BATCH_FIXEDLENGTH
 }

@@ -8,6 +8,8 @@ import com.wtechitsolutions.parser.BindyFormatter;
 import com.wtechitsolutions.parser.CamelBeanIOFormatter;
 import com.wtechitsolutions.parser.FixedFormat4JFormatter;
 import com.wtechitsolutions.parser.FixedLengthFormatter;
+import com.wtechitsolutions.parser.SpringBatchFf4jFormatter;
+import com.wtechitsolutions.parser.SpringBatchFixedLengthFormatter;
 import com.wtechitsolutions.parser.SpringBatchFormatter;
 import com.wtechitsolutions.parser.VelocityFormatter;
 import com.wtechitsolutions.strategy.CodaBeanIOStrategy;
@@ -15,6 +17,8 @@ import com.wtechitsolutions.strategy.CodaBindyStrategy;
 import com.wtechitsolutions.strategy.CodaCamelBeanIOStrategy;
 import com.wtechitsolutions.strategy.CodaFixedFormat4JStrategy;
 import com.wtechitsolutions.strategy.CodaFixedLengthStrategy;
+import com.wtechitsolutions.strategy.CodaSpringBatchFf4jStrategy;
+import com.wtechitsolutions.strategy.CodaSpringBatchFixedLengthStrategy;
 import com.wtechitsolutions.strategy.CodaSpringBatchStrategy;
 import com.wtechitsolutions.strategy.CodaVelocityStrategy;
 import com.wtechitsolutions.strategy.FileGenerationStrategy;
@@ -23,6 +27,8 @@ import com.wtechitsolutions.strategy.SwiftBindyStrategy;
 import com.wtechitsolutions.strategy.SwiftCamelBeanIOStrategy;
 import com.wtechitsolutions.strategy.SwiftFixedFormat4JStrategy;
 import com.wtechitsolutions.strategy.SwiftFixedLengthStrategy;
+import com.wtechitsolutions.strategy.SwiftSpringBatchFf4jStrategy;
+import com.wtechitsolutions.strategy.SwiftSpringBatchFixedLengthStrategy;
 import com.wtechitsolutions.strategy.SwiftSpringBatchStrategy;
 import com.wtechitsolutions.strategy.SwiftVelocityStrategy;
 import org.junit.jupiter.api.Test;
@@ -48,9 +54,9 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
- * JMH micro-benchmarks for all 14 FileGenerationStrategy implementations
- * (7 libraries x 2 formats), covering both generate and parse operations.
- * 28 @Benchmark methods total.
+ * JMH micro-benchmarks for all 18 FileGenerationStrategy implementations
+ * (9 libraries x 2 formats), covering both generate and parse operations.
+ * 36 @Benchmark methods total.
  *
  * <p>Run via: mvn test -Pbenchmark -Pskip-frontend
  *
@@ -77,6 +83,8 @@ public class FileGenerationBenchmark {
     private FileGenerationStrategy codaCamelBeanIO;
     private FileGenerationStrategy codaVelocity;
     private FileGenerationStrategy codaSpringBatch;
+    private FileGenerationStrategy codaSpringBatchFf4j;
+    private FileGenerationStrategy codaSpringBatchFixedLength;
 
     // SWIFT strategies
     private FileGenerationStrategy swiftBeanIO;
@@ -86,6 +94,8 @@ public class FileGenerationBenchmark {
     private FileGenerationStrategy swiftCamelBeanIO;
     private FileGenerationStrategy swiftVelocity;
     private FileGenerationStrategy swiftSpringBatch;
+    private FileGenerationStrategy swiftSpringBatchFf4j;
+    private FileGenerationStrategy swiftSpringBatchFixedLength;
 
     // Pre-generated file content for parse benchmarks
     private String codaBeanIOFile;
@@ -95,6 +105,8 @@ public class FileGenerationBenchmark {
     private String codaCamelBeanIOFile;
     private String codaVelocityFile;
     private String codaSpringBatchFile;
+    private String codaSpringBatchFf4jFile;
+    private String codaSpringBatchFixedLengthFile;
 
     private String swiftBeanIOFile;
     private String swiftFf4jFile;
@@ -103,6 +115,8 @@ public class FileGenerationBenchmark {
     private String swiftCamelBeanIOFile;
     private String swiftVelocityFile;
     private String swiftSpringBatchFile;
+    private String swiftSpringBatchFf4jFile;
+    private String swiftSpringBatchFixedLengthFile;
 
     @Setup
     public void setup() {
@@ -123,6 +137,8 @@ public class FileGenerationBenchmark {
         velocity.init();
 
         SpringBatchFormatter springBatch = new SpringBatchFormatter();
+        SpringBatchFf4jFormatter springBatchFf4j = new SpringBatchFf4jFormatter();
+        SpringBatchFixedLengthFormatter springBatchVl = new SpringBatchFixedLengthFormatter();
 
         codaBeanIO        = new CodaBeanIOStrategy(beanIO);
         codaFixedFormat4J = new CodaFixedFormat4JStrategy(ff4j);
@@ -131,6 +147,8 @@ public class FileGenerationBenchmark {
         codaCamelBeanIO   = new CodaCamelBeanIOStrategy(camelBeanIO);
         codaVelocity      = new CodaVelocityStrategy(velocity);
         codaSpringBatch   = new CodaSpringBatchStrategy(springBatch);
+        codaSpringBatchFf4j        = new CodaSpringBatchFf4jStrategy(springBatchFf4j);
+        codaSpringBatchFixedLength = new CodaSpringBatchFixedLengthStrategy(springBatchVl);
 
         swiftBeanIO        = new SwiftBeanIOStrategy(beanIO);
         swiftFixedFormat4J = new SwiftFixedFormat4JStrategy(ff4j);
@@ -139,6 +157,8 @@ public class FileGenerationBenchmark {
         swiftCamelBeanIO   = new SwiftCamelBeanIOStrategy(camelBeanIO);
         swiftVelocity      = new SwiftVelocityStrategy(velocity);
         swiftSpringBatch   = new SwiftSpringBatchStrategy(springBatch);
+        swiftSpringBatchFf4j        = new SwiftSpringBatchFf4jStrategy(springBatchFf4j);
+        swiftSpringBatchFixedLength = new SwiftSpringBatchFixedLengthStrategy(springBatchVl);
 
         // Pre-generate file content so parse benchmarks measure only parsing
         codaBeanIOFile      = codaBeanIO.generate(transactions, accounts);
@@ -148,6 +168,8 @@ public class FileGenerationBenchmark {
         codaCamelBeanIOFile = codaCamelBeanIO.generate(transactions, accounts);
         codaVelocityFile    = codaVelocity.generate(transactions, accounts);
         codaSpringBatchFile = codaSpringBatch.generate(transactions, accounts);
+        codaSpringBatchFf4jFile        = codaSpringBatchFf4j.generate(transactions, accounts);
+        codaSpringBatchFixedLengthFile = codaSpringBatchFixedLength.generate(transactions, accounts);
 
         swiftBeanIOFile      = swiftBeanIO.generate(transactions, accounts);
         swiftFf4jFile        = swiftFixedFormat4J.generate(transactions, accounts);
@@ -156,6 +178,8 @@ public class FileGenerationBenchmark {
         swiftCamelBeanIOFile = swiftCamelBeanIO.generate(transactions, accounts);
         swiftVelocityFile    = swiftVelocity.generate(transactions, accounts);
         swiftSpringBatchFile = swiftSpringBatch.generate(transactions, accounts);
+        swiftSpringBatchFf4jFile        = swiftSpringBatchFf4j.generate(transactions, accounts);
+        swiftSpringBatchFixedLengthFile = swiftSpringBatchFixedLength.generate(transactions, accounts);
     }
 
     // ── CODA generate ─────────────────────────────────────────────────────────
@@ -195,6 +219,16 @@ public class FileGenerationBenchmark {
         return codaSpringBatch.generate(transactions, accounts);
     }
 
+    @Benchmark
+    public String codaSpringBatchFf4j() {
+        return codaSpringBatchFf4j.generate(transactions, accounts);
+    }
+
+    @Benchmark
+    public String codaSpringBatchFixedLength() {
+        return codaSpringBatchFixedLength.generate(transactions, accounts);
+    }
+
     // ── SWIFT generate ────────────────────────────────────────────────────────
 
     @Benchmark
@@ -230,6 +264,16 @@ public class FileGenerationBenchmark {
     @Benchmark
     public String swiftSpringBatch() {
         return swiftSpringBatch.generate(transactions, accounts);
+    }
+
+    @Benchmark
+    public String swiftSpringBatchFf4j() {
+        return swiftSpringBatchFf4j.generate(transactions, accounts);
+    }
+
+    @Benchmark
+    public String swiftSpringBatchFixedLength() {
+        return swiftSpringBatchFixedLength.generate(transactions, accounts);
     }
 
     // ── CODA parse ────────────────────────────────────────────────────────────
@@ -269,6 +313,16 @@ public class FileGenerationBenchmark {
         return codaSpringBatch.parse(codaSpringBatchFile);
     }
 
+    @Benchmark
+    public List<Transaction> codaSpringBatchFf4jParse() {
+        return codaSpringBatchFf4j.parse(codaSpringBatchFf4jFile);
+    }
+
+    @Benchmark
+    public List<Transaction> codaSpringBatchFixedLengthParse() {
+        return codaSpringBatchFixedLength.parse(codaSpringBatchFixedLengthFile);
+    }
+
     // ── SWIFT parse ───────────────────────────────────────────────────────────
 
     @Benchmark
@@ -304,6 +358,16 @@ public class FileGenerationBenchmark {
     @Benchmark
     public List<Transaction> swiftSpringBatchParse() {
         return swiftSpringBatch.parse(swiftSpringBatchFile);
+    }
+
+    @Benchmark
+    public List<Transaction> swiftSpringBatchFf4jParse() {
+        return swiftSpringBatchFf4j.parse(swiftSpringBatchFf4jFile);
+    }
+
+    @Benchmark
+    public List<Transaction> swiftSpringBatchFixedLengthParse() {
+        return swiftSpringBatchFixedLength.parse(swiftSpringBatchFixedLengthFile);
     }
 
     // ── JUnit 5 entry point ───────────────────────────────────────────────────
