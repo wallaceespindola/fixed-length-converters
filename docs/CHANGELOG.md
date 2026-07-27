@@ -27,6 +27,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   `SpringBatchFixedLengthFormatter` beans; four new strategy classes (CODA + SWIFT per approach)
 - `AnnotatedLayoutTest` — asserts both annotation-derived layouts match the hand-written ranges and
   produce byte-identical CODA output; total test count 118 → 149
+- **Formatter analysis refresh** across README, `docs/benchmark-results.md` and both slide decks:
+  library health (pinned vs latest version, release dates, repo activity), adoption and governance
+  (stars, governance model, deps.dev dependents, license), supply-chain weight (jar sizes, transitive
+  cost, CVE-2020-13936 note for Velocity), a bank-suitability matrix and a decision guide.
+  All facts verified 2026-07-27 from Maven Central metadata, the GitHub REST API and deps.dev
+- Measured throughput published for all 9 approaches: 36-benchmark JMH run (ops/s, CODA + SWIFT,
+  read + write) plus end-to-end batch-pipeline records/second on the MEDIUM profile
+- Slide deck grown from 15 to 22 slides — new slides for annotation-derived layouts, library health,
+  adoption & governance, supply-chain weight, bank suitability, and both performance views
+- README gained a Presentation section linking the Marp deck, the PPTX and the regeneration command
 
 ### Changed
 - **Load profiles rescaled** — LOW: 10 accounts / 100 txns / 5 statements (was 20/200/10);

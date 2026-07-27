@@ -37,7 +37,7 @@ gdrive files upload \
 
 ---
 
-## Presentation structure (15 slides)
+## Presentation structure (22 slides)
 
 | # | Slide |
 |---|-------|
@@ -46,16 +46,26 @@ gdrive files upload \
 | 3 | Architecture |
 | 4 | CODA Format — Belgian Banking Standard |
 | 5 | SWIFT MT940 — International Statement Format |
-| 6 | 7 Parser Libraries |
-| 7 | Strategy Pattern — One Interface, 14 Implementations |
-| 8 | Spring Batch Pipeline |
-| 9 | REST API |
-| 10 | Benchmark Metrics |
-| 11 | Library Recommendations |
-| 12 | Code Quality & CI/CD |
-| 13 | Quick Start |
-| 14 | Technology Stack |
-| 15 | Thank You |
+| 6 | 9 Formatter Approaches |
+| 7 | Annotation-Derived Layouts — Fixing the Slicing Problem |
+| 8 | Strategy Pattern — One Interface, 18 Implementations |
+| 9 | Spring Batch Pipeline |
+| 10 | Library Health — versions, release dates, repo activity |
+| 11 | Adoption & Governance — stars, governance model, dependents, license |
+| 12 | Supply-Chain Weight — jar sizes, transitive cost, CVE note |
+| 13 | Bank Suitability Matrix |
+| 14 | Measured Performance — JMH |
+| 15 | Measured Performance — Batch Pipeline |
+| 16 | Decision Guide |
+| 17 | REST API |
+| 18 | Benchmark Metrics |
+| 19 | Code Quality & CI/CD |
+| 20 | Quick Start |
+| 21 | Technology Stack |
+| 22 | Thank You |
+
+Library health, adoption and performance figures were verified on **2026-07-27** against Maven Central
+metadata, the GitHub REST API, deps.dev and a local JMH run. Re-verify before presenting.
 
 ---
 

@@ -7,6 +7,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 **Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 9 Java fixed-length formatter approaches (7 libraries + 2 Spring Batch hybrids driven by annotation-derived layouts) via the Strategy Pattern and Spring Batch.
 
 **PRD:** `docs/PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
+**Library analysis:** `docs/benchmark-results.md` (health, adoption, bank suitability, JMH numbers) | **Slides:** `docs/slides/` (Marp `.md` + 22-slide PPTX)
 
 ## Implementation Status: COMPLETE
 
@@ -26,7 +27,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
 | Testing | JUnit 5 + Mockito, 149 tests |
-| Libraries | BeanIO 3.2.1, fixedformat4j 1.7.0, fixedlength 0.15, Camel Bindy 4.20.0, Camel BeanIO 4.20.0, Velocity 2.4.1, Spring Batch 5.x |
+| Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
 
@@ -155,6 +156,19 @@ GET  /actuator/info              → app name, version, description
 - **No Maven profiles needed** — `mvn clean install` and `mvn spring-boot:run` work with no flags; only the `benchmark` profile exists (JMH)
 - **Line endings**: `.gitattributes` enforces LF for all source files; `.ps1`/`.bat` keep CRLF; `.ps1` files must use **ASCII-only** characters (no Unicode box-drawing) — PowerShell 5.x on Windows reads scripts as the system code page and misinterprets multibyte UTF-8
 - **Actuator health includes version**: `VersionHealthIndicator` in `config/` exposes `version`, `artifact`, `description` as a `version` component alongside `db`, `diskSpace`, `ping`
+
+## Docs & Slides
+
+- `docs/benchmark-results.md` — library health (versions, release dates, repo activity), adoption/governance,
+  supply-chain weight, bank-suitability matrix, JMH throughput and batch-pipeline throughput.
+  **Facts verified 2026-07-27** from Maven Central `maven-metadata.xml` + artifact `Last-Modified`,
+  GitHub REST API, deps.dev. Re-verify dates/stars before reusing them
+- **Maven Central publishes no public download counts** — never quote download numbers; use dependents
+  (deps.dev, pinned version only), stars and release cadence instead
+- `docs/slides/banking-parser-comparison.md` — Marp deck (22 slides); `banking-parser-platform.pptx` — PowerPoint
+- The PPTX is **generated**: edit `tools/python/generate_pptx.py`, then `python3 tools/python/generate_pptx.py`.
+  Never hand-edit the `.pptx`. `TOTAL` in that script must match the number of `slide_*()` calls in `main()`
+- Keep the Marp deck, the generator and `docs/slides/google-slides-export.md` slide list in sync
 
 ## Testing Strategy
 

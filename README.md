@@ -248,29 +248,91 @@ as a reference for teams validating parsers before migration.
 
 ---
 
-## Formatter Library Comparison
+## Formatter Comparison & Analysis
 
-| Library                 | Grammar Support | Annotation Quality | Spring Batch Fit | Risk   |
-|-------------------------|-----------------|--------------------|------------------|--------|
-| **BeanIO**              | Excellent       | Good               | Good             | Low    |
-| **fixedformat4j**       | Limited         | Excellent          | Excellent        | Low    |
-| **fixedlength**         | Limited         | Good               | Good             | Medium |
-| **Apache Camel Bindy**  | Limited         | Good               | Medium           | Medium |
-| **Apache Camel BeanIO** | Excellent       | XML-based          | Medium           | Medium |
-| **Apache Velocity**     | N/A (template)  | N/A                | Low (gen-only)   | Low    |
-| **Spring Batch Native** | Excellent       | Programmatic       | Native           | Low    |
-| **Spring Batch + fixedformat4j** | Excellent | Annotation-derived | Native | Low |
-| **Spring Batch + fixedlength**   | Excellent | Annotation-derived | Native | Low |
+All facts below verified **2026-07-27** against Maven Central metadata, the GitHub REST API and deps.dev.
+Full detail, including the batch-pipeline numbers, lives in [`docs/benchmark-results.md`](docs/benchmark-results.md).
 
-### Strategic Recommendations
+### Library health
 
-| Scenario                          | Recommended Library |
-|-----------------------------------|---------------------|
-| Maximum CODA grammar correctness  | BeanIO              |
-| Simplicity and modern annotations | fixedformat4j       |
-| Existing Apache Camel ecosystem   | Apache Camel Bindy  |
-| Lightweight experimentation       | fixedlength         |
-| Spring Batch jobs without hand-written `Range` slicing | Spring Batch + fixedformat4j |
+| Library | Coordinates | Pinned | Latest | Latest released | Last repo activity |
+|---|---|---|---|---|---|
+| **BeanIO** | `com.github.beanio:beanio` | 3.2.1 | 3.2.1 | 2025-02-07 | 2025-02-07 |
+| **fixedformat4j** | `com.ancientprogramming.fixedformat4j:fixedformat4j` | 1.9.1 | 1.9.1 | 2026-06-17 | 2026-07-25 |
+| **fixedlength** | `name.velikodniy.vitaliy:fixedlength` | 0.15 | 0.15 | 2026-02-26 | 2026-02-26 |
+| **Camel Bindy / BeanIO** | `org.apache.camel:camel-bindy` · `camel-beanio` | 4.21.0 | 4.21.0 | 2026-06-27 | daily |
+| **Velocity** | `org.apache.velocity:velocity-engine-core` | 2.4.1 | 2.4.1 | 2024-10-14 | 2026-06-14 |
+| **Spring Batch** | `org.springframework.batch:spring-batch-core` | 5.2.2 | 6.0.4 | 2026-06-10 | 2026-07-23 |
+
+Spring Batch 5.2.2 is what Spring Boot 3.4.5 resolves — 6.x requires Boot 4.x.
+
+### Adoption, governance & footprint
+
+| Library | Stars | Governance | Dependents¹ | Own jar | Transitive cost |
+|---|---:|---|---:|---:|---|
+| BeanIO | 68 | Community fork of the 2014 `org.beanio` line | 10 | 430 KB | none |
+| fixedformat4j | 52 | Single maintainer, actively releasing | 2 | 125 KB | none |
+| fixedlength | 23 | Single maintainer, 0.x versioning | 0 | 33 KB | none |
+| Camel Bindy | 6 273 | Apache Software Foundation | 4 | 171 KB | `camel-support`, **icu4j 14 MB** |
+| Camel BeanIO | 6 273 | Apache Software Foundation | 4 | 27 KB | Camel core + BeanIO 2.x |
+| Velocity | 413 | Apache Software Foundation | 1 560 | 503 KB | commons-lang3, slf4j |
+| Spring Batch | 2 947 | Broadcom/VMware, commercial support | 40 | — | already on the classpath |
+
+¹ deps.dev dependent packages for the pinned version only — a directional proxy.
+**Maven Central publishes no public download counts**, so no download figures are quoted here.
+All seven libraries are Apache-2.0.
+
+> **Security note:** Velocity < 2.3 carried CVE-2020-13936 (template → RCE). The pinned 2.4.1 is not affected,
+> but the risk class remains: `.vm` templates must be version-controlled and never user-supplied.
+
+### Bank suitability matrix
+
+| Approach | Grammar power | Layout auditability | Spring Batch fit | Support model | Verdict for a bank |
+|---|---|---|---|---|---|
+| **Spring Batch + fixedformat4j** | Medium | Annotations | Native | Broadcom + maintainer | **Best overall fit** |
+| **Spring Batch + fixedlength** | Medium | Annotations | Native | Broadcom + maintainer | Same shape, 33 KB dependency |
+| **Spring Batch native** | Medium | Code (`Range` list) | Native | Broadcom/VMware | Safe default; layout duplicated by hand |
+| **BeanIO** | High (record groups) | Programmatic builder | Good | Community only | Complex CODA grammars; key-person risk |
+| **Camel BeanIO** | High | XML mapping files | Medium | ASF | Auditable XML, heavy dependency path |
+| **Camel Bindy** | Medium | Annotations | Medium | ASF | Only if Camel already in production |
+| **fixedformat4j** | Low (flat records) | Annotations | Excellent | Single maintainer | Simple fixed layouts outside batch |
+| **fixedlength** | Low | Annotations | Good | Single maintainer, 0.x | Prototyping, not core payments |
+| **Velocity** | N/A (write-only) | Templates | Low | ASF | Report rendering, never parsing |
+
+### Measured performance (JMH, ops/s)
+
+1 fork, 2×1 s warm-up, 3×2 s measurement, one op = 5 accounts × 20 transactions, Java 21 / Apple Silicon:
+
+| Approach | CODA write | CODA read | SWIFT write | SWIFT read |
+|---|---:|---:|---:|---:|
+| **fixedformat4j** | **8 463** | **16 106** | 11 418 | 14 496 |
+| fixedlength | 6 452 | 7 810 | **11 616** | 13 819 |
+| Velocity | 5 562 | 8 947 | 4 162 | 14 079 |
+| BeanIO | 5 306 | 2 632 | 11 373 | 14 499 |
+| Camel BeanIO | 4 900 | 2 907 | 10 146 | 14 450 |
+| Spring Batch native | 4 642 | 9 351 | 11 595 | 14 558 |
+| Spring Batch + fixedlength | 4 502 | 9 216 | 11 519 | 14 486 |
+| Spring Batch + ff4j | 4 371 | 8 656 | 11 510 | **14 587** |
+| Camel Bindy | 3 186 | 2 298 | 11 384 | 14 291 |
+
+- **fixedformat4j wins CODA outright** — 1.8× write and 1.7× read versus the next best
+- **Annotation-derived layout is free at runtime** — the hybrids sit within noise of native Spring Batch;
+  reflection happens once at bean construction, never per record
+- **SWIFT converges** (~11k write / ~14k read) — all approaches share `SwiftMtRecord`; only Velocity's
+  template rendering separates from the pack
+- Reproduce with `mvn test -Pbenchmark`; gaps under ~20 % are noise at this iteration count
+
+### Strategic recommendations
+
+| Scenario | Recommended approach |
+|---|---|
+| New Spring Batch job in a bank | Spring Batch + fixedformat4j |
+| Minimal dependency footprint | Spring Batch + fixedlength |
+| Maximum CODA grammar correctness | BeanIO |
+| Layout auditable outside the code | Camel BeanIO (XML mappings) |
+| Existing Apache Camel ecosystem | Apache Camel Bindy |
+| Statement / report rendering | Apache Velocity |
+| No new dependency allowed | Spring Batch native |
 
 ---
 
@@ -545,12 +607,32 @@ fixed-length-converters/
 ├── src/main/frontend/          React source (kept for reference; UI now served from static/)
 ├── src/main/resources/static/  Vanilla HTML/CSS/JS UI (index.html — served directly)
 ├── docs/
+│   ├── benchmark-results.md    Library health, adoption, suitability, JMH + pipeline numbers
+│   ├── slides/                 Marp deck (.md) + PowerPoint deck (22 slides)
 │   ├── examples/coda/          Valid, malformed, edge-case CODA files
 │   ├── examples/swift-mt/      Valid, malformed, edge-case SWIFT MT940 files
 │   └── diagrams/               Architecture diagrams (.puml + .mmd)
-├── tools/python/               Benchmark aggregation + report generation
+├── tools/python/               Benchmark aggregation, report generation, PPTX generator
 ├── output/                     Generated banking files (gitignored)
 └── .github/workflows/          build, test, benchmark, codeql, release
+```
+
+---
+
+## Presentation
+
+A 22-slide deck covering the formats, the 18 strategies, library health and the measured benchmarks:
+
+| File | Format |
+|---|---|
+| [`docs/slides/banking-parser-comparison.md`](docs/slides/banking-parser-comparison.md) | Marp Markdown (renders in VS Code / `marp-cli`) |
+| [`docs/slides/banking-parser-platform.pptx`](docs/slides/banking-parser-platform.pptx) | PowerPoint / Google Slides |
+| [`docs/slides/google-slides-export.md`](docs/slides/google-slides-export.md) | Upload + conversion instructions |
+
+Regenerate the PPTX after editing slide content:
+
+```bash
+python3 tools/python/generate_pptx.py
 ```
 
 ---

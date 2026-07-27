@@ -35,7 +35,7 @@ style: |
 # Banking Fixed-Length File Platform
 
 ## Generating, parsing and benchmarking CODA & SWIFT MT940 files
-## across 7 Java formatter libraries via Strategy Pattern + Spring Batch
+## across 9 Java formatter approaches via Strategy Pattern + Spring Batch
 
 **Wallace Espindola** · wallace.espindola@gmail.com
 [linkedin.com/in/wallaceespindola](https://www.linkedin.com/in/wallaceespindola/) · [github.com/wallaceespindola](https://github.com/wallaceespindola/)
@@ -45,16 +45,18 @@ style: |
 ## Problem Statement
 
 Multiple Java libraries claim to support fixed-length banking file formats.
-**Which one is best for enterprise Spring Batch use?**
+**Which one should a bank standardise on for Spring Batch workloads?**
 
 Evaluation criteria:
 
 1. **Correctness** — Does output conform to Febelfin / SWIFT specifications?
-2. **Performance** — Throughput in records/second under realistic load
-3. **Maintainability** — Annotation quality, no XML, clean code
+2. **Performance** — Throughput in records/second, measured with JMH
+3. **Maintainability** — Annotation quality, layout auditability, no hidden XML
 4. **Spring Batch fit** — Chunk-oriented reader/writer compatibility
+5. **Supply-chain health** — Release cadence, governance, dependency weight
+6. **Operational risk** — Support model, key-person risk, CVE history
 
-> *One codebase, 7 libraries, identical domain data, automated benchmarks.*
+> *One codebase, 9 approaches, identical domain data, automated benchmarks.*
 
 ---
 
@@ -72,11 +74,11 @@ Web UI (HTML/CSS/JS)
   DomainEntityItemReader → FileGenerationItemProcessor → FileOutputItemWriter
                                       │
                                StrategyResolver  (O(1) map lookup)
-                              /    |    |    |    |    |    \
-                         BeanIO  ff4j  VL  Bindy CamelBIO Vel SB
+                     /    |    |    |    |    |    |    |    \
+                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+ff4j  SB+VL
                               ↓
-                       14 FileGenerationStrategy implementations
-                       (7 libraries × CODA + SWIFT)
+                       18 FileGenerationStrategy implementations
+                       (9 approaches × CODA + SWIFT)
 ```
 
 ---
@@ -128,42 +130,66 @@ Each field has an exact byte offset — annotations define the mapping.
 
 ---
 
-## 7 Parser Libraries
+## 9 Formatter Approaches
 
-| Library | Mechanism | CODA Write | CODA Read | SWIFT |
+| Approach | Mechanism | CODA W | CODA R | SWIFT |
 |---------|-----------|-----------|-----------|-------|
-| **BeanIO** | `@Record` + `@Field` annotations | ✅ | ✅ | ✅ |
+| **BeanIO** | `StreamBuilder` + `FieldBuilder.at()` (0-based) | ✅ | ✅ | ✅ |
 | **fixedformat4j** | `@Record(length=128)` + `@Field(offset, length)` | ✅ | ✅ | ✅ |
 | **fixedlength** | `@FixedLine` + `@FixedField(offset, length)` | ✅ | ✅ | ✅ |
 | **Camel Bindy** | `@FixedLengthRecord` + `@DataField(pos, length)` | ✅ | ✅ | ✅ |
-| **Camel BeanIO** | XML stream mapping | ✅ | ✅ | ✅ |
+| **Camel BeanIO** | XML stream mapping via Camel dataformat | ✅ | ✅ | ✅ |
 | **Velocity** | `.vm` template files (write-only for CODA) | ✅ | — | ✅ |
 | **Spring Batch** | `FormatterLineAggregator` + `FixedLengthTokenizer` | ✅ | ✅ | ✅ |
+| **Spring Batch + ff4j** | Spring Batch components, layout from `@Field` | ✅ | ✅ | ✅ |
+| **Spring Batch + fixedlength** | Spring Batch components, layout from `@FixedField` | ✅ | ✅ | ✅ |
 
-All libraries share the same domain data and produce comparable output files.
+All approaches share the same domain data and produce byte-comparable output files.
 
 ---
 
-## Strategy Pattern — One Interface, 14 Implementations
+## Annotation-Derived Layouts — Fixing the Slicing Problem
+
+Native Spring Batch needs the layout **twice**: `Range` list to read, format string to write.
+Two copies of the same offsets drift apart silently.
+
+```java
+// Before — layout restated by hand, 12 magic ranges
+t.setColumns(new Range(1,1), new Range(2,4), new Range(5,14), /* ... */);
+
+// After — layout read from the annotated model, once
+AnnotatedLayout layout = AnnotatedLayout.fromFixedFormat4j(Ff4jCodaRecord.class);
+FixedLengthTokenizer tokenizer = layout.tokenizer();   // read path
+String format = layout.formatString();                 // write path
+```
+
+- Offsets, widths, alignment and padding char come from `@Field` / `@FixedField`
+- Constructor validates gaps, overlaps and the 128-char total — layout errors fail fast
+- Output is **byte-identical** to hand-sliced Spring Batch (asserted in `AnnotatedLayoutTest`)
+
+---
+
+## Strategy Pattern — One Interface, 18 Implementations
 
 ```java
 public interface FileGenerationStrategy {
     String generate(List<Transaction> txs, List<Account> accounts);
     List<Transaction> parse(String fileContent);
     FileType getFileType();   // CODA | SWIFT
-    Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH
-                              // BINDY | CAMEL_BEANIO | VELOCITY | SPRING_BATCH
+    Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH | BINDY
+                              // CAMEL_BEANIO | VELOCITY | SPRING_BATCH
+                              // SPRING_BATCH_FF4J | SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }
 ```
 
 ```java
 // Resolution — O(1) map lookup, no if/switch chains
-FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.BEANIO);
+FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FF4J);
 String codaFile = s.generate(transactions, accounts);
 ```
 
-`StrategyResolver` auto-wires all 14 beans from Spring context at startup.
+`StrategyResolver` auto-wires all 18 beans from the Spring context at startup.
 
 ---
 
@@ -190,11 +216,147 @@ Job parameters: `fileType`, `library`, `operationId`, `runTimestamp`
 
 ---
 
+## Library Health — Verified 2026-07-27
+
+| Library | Coordinates (G:A) | Pinned | Latest | Latest released | Last repo activity |
+|---|---|---|---|---|---|
+| BeanIO | `com.github.beanio:beanio` | 3.2.1 | 3.2.1 | 2025-02-07 | 2025-02-07 |
+| fixedformat4j | `com.ancientprogramming.fixedformat4j:fixedformat4j` | 1.9.1 | 1.9.1 | 2026-06-17 | 2026-07-25 |
+| fixedlength | `name.velikodniy.vitaliy:fixedlength` | 0.15 | 0.15 | 2026-02-26 | 2026-02-26 |
+| Camel Bindy / BeanIO | `org.apache.camel:camel-bindy` · `camel-beanio` | 4.21.0 | 4.21.0 | 2026-06-27 | daily |
+| Velocity | `org.apache.velocity:velocity-engine-core` | 2.4.1 | 2.4.1 | 2024-10-14 | 2026-06-14 |
+| Spring Batch | `org.springframework.batch:spring-batch-core` | 5.2.2 | 6.0.4 | 2026-06-10 | 2026-07-23 |
+
+Sources: Maven Central `maven-metadata.xml` + artifact `Last-Modified`, GitHub REST API.
+Spring Batch 5.2.2 is what Spring Boot 3.4.5 resolves; 6.x needs Boot 4.x.
+
+---
+
+## Adoption & Governance
+
+| Library | GitHub repo | Stars | Governance | Dependents¹ | License |
+|---|---|---:|---|---:|---|
+| BeanIO | `beanio/beanio` | 68 | Community fork of the 2014 `org.beanio` line | 10 | Apache-2.0 |
+| fixedformat4j | `jeyben/fixedformat4j` | 52 | Single maintainer, active | 2 | Apache-2.0 |
+| fixedlength | `g0ddest/fixedlength` | 23 | Single maintainer, 0.x versioning | 0 | Apache-2.0 |
+| Camel Bindy / BeanIO | `apache/camel` | 6 273 | Apache Software Foundation | 4 | Apache-2.0 |
+| Velocity | `apache/velocity-engine` | 413 | Apache Software Foundation | 1 560 | Apache-2.0 |
+| Spring Batch | `spring-projects/spring-batch` | 2 947 | Broadcom/VMware, commercial support | 40 | Apache-2.0 |
+
+¹ deps.dev dependent packages for the **pinned version only** — a directional proxy.
+**Maven Central publishes no public download counts**; treat any "downloads" figure elsewhere as an estimate.
+
+---
+
+## Supply-Chain Weight
+
+| Approach | Own jar | Transitive cost | Notes |
+|---|---:|---|---|
+| BeanIO | 430 KB | none | Self-contained |
+| fixedformat4j | 125 KB | none | Smallest annotation-driven option |
+| fixedlength | 33 KB | none | Tiny; 0.x API stability caveat |
+| Camel Bindy | 171 KB | `camel-support`, `camel-api`, **icu4j 14 MB** | 45 Camel artifacts on the tree |
+| Camel BeanIO | 27 KB | Camel core + BeanIO 2.x | Two ecosystems in one path |
+| Velocity | 503 KB | commons-lang3, slf4j | Templates are executable code |
+| Spring Batch (3 variants) | 0 KB extra | already on the classpath | Batch runtime is a given |
+
+**Security note:** Velocity < 2.3 carried CVE-2020-13936 (template → RCE). Pinned 2.4.1 is not affected,
+but the risk class remains: `.vm` templates must be version-controlled and never user-supplied.
+
+---
+
+## Bank Suitability Matrix
+
+| Approach | Grammar power | Layout auditability | Batch fit | Support model | Bank verdict |
+|---|---|---|---|---|---|
+| BeanIO | **High** (record groups, repeating segments) | Programmatic builder | Good | Community only | Good for complex CODA grammars; accept key-person risk |
+| fixedformat4j | Low (flat records) | **Annotations** | Excellent | Single maintainer | Strong for simple fixed layouts |
+| fixedlength | Low | Annotations | Good | Single maintainer, 0.x | Prototyping, not core payments |
+| Camel Bindy | Medium | Annotations | Medium | ASF | Only if Camel already runs in production |
+| Camel BeanIO | High | XML mapping files | Medium | ASF | Auditable XML, heavy dependency path |
+| Velocity | N/A (write-only) | Templates | Low | ASF | Report rendering, never parsing |
+| Spring Batch native | Medium | **Code** (`Range` list) | **Native** | Broadcom/VMware | Safe default; layout duplicated by hand |
+| **Spring Batch + ff4j** | Medium | **Annotations** | **Native** | Broadcom + single maintainer | **Best overall fit for a bank** |
+| **Spring Batch + fixedlength** | Medium | **Annotations** | **Native** | Broadcom + single maintainer | Same shape, smaller dependency |
+
+---
+
+## Measured Performance — JMH
+
+| Approach | CODA write | CODA read | SWIFT write | SWIFT read |
+|---|---:|---:|---:|---:|
+| **fixedformat4j** | **8 463** | **16 106** | 11 418 | 14 496 |
+| fixedlength | 6 452 | 7 810 | 11 616 | 13 819 |
+| Velocity | 5 562 | 8 947 | 4 162 | 14 079 |
+| BeanIO | 5 306 | 2 632 | 11 373 | 14 499 |
+| Camel BeanIO | 4 900 | 2 907 | 10 146 | 14 450 |
+| Spring Batch native | 4 642 | 9 351 | 11 595 | 14 558 |
+| Spring Batch + fixedlength | 4 502 | 9 216 | 11 519 | 14 486 |
+| Spring Batch + ff4j | 4 371 | 8 656 | 11 510 | 14 587 |
+| Camel Bindy | 3 186 | 2 298 | 11 384 | 14 291 |
+
+Throughput in ops/s (one op = 20 transactions × 5 accounts). Highest per column in bold.
+
+- **fixedformat4j wins CODA outright** — 1.8× the write throughput and 1.7× the read throughput of the next best
+- **Annotation-derived layout is free at runtime** — the two hybrids sit within noise of native Spring Batch;
+  reflection happens once at bean construction, never per record
+- **SWIFT converges (~11k write / ~14k read)** — all approaches share `SwiftMtRecord`; only Velocity's
+  template rendering (4 162 ops/s) stands out
+- Error bars are wide on some runs (1 fork × 3 iterations) — treat gaps under ~20 % as noise
+
+Method: JMH throughput mode, 1 fork, 2×1 s warm-up, 3×2 s measurement, 5 accounts / 20 transactions per op,
+Java 21 on Apple Silicon. Re-run with `mvn test -Pbenchmark` — absolute values are machine-specific,
+the **ranking** is what transfers.
+
+---
+
+## Measured Performance — Batch Pipeline
+
+End-to-end Spring Batch job (`POST /api/batch/generate`), MEDIUM profile — 100 accounts / 1 000 transactions,
+H2 in-memory, chunk size 100. Median of 4 warm runs, records/second:
+
+| Approach | CODA | SWIFT |
+|---|---:|---:|
+| BeanIO | ~72 000 | ~134 000 |
+| Spring Batch + fixedlength | ~71 000 | ~167 000 |
+| fixedformat4j | ~68 000 | ~146 000 |
+| Spring Batch native | ~63 000 | ~71 000 |
+| Camel BeanIO | ~63 000 | ~143 000 |
+| Spring Batch + ff4j | ~59 000 | ~167 000 |
+| fixedlength | ~56 000 | ~143 000 |
+| Camel Bindy | ~29 000 | ~83 000 |
+| Velocity | ~18 000 | ~19 000 |
+
+Every approach clears 1 000 records in **under 60 ms** end-to-end; most land between 14 ms and 18 ms,
+where millisecond timer resolution dominates. Only Velocity and Camel Bindy separate from the pack here.
+
+Pipeline numbers include JPA read, strategy call, file write and metrics persistence,
+so they compress the differences visible in the JMH numbers.
+
+---
+
+## Decision Guide
+
+| Use case | Pick | Why |
+|----------|------|-----|
+| New Spring Batch job in a bank | **Spring Batch + fixedformat4j** | Batch-native runtime, layout declared once in annotations, no extra runtime deps |
+| Minimal dependency footprint | **Spring Batch + fixedlength** | 33 KB library, same annotation-driven layout |
+| Complex CODA grammar (record groups) | **BeanIO** | Richest grammar model of the set |
+| Camel routes already in production | **Camel Bindy** | Native dataformat inside existing routes |
+| Auditor wants layout outside the code | **Camel BeanIO** | XML mapping files, reviewable without Java |
+| Rendering statements/reports | **Velocity** | Template engine, write-only by design |
+| No new dependency allowed at all | **Spring Batch native** | Ships with the batch runtime |
+
+> **Recommendation:** standardise on one approach per system. Benchmark on your own hardware first —
+> then pin the version and treat the layout model as a controlled artefact.
+
+---
+
 ## REST API
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| `POST` | `/api/domain/generate` | Seed H2 with sample data (`?loadProfile=LOW\|HIGH`) |
+| `POST` | `/api/domain/generate` | Seed H2 with sample data (`?loadProfile=LOW\|MEDIUM\|HIGH`) |
 | `POST` | `/api/batch/generate` | Trigger Spring Batch job `{fileType, library}` |
 | `GET` | `/api/batch/history` | Last 50 job executions |
 | `GET` | `/api/benchmark/results` | All benchmark metrics |
@@ -219,7 +381,7 @@ Job parameters: `fileType`, `library`, `operationId`, `runTimestamp`
 | `successRate` | % of chunks completed without error |
 
 ```bash
-# Run JMH benchmark suite (28 @Benchmark methods)
+# Run JMH benchmark suite (36 @Benchmark methods)
 mvn test -Pbenchmark
 
 # Export results
@@ -229,30 +391,14 @@ curl http://localhost:8080/api/benchmark/export/json
 
 ---
 
-## Library Recommendations
-
-| Use Case | Recommended Library | Reason |
-|----------|--------------------|----|
-| Enterprise CODA processing | **BeanIO** | Best grammar support, battle-tested |
-| New projects, modern code | **fixedformat4j** | Best annotation DX, no boilerplate |
-| Existing Camel ecosystem | **Camel Bindy** | Native Camel route integration |
-| Lightweight / prototyping | **fixedlength** | Minimal setup, pure annotations |
-| Template-driven reports | **Velocity** | Flexible .vm template rendering |
-| Tightest Spring Batch fit | **Spring Batch native** | Reuses existing batch components |
-
-> **Recommendation:** Pick one library and standardise across the codebase.
-> Don't mix libraries in production — benchmark first, then commit.
-
----
-
 ## Code Quality & CI/CD
 
-**Testing** — 118 tests across 12 test classes:
+**Testing** — 149 tests across 13 test classes:
 
 | Category | Tests | Coverage |
 |----------|-------|----------|
-| Unit | DomainDataGeneratorTest, CodaRecordTest | Mock repos, field validation |
-| Integration | StrategyResolverTest, CodaStrategyTest, SwiftStrategyTest | All 14 strategies |
+| Unit | DomainDataGeneratorTest, CodaRecordTest, AnnotatedLayoutTest | Mock repos, field validation, layout reflection |
+| Integration | StrategyResolverTest, CodaStrategyTest, SwiftStrategyTest | All 18 strategies |
 | Symmetry | SymmetryTest | Round-trip: generate → parse → compare |
 | Golden file | GoldenFileTest | 128-char CODA lines, MT940 tags |
 | API | DomainControllerTest, BatchControllerTest | MockMvc |
@@ -277,10 +423,10 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 # Step 1 — Generate domain data
 curl -X POST http://localhost:8080/api/domain/generate?loadProfile=HIGH
 
-# Step 2 — Run batch job (pick any library)
+# Step 2 — Run batch job (pick any approach)
 curl -X POST http://localhost:8080/api/batch/generate \
   -H "Content-Type: application/json" \
-  -d '{"fileType":"CODA","library":"BEANIO"}'
+  -d '{"fileType":"CODA","library":"SPRING_BATCH_FF4J"}'
 
 # Step 3 — Export benchmark results
 curl http://localhost:8080/api/benchmark/export/csv -o results.csv
@@ -293,13 +439,13 @@ curl http://localhost:8080/api/benchmark/export/csv -o results.csv
 | Area | Technology |
 |------|-----------|
 | Language | Java 21 |
-| Backend | Spring Boot, Spring Batch, Spring Data JPA |
+| Backend | Spring Boot 3.4.5, Spring Batch 5.2.2, Spring Data JPA |
 | Database | H2 In-Memory |
 | API Docs | OpenAPI + Swagger UI (dev profile) |
-| Monitoring | Spring Actuator (`/health`, `/info`) |
+| Monitoring | Spring Actuator (`/health`, `/info`, version indicator) |
 | Frontend | Vanilla HTML/CSS/JS + Chart.js |
 | Build | Maven (single `mvn clean install`, no profiles) |
-| Testing | JUnit 5 + Mockito, 118 tests, JMH benchmarks |
+| Testing | JUnit 5 + Mockito, 149 tests, 36 JMH benchmarks |
 | CI/CD | GitHub Actions (build, test, benchmark, CodeQL) |
 
 ---

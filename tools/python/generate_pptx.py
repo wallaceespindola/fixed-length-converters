@@ -22,6 +22,8 @@ LINK_BLUE   = RGBColor(0x15, 0x65, 0xC0)
 W  = Inches(13.33)   # widescreen 16:9
 H  = Inches(7.5)
 
+TOTAL = 22          # total slide count (keep in sync with main())
+
 OUT_DIR   = os.path.join(os.path.dirname(__file__), "..", "..", "docs", "slides")
 OUT_FILE  = os.path.join(OUT_DIR, "banking-parser-platform.pptx")
 
@@ -177,7 +179,7 @@ def slide_title(prs):
 
     add_textbox(slide,
         Inches(0.8), Inches(3.2), W - Inches(1.6), Inches(0.6),
-        "across 7 Java formatter libraries via Strategy Pattern + Spring Batch",
+        "across 9 Java formatter approaches via Strategy Pattern + Spring Batch",
         font_size=22, color=WHITE, align=PP_ALIGN.CENTER)
 
     add_textbox(slide,
@@ -193,7 +195,7 @@ def slide_title(prs):
     # page number area (bottom bar)
     add_textbox(slide,
         Inches(0.4), H - Inches(1.1), W - Inches(0.8), Inches(0.4),
-        "1 / 15", font_size=12, color=RGBColor(0x88, 0x88, 0x88),
+        f"1 / {TOTAL}", font_size=12, color=RGBColor(0x88, 0x88, 0x88),
         align=PP_ALIGN.RIGHT)
 
 
@@ -204,7 +206,7 @@ def slide_heading(slide, title, page):
         title, font_size=26, bold=True, color=WHITE)
     add_textbox(slide,
         Inches(0.4), H - Inches(0.35), W - Inches(0.8), Inches(0.3),
-        f"{page} / 15", font_size=11,
+        f"{page} / {TOTAL}", font_size=11,
         color=RGBColor(0x88, 0x88, 0x88), align=PP_ALIGN.RIGHT)
 
 
@@ -218,7 +220,7 @@ def slide_problem(prs):
         font_size=17, color=BLACK)
     add_textbox(slide,
         Inches(0.5), Inches(1.5), W - Inches(1.0), Inches(0.5),
-        "Which one is best for enterprise Spring Batch use?",
+        "Which one should a bank standardise on for Spring Batch workloads?",
         font_size=20, bold=True, color=ORANGE)
 
     add_textbox(slide,
@@ -227,23 +229,25 @@ def slide_problem(prs):
 
     criteria = [
         ("Correctness", "Does output conform to Febelfin / SWIFT specifications?"),
-        ("Performance", "Throughput in records/second under realistic load"),
-        ("Maintainability", "Annotation quality, no XML, clean code"),
+        ("Performance", "Throughput in records/second, measured with JMH"),
+        ("Maintainability", "Annotation quality, layout auditability, no hidden XML"),
         ("Spring Batch fit", "Chunk-oriented reader/writer compatibility"),
+        ("Supply-chain health", "Release cadence, governance, dependency weight"),
+        ("Operational risk", "Support model, key-person risk, CVE history"),
     ]
     for i, (label, desc) in enumerate(criteria):
-        top = Inches(2.7) + i * Inches(0.65)
+        top = Inches(2.6) + i * Inches(0.52)
         add_textbox(slide, Inches(0.5), top, Inches(2.5), Inches(0.5),
                     f"{i+1}. {label}", font_size=17, bold=True, color=DARK_ORANGE)
         add_textbox(slide, Inches(3.1), top, W - Inches(3.6), Inches(0.5),
                     f"— {desc}", font_size=16, color=BLACK)
 
     add_rect(slide,
-        Inches(0.5), Inches(5.6), W - Inches(1.0), Inches(0.85),
+        Inches(0.5), Inches(6.0), W - Inches(1.0), Inches(0.8),
         GRAY_BG)
     add_textbox(slide,
-        Inches(0.7), Inches(5.65), W - Inches(1.4), Inches(0.75),
-        "One codebase, 7 libraries, identical domain data, automated benchmarks.",
+        Inches(0.7), Inches(6.1), W - Inches(1.4), Inches(0.7),
+        "One codebase, 9 approaches, identical domain data, automated benchmarks.",
         font_size=16, italic=True, color=DARK_ORANGE)
 
 
@@ -263,11 +267,11 @@ Web UI (HTML/CSS/JS)
   DomainEntityItemReader -> FileGenerationItemProcessor -> FileOutputItemWriter
                                       |
                                StrategyResolver  (O(1) map lookup)
-                              /    |    |    |    |    |    \\
-                         BeanIO  ff4j  VL  Bindy CamelBIO Vel SB
+                     /    |    |    |    |    |    |    |    \\
+                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+ff4j  SB+VL
                               |
-                       14 FileGenerationStrategy implementations
-                       (7 libraries x CODA + SWIFT)"""
+                       18 FileGenerationStrategy implementations
+                       (9 approaches x CODA + SWIFT)"""
 
     add_code_box(slide,
         Inches(0.4), Inches(0.95), W - Inches(0.8), Inches(5.9),
@@ -346,39 +350,42 @@ def slide_swift(prs):
 
 def slide_libraries(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "7 Parser Libraries", 6)
+    slide_heading(slide, "9 Formatter Approaches", 6)
 
     rows = [
-        ("Library",          "Mechanism",                                       "CODA W", "CODA R", "SWIFT"),
-        ("BeanIO",           "@Record + @Field annotations",                    "Yes",    "Yes",    "Yes"),
+        ("Approach",         "Mechanism",                                       "CODA W", "CODA R", "SWIFT"),
+        ("BeanIO",           "StreamBuilder + FieldBuilder.at() (0-based)",     "Yes",    "Yes",    "Yes"),
         ("fixedformat4j",    "@Record(length=128) + @Field(offset, length)",    "Yes",    "Yes",    "Yes"),
         ("fixedlength",      "@FixedLine + @FixedField(offset, length)",        "Yes",    "Yes",    "Yes"),
         ("Camel Bindy",      "@FixedLengthRecord + @DataField(pos, length)",    "Yes",    "Yes",    "Yes"),
-        ("Camel BeanIO",     "XML stream mapping",                              "Yes",    "Yes",    "Yes"),
+        ("Camel BeanIO",     "XML stream mapping via Camel dataformat",         "Yes",    "Yes",    "Yes"),
         ("Velocity",         ".vm template files (write-only for CODA)",        "Yes",    "—",      "Yes"),
         ("Spring Batch",     "FormatterLineAggregator + FixedLengthTokenizer",  "Yes",    "Yes",    "Yes"),
+        ("Spring Batch + ff4j",         "Spring Batch components, layout from @Field",      "Yes", "Yes", "Yes"),
+        ("Spring Batch + fixedlength",  "Spring Batch components, layout from @FixedField", "Yes", "Yes", "Yes"),
     ]
-    col_w = [Inches(2.0), Inches(5.0), Inches(1.3), Inches(1.3), Inches(1.3)]
+    col_w = [Inches(2.9), Inches(5.0), Inches(1.3), Inches(1.3), Inches(1.3)]
     add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
               rows, col_w, font_size=13)
 
     add_textbox(slide,
         Inches(0.5), Inches(6.6), W - Inches(1.0), Inches(0.4),
-        "All libraries share the same domain data and produce comparable output files.",
+        "All approaches share the same domain data and produce byte-comparable output files.",
         font_size=13, italic=True, color=RGBColor(0x55, 0x55, 0x55))
 
 
 def slide_strategy(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Strategy Pattern — One Interface, 14 Implementations", 7)
+    slide_heading(slide, "Strategy Pattern — One Interface, 18 Implementations", 8)
 
     code1 = """\
 public interface FileGenerationStrategy {
     String generate(List<Transaction> txs, List<Account> accounts);
     List<Transaction> parse(String fileContent);
     FileType getFileType();   // CODA | SWIFT
-    Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH
-                              // BINDY | CAMEL_BEANIO | VELOCITY | SPRING_BATCH
+    Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH | BINDY
+                              // CAMEL_BEANIO | VELOCITY | SPRING_BATCH
+                              // SPRING_BATCH_FF4J | SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }"""
     add_code_box(slide, Inches(0.4), Inches(0.95),
@@ -386,20 +393,20 @@ public interface FileGenerationStrategy {
 
     code2 = """\
 // Resolution — O(1) map lookup, no if/switch chains
-FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.BEANIO);
+FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FF4J);
 String codaFile = s.generate(transactions, accounts);"""
     add_code_box(slide, Inches(0.4), Inches(3.6),
                  W - Inches(0.8), Inches(1.5), code2, font_size=13)
 
     add_textbox(slide,
         Inches(0.5), Inches(5.3), W - Inches(1.0), Inches(0.5),
-        "StrategyResolver auto-wires all 14 beans from Spring context at startup.",
+        "StrategyResolver auto-wires all 18 beans from the Spring context at startup.",
         font_size=16, color=DARK_ORANGE)
 
 
 def slide_batch(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Spring Batch Pipeline", 8)
+    slide_heading(slide, "Spring Batch Pipeline", 9)
 
     code = """\
 bankingFileGenerationJob  (restartable — saveState=true)
@@ -427,11 +434,11 @@ bankingFileGenerationJob  (restartable — saveState=true)
 
 def slide_api(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "REST API", 9)
+    slide_heading(slide, "REST API", 17)
 
     rows = [
         ("Method", "Endpoint",                        "Description"),
-        ("POST",   "/api/domain/generate",            "Seed H2 with sample data (?loadProfile=LOW|HIGH)"),
+        ("POST",   "/api/domain/generate",            "Seed H2 with sample data (?loadProfile=LOW|MEDIUM|HIGH)"),
         ("POST",   "/api/batch/generate",             "Trigger Spring Batch job {fileType, library}"),
         ("GET",    "/api/batch/history",              "Last 50 job executions"),
         ("GET",    "/api/benchmark/results",          "All benchmark metrics"),
@@ -449,7 +456,7 @@ def slide_api(prs):
 
 def slide_benchmark(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Benchmark Metrics", 10)
+    slide_heading(slide, "Benchmark Metrics", 18)
 
     rows = [
         ("Metric",                "Description"),
@@ -465,7 +472,7 @@ def slide_benchmark(prs):
               rows, col_w, font_size=15)
 
     code = """\
-# Run JMH benchmark suite (28 @Benchmark methods)
+# Run JMH benchmark suite (36 @Benchmark methods)
 mvn test -Pbenchmark
 
 # Export results
@@ -477,47 +484,48 @@ curl http://localhost:8080/api/benchmark/export/json"""
 
 def slide_recommendations(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Library Recommendations", 11)
+    slide_heading(slide, "Decision Guide", 16)
 
     rows = [
-        ("Use Case",                    "Recommended Library",  "Reason"),
-        ("Enterprise CODA processing",  "BeanIO",              "Best grammar support, battle-tested"),
-        ("New projects, modern code",   "fixedformat4j",       "Best annotation DX, no boilerplate"),
-        ("Existing Camel ecosystem",    "Camel Bindy",         "Native Camel route integration"),
-        ("Lightweight / prototyping",   "fixedlength",         "Minimal setup, pure annotations"),
-        ("Template-driven reports",     "Velocity",            "Flexible .vm template rendering"),
-        ("Tightest Spring Batch fit",   "Spring Batch native", "Reuses existing batch components"),
+        ("Use case",                          "Pick",                        "Why"),
+        ("New Spring Batch job in a bank",    "Spring Batch + fixedformat4j","Batch-native runtime, layout declared once, no extra runtime deps"),
+        ("Minimal dependency footprint",      "Spring Batch + fixedlength",  "33 KB library, same annotation-driven layout"),
+        ("Complex CODA grammar",              "BeanIO",                      "Richest grammar model (record groups, repeating segments)"),
+        ("Camel routes already in production","Camel Bindy",                 "Native dataformat inside existing routes"),
+        ("Layout auditable outside the code", "Camel BeanIO",                "XML mapping files, reviewable without Java"),
+        ("Rendering statements / reports",    "Velocity",                    "Template engine, write-only by design"),
+        ("No new dependency allowed",         "Spring Batch native",         "Ships with the batch runtime"),
     ]
-    col_w = [Inches(3.5), Inches(2.8), W - Inches(6.8)]
+    col_w = [Inches(3.6), Inches(3.0), W - Inches(7.4)]
     add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
-              rows, col_w, font_size=14)
+              rows, col_w, font_size=12)
 
     add_rect(slide,
-        Inches(0.4), Inches(5.9), W - Inches(0.8), Inches(1.0),
+        Inches(0.4), Inches(5.5), W - Inches(0.8), Inches(1.0),
         GRAY_BG)
     add_textbox(slide,
-        Inches(0.6), Inches(5.95), W - Inches(1.2), Inches(0.45),
-        "Recommendation: Pick one library and standardise across the codebase.",
+        Inches(0.6), Inches(5.55), W - Inches(1.2), Inches(0.45),
+        "Recommendation: standardise on one approach per system.",
         font_size=15, bold=True, color=DARK_ORANGE)
     add_textbox(slide,
-        Inches(0.6), Inches(6.4), W - Inches(1.2), Inches(0.4),
-        "Don't mix libraries in production — benchmark first, then commit.",
-        font_size=14, italic=True, color=BLACK)
+        Inches(0.6), Inches(6.0), W - Inches(1.2), Inches(0.4),
+        "Benchmark on your own hardware, then pin the version and treat the layout model as a controlled artefact.",
+        font_size=13, italic=True, color=BLACK)
 
 
 def slide_quality(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Code Quality & CI/CD", 12)
+    slide_heading(slide, "Code Quality & CI/CD", 19)
 
     add_textbox(slide,
         Inches(0.5), Inches(0.95), Inches(4), Inches(0.4),
-        "Testing — 118 tests across 12 test classes:",
+        "Testing — 149 tests across 13 test classes:",
         font_size=17, bold=True, color=BLACK)
 
     rows = [
         ("Category",   "Tests",                                              "Coverage"),
-        ("Unit",       "DomainDataGeneratorTest, CodaRecordTest",            "Mock repos, field validation"),
-        ("Integration","StrategyResolverTest, CodaStrategyTest, SwiftStrategyTest", "All 14 strategies"),
+        ("Unit",       "DomainDataGeneratorTest, CodaRecordTest, AnnotatedLayoutTest", "Mock repos, fields, layout reflection"),
+        ("Integration","StrategyResolverTest, CodaStrategyTest, SwiftStrategyTest", "All 18 strategies"),
         ("Symmetry",   "SymmetryTest",                                        "Round-trip: generate -> parse -> compare"),
         ("Golden file","GoldenFileTest",                                      "128-char CODA lines, MT940 tags"),
         ("API",        "DomainControllerTest, BatchControllerTest",           "MockMvc"),
@@ -540,7 +548,7 @@ def slide_quality(prs):
 
 def slide_quickstart(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Quick Start", 13)
+    slide_heading(slide, "Quick Start", 20)
 
     code = """\
 # Clone and build (Java 21 + Maven 3.9 required — no Node.js needed)
@@ -554,10 +562,10 @@ mvn spring-boot:run -Dspring-boot.run.profiles=dev
 # Step 1 -- Generate domain data
 curl -X POST http://localhost:8080/api/domain/generate?loadProfile=HIGH
 
-# Step 2 -- Run batch job (pick any library)
+# Step 2 -- Run batch job (pick any approach)
 curl -X POST http://localhost:8080/api/batch/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"fileType":"CODA","library":"BEANIO"}'
+  -d '{"fileType":"CODA","library":"SPRING_BATCH_FF4J"}'
 
 # Step 3 -- Export benchmark results
 curl http://localhost:8080/api/benchmark/export/csv -o results.csv"""
@@ -568,18 +576,18 @@ curl http://localhost:8080/api/benchmark/export/csv -o results.csv"""
 
 def slide_stack(prs):
     slide = blank_slide(prs)
-    slide_heading(slide, "Technology Stack", 14)
+    slide_heading(slide, "Technology Stack", 21)
 
     rows = [
         ("Area",        "Technology"),
         ("Language",    "Java 21"),
-        ("Backend",     "Spring Boot, Spring Batch, Spring Data JPA"),
+        ("Backend",     "Spring Boot 3.4.5, Spring Batch 5.2.2, Spring Data JPA"),
         ("Database",    "H2 In-Memory"),
         ("API Docs",    "OpenAPI + Swagger UI (dev profile)"),
-        ("Monitoring",  "Spring Actuator (/health, /info)"),
+        ("Monitoring",  "Spring Actuator (/health, /info, version indicator)"),
         ("Frontend",    "Vanilla HTML/CSS/JS + Chart.js"),
         ("Build",       "Maven (single mvn clean install, no profiles)"),
-        ("Testing",     "JUnit 5 + Mockito, 118 tests, JMH benchmarks"),
+        ("Testing",     "JUnit 5 + Mockito, 149 tests, 36 JMH benchmarks"),
         ("CI/CD",       "GitHub Actions (build, test, benchmark, CodeQL)"),
     ]
     col_w = [Inches(2.5), W - Inches(3.0)]
@@ -625,8 +633,215 @@ def slide_thankyou(prs):
 
     add_textbox(slide,
         Inches(0.4), H - Inches(1.1), W - Inches(0.8), Inches(0.4),
-        "15 / 15", font_size=12,
+        f"{TOTAL} / {TOTAL}", font_size=12,
         color=RGBColor(0x88, 0x88, 0x88), align=PP_ALIGN.RIGHT)
+
+
+
+def slide_annotated_layout(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Annotation-Derived Layouts — Fixing the Slicing Problem", 7)
+
+    add_textbox(slide,
+        Inches(0.5), Inches(0.95), W - Inches(1.0), Inches(0.4),
+        "Native Spring Batch needs the layout twice: a Range list to read, a format string to write.",
+        font_size=16, color=BLACK)
+    add_textbox(slide,
+        Inches(0.5), Inches(1.35), W - Inches(1.0), Inches(0.4),
+        "Two copies of the same offsets drift apart silently.",
+        font_size=16, bold=True, color=ORANGE)
+
+    code = """\
+// Before -- layout restated by hand, 12 magic ranges
+t.setColumns(new Range(1,1), new Range(2,4), new Range(5,14), /* ... */);
+
+// After -- layout read from the annotated model, once
+AnnotatedLayout layout = AnnotatedLayout.fromFixedFormat4j(Ff4jCodaRecord.class);
+FixedLengthTokenizer tokenizer = layout.tokenizer();   // read path
+String format = layout.formatString();                 // write path"""
+    add_code_box(slide, Inches(0.4), Inches(1.9),
+                 W - Inches(0.8), Inches(2.5), code, font_size=13)
+
+    bullets = [
+        "Offsets, widths, alignment and padding char come from @Field / @FixedField",
+        "Constructor validates gaps, overlaps and the 128-char total — layout errors fail fast",
+        "Output is byte-identical to hand-sliced Spring Batch (asserted in AnnotatedLayoutTest)",
+    ]
+    for i, b in enumerate(bullets):
+        add_textbox(slide, Inches(0.5), Inches(4.6) + i * Inches(0.5),
+                    W - Inches(1.0), Inches(0.45),
+                    f"• {b}", font_size=15, color=BLACK)
+
+
+def slide_health(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Library Health — Verified 2026-07-27", 10)
+
+    rows = [
+        ("Library",        "Coordinates (groupId:artifactId)",                    "Pinned", "Latest", "Released",   "Repo activity"),
+        ("BeanIO",         "com.github.beanio:beanio",                            "3.2.1",  "3.2.1",  "2025-02-07", "2025-02-07"),
+        ("fixedformat4j",  "com.ancientprogramming.fixedformat4j:fixedformat4j",  "1.9.1",  "1.9.1",  "2026-06-17", "2026-07-25"),
+        ("fixedlength",    "name.velikodniy.vitaliy:fixedlength",                 "0.15",   "0.15",   "2026-02-26", "2026-02-26"),
+        ("Camel Bindy",    "org.apache.camel:camel-bindy",                        "4.21.0", "4.21.0", "2026-06-27", "daily"),
+        ("Camel BeanIO",   "org.apache.camel:camel-beanio",                       "4.21.0", "4.21.0", "2026-06-27", "daily"),
+        ("Velocity",       "org.apache.velocity:velocity-engine-core",            "2.4.1",  "2.4.1",  "2024-10-14", "2026-06-14"),
+        ("Spring Batch",   "org.springframework.batch:spring-batch-core",         "5.2.2",  "6.0.4",  "2026-06-10", "2026-07-23"),
+    ]
+    col_w = [Inches(1.9), Inches(4.6), Inches(1.0), Inches(1.0), Inches(1.5), Inches(1.6)]
+    add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
+              rows, col_w, font_size=11)
+
+    notes = [
+        "Sources: Maven Central maven-metadata.xml + artifact Last-Modified header, GitHub REST API",
+        "Spring Batch 5.2.2 is what Spring Boot 3.4.5 resolves; 6.x requires Boot 4.x",
+    ]
+    for i, n in enumerate(notes):
+        add_textbox(slide, Inches(0.5), Inches(4.5) + i * Inches(0.42),
+                    W - Inches(1.0), Inches(0.4),
+                    f"• {n}", font_size=13, italic=True,
+                    color=RGBColor(0x55, 0x55, 0x55))
+
+
+def slide_adoption(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Adoption & Governance", 11)
+
+    rows = [
+        ("Library",       "GitHub repo",                 "Stars", "Governance",                          "Dependents", "License"),
+        ("BeanIO",        "beanio/beanio",               "68",    "Community fork of the 2014 org.beanio","10",        "Apache-2.0"),
+        ("fixedformat4j", "jeyben/fixedformat4j",        "52",    "Single maintainer, active",            "2",         "Apache-2.0"),
+        ("fixedlength",   "g0ddest/fixedlength",         "23",    "Single maintainer, 0.x versioning",    "0",         "Apache-2.0"),
+        ("Camel Bindy",   "apache/camel",                "6 273", "Apache Software Foundation",           "4",         "Apache-2.0"),
+        ("Camel BeanIO",  "apache/camel",                "6 273", "Apache Software Foundation",           "4",         "Apache-2.0"),
+        ("Velocity",      "apache/velocity-engine",      "413",   "Apache Software Foundation",           "1 560",     "Apache-2.0"),
+        ("Spring Batch",  "spring-projects/spring-batch","2 947", "Broadcom/VMware, commercial support",  "40",        "Apache-2.0"),
+    ]
+    col_w = [Inches(1.8), Inches(2.9), Inches(0.9), Inches(4.0), Inches(1.4), Inches(1.5)]
+    add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
+              rows, col_w, font_size=11)
+
+    add_rect(slide, Inches(0.4), Inches(4.6), W - Inches(0.8), Inches(1.15), GRAY_BG)
+    add_textbox(slide, Inches(0.6), Inches(4.65), W - Inches(1.2), Inches(0.45),
+        "Dependents = deps.dev dependent packages for the pinned version only — a directional proxy.",
+        font_size=13, color=BLACK)
+    add_textbox(slide, Inches(0.6), Inches(5.1), W - Inches(1.2), Inches(0.55),
+        "Maven Central publishes no public download counts; treat any 'downloads' figure elsewhere as an estimate.",
+        font_size=13, bold=True, color=DARK_ORANGE)
+
+
+def slide_supply_chain(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Supply-Chain Weight", 12)
+
+    rows = [
+        ("Approach",           "Own jar", "Transitive cost",                      "Notes"),
+        ("BeanIO",             "430 KB",  "none",                                 "Self-contained"),
+        ("fixedformat4j",      "125 KB",  "none",                                 "Smallest annotation-driven option"),
+        ("fixedlength",        "33 KB",   "none",                                 "Tiny; 0.x API stability caveat"),
+        ("Camel Bindy",        "171 KB",  "camel-support, camel-api, icu4j 14 MB","45 Camel artifacts on the tree"),
+        ("Camel BeanIO",       "27 KB",   "Camel core + BeanIO 2.x",              "Two ecosystems in one path"),
+        ("Velocity",           "503 KB",  "commons-lang3, slf4j",                 "Templates are executable code"),
+        ("Spring Batch (x3)",  "0 KB",    "already on the classpath",             "Batch runtime is a given"),
+    ]
+    col_w = [Inches(2.6), Inches(1.3), Inches(4.4), W - Inches(8.8)]
+    add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
+              rows, col_w, font_size=12)
+
+    add_rect(slide, Inches(0.4), Inches(4.6), W - Inches(0.8), Inches(1.2), GRAY_BG)
+    add_textbox(slide, Inches(0.6), Inches(4.68), W - Inches(1.2), Inches(0.45),
+        "Security: Velocity < 2.3 carried CVE-2020-13936 (template -> RCE). Pinned 2.4.1 is not affected.",
+        font_size=13, bold=True, color=DARK_ORANGE)
+    add_textbox(slide, Inches(0.6), Inches(5.15), W - Inches(1.2), Inches(0.5),
+        "The risk class remains: .vm templates must be version-controlled and never user-supplied.",
+        font_size=13, italic=True, color=BLACK)
+
+
+def slide_suitability(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Bank Suitability Matrix", 13)
+
+    rows = [
+        ("Approach",            "Grammar",  "Layout audit",   "Batch fit", "Support model",         "Bank verdict"),
+        ("BeanIO",              "High",     "Builder code",   "Good",      "Community only",        "Good for complex CODA; key-person risk"),
+        ("fixedformat4j",       "Low",      "Annotations",    "Excellent", "Single maintainer",     "Strong for simple fixed layouts"),
+        ("fixedlength",         "Low",      "Annotations",    "Good",      "Single maintainer, 0.x","Prototyping, not core payments"),
+        ("Camel Bindy",         "Medium",   "Annotations",    "Medium",    "ASF",                   "Only if Camel already in production"),
+        ("Camel BeanIO",        "High",     "XML mappings",   "Medium",    "ASF",                   "Auditable XML, heavy dependency path"),
+        ("Velocity",            "N/A",      "Templates",      "Low",       "ASF",                   "Report rendering, never parsing"),
+        ("Spring Batch native", "Medium",   "Code (Range)",   "Native",    "Broadcom/VMware",       "Safe default; layout duplicated by hand"),
+        ("Spring Batch + ff4j", "Medium",   "Annotations",    "Native",    "Broadcom + maintainer", "Best overall fit for a bank"),
+        ("Spring Batch + f.l.", "Medium",   "Annotations",    "Native",    "Broadcom + maintainer", "Same shape, smaller dependency"),
+    ]
+    col_w = [Inches(2.4), Inches(1.0), Inches(1.5), Inches(1.0), Inches(2.3), W - Inches(9.0)]
+    add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
+              rows, col_w, font_size=11)
+
+
+def slide_perf_jmh(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Measured Performance — JMH", 14)
+
+    rows = [
+        ("Approach",                    "CODA write", "CODA read", "SWIFT write", "SWIFT read"),
+        ("fixedformat4j",               "8 463",      "16 106",    "11 418",      "14 496"),
+        ("fixedlength",                 "6 452",      "7 810",     "11 616",      "13 819"),
+        ("Velocity",                    "5 562",      "8 947",     "4 162",       "14 079"),
+        ("BeanIO",                      "5 306",      "2 632",     "11 373",      "14 499"),
+        ("Camel BeanIO",                "4 900",      "2 907",     "10 146",      "14 450"),
+        ("Spring Batch native",         "4 642",      "9 351",     "11 595",      "14 558"),
+        ("Spring Batch + fixedlength",  "4 502",      "9 216",     "11 519",      "14 486"),
+        ("Spring Batch + ff4j",         "4 371",      "8 656",     "11 510",      "14 587"),
+        ("Camel Bindy",                 "3 186",      "2 298",     "11 384",      "14 291"),
+    ]
+    col_w = [Inches(3.6), Inches(2.0), Inches(2.0), Inches(2.0), Inches(2.0)]
+    add_table(slide, Inches(0.4), Inches(0.95), W - Inches(0.8),
+              rows, col_w, font_size=12)
+
+    bullets = [
+        "fixedformat4j wins CODA outright — 1.8x write and 1.7x read versus the next best",
+        "Annotation-derived layout is free at runtime — hybrids sit within noise of native Spring Batch",
+        "SWIFT converges (~11k write / ~14k read): shared SwiftMtRecord path; only Velocity stands out",
+        "ops/s, 1 fork x 3 iterations, Java 21 on Apple Silicon — gaps under ~20% are noise",
+    ]
+    for i, b in enumerate(bullets):
+        add_textbox(slide, Inches(0.5), Inches(5.15) + i * Inches(0.42),
+                    W - Inches(1.0), Inches(0.4),
+                    f"• {b}", font_size=13, color=BLACK)
+
+
+def slide_perf_pipeline(prs):
+    slide = blank_slide(prs)
+    slide_heading(slide, "Measured Performance — Batch Pipeline", 15)
+
+    add_textbox(slide,
+        Inches(0.5), Inches(0.95), W - Inches(1.0), Inches(0.45),
+        "End-to-end job, MEDIUM profile (100 accounts / 1 000 transactions), median of 4 warm runs — records/second",
+        font_size=15, bold=True, color=DARK_ORANGE)
+
+    rows = [
+        ("Approach",                   "CODA",     "SWIFT"),
+        ("BeanIO",                     "~72 000",  "~134 000"),
+        ("Spring Batch + fixedlength", "~71 000",  "~167 000"),
+        ("fixedformat4j",              "~68 000",  "~146 000"),
+        ("Spring Batch native",        "~63 000",  "~71 000"),
+        ("Camel BeanIO",               "~63 000",  "~143 000"),
+        ("Spring Batch + ff4j",        "~59 000",  "~167 000"),
+        ("fixedlength",                "~56 000",  "~143 000"),
+        ("Camel Bindy",                "~29 000",  "~83 000"),
+        ("Velocity",                   "~18 000",  "~19 000"),
+    ]
+    col_w = [Inches(4.5), Inches(2.5), Inches(2.5)]
+    add_table(slide, Inches(0.4), Inches(1.5), W - Inches(0.8),
+              rows, col_w, font_size=12)
+
+    add_textbox(slide,
+        Inches(0.5), Inches(5.6), W - Inches(1.0), Inches(0.45),
+        "Every approach clears 1 000 records in under 60 ms end-to-end; most land between 14 ms and 18 ms,",
+        font_size=13, italic=True, color=RGBColor(0x55, 0x55, 0x55))
+    add_textbox(slide,
+        Inches(0.5), Inches(6.0), W - Inches(1.0), Inches(0.45),
+        "where millisecond timer resolution dominates — use the JMH numbers to compare formatters.",
+        font_size=13, italic=True, color=RGBColor(0x55, 0x55, 0x55))
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
@@ -635,21 +850,28 @@ def main():
     os.makedirs(OUT_DIR, exist_ok=True)
     prs = new_prs()
 
-    slide_title(prs)
-    slide_problem(prs)
-    slide_architecture(prs)
-    slide_coda(prs)
-    slide_swift(prs)
-    slide_libraries(prs)
-    slide_strategy(prs)
-    slide_batch(prs)
-    slide_api(prs)
-    slide_benchmark(prs)
-    slide_recommendations(prs)
-    slide_quality(prs)
-    slide_quickstart(prs)
-    slide_stack(prs)
-    slide_thankyou(prs)
+    slide_title(prs)                 # 1
+    slide_problem(prs)               # 2
+    slide_architecture(prs)          # 3
+    slide_coda(prs)                  # 4
+    slide_swift(prs)                 # 5
+    slide_libraries(prs)             # 6
+    slide_annotated_layout(prs)      # 7
+    slide_strategy(prs)              # 8
+    slide_batch(prs)                 # 9
+    slide_health(prs)                # 10
+    slide_adoption(prs)              # 11
+    slide_supply_chain(prs)          # 12
+    slide_suitability(prs)           # 13
+    slide_perf_jmh(prs)              # 14
+    slide_perf_pipeline(prs)         # 15
+    slide_recommendations(prs)       # 16 — decision guide
+    slide_api(prs)                   # 17
+    slide_benchmark(prs)             # 18
+    slide_quality(prs)               # 19
+    slide_quickstart(prs)            # 20
+    slide_stack(prs)                 # 21
+    slide_thankyou(prs)              # 22
 
     prs.save(OUT_FILE)
     print(f"Saved: {OUT_FILE}")
