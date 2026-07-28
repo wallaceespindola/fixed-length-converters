@@ -90,6 +90,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   saturated the CPU reported up to 75 % lower throughput on the allocation-heavy CODA paths; the
   fixedformat4j CODA lead is ~1.3× write / ~1.5× read (was quoted as 1.8× / 1.7× from a single run)
 - Stale `-Pskip-frontend` flag removed from the `FileGenerationBenchmark` javadoc — that profile no longer exists
+- **Frontend Component Diagram showed 7 strategies and 7 parser wrappers** — the Mermaid copy embedded in
+  `index.html` had not been updated when the two hybrids landed. Now `9x CodaStrategy` / `9x SwiftStrategy`
+  with `SpringBatch+FixedFormat4J` and `SpringBatch+FixedLength` wired into the parser layer; all 7 diagrams
+  re-checked in a browser (7 SVGs, no Mermaid errors)
+- Diagram labels spell the approach out — `SB+FF4J` / `SpringBatch+FF4J` are now `SpringBatch+FixedFormat4J`
+  in the deck, the PPTX generator and the frontend system-architecture diagram
 - **Run All column misalignment** — `SPRING_BATCH_FIXEDLENGTH` (23 chars) overflowed the 126px library column and
   shifted the duration and file name of those rows. Columns are now `flex: none` with `.ra-lib` at 200px; verified
   in a browser across all 18 rows (one distinct x-offset per column)

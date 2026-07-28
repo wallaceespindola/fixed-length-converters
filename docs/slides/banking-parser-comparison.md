@@ -74,9 +74,10 @@ Web UI (HTML/CSS/JS)
   DomainEntityItemReader → FileGenerationItemProcessor → FileOutputItemWriter
                                       │
                                StrategyResolver  (O(1) map lookup)
-                     /    |    |    |    |    |    |    |    \
-                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+FF4J  SB+VL
-                              ↓
+                                      │
+        BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity
+        SpringBatch · SpringBatch+FixedFormat4J · SpringBatch+FixedLength
+                                      ↓
                        18 FileGenerationStrategy implementations
                        (9 approaches × CODA + SWIFT)
 ```

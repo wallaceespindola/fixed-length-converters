@@ -878,7 +878,7 @@ const DIAGRAMS = [
       '  end\n' +
       '  SR --> CODA["9 CODA Strategies"]\n' +
       '  SR --> SWIFT["9 SWIFT MT940 Strategies"]\n' +
-      '  CODA & SWIFT --> LIBS["BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity · SpringBatch · SpringBatch+FF4J · SpringBatch+FixedLength"]\n' +
+      '  CODA & SWIFT --> LIBS["BeanIO · FixedFormat4J · FixedLength · Bindy · CamelBeanIO · Velocity · SpringBatch · SpringBatch+FixedFormat4J · SpringBatch+FixedLength"]\n' +
       '  UI --> API\n' +
       '  DC --> DB\n' +
       '  BC --> JL\n' +
@@ -912,8 +912,8 @@ const DIAGRAMS = [
       '  end\n' +
       '  subgraph Strategy["Strategy Layer"]\n' +
       '    SR[StrategyResolver]\n' +
-      '    CS["7x CodaStrategy"]\n' +
-      '    SS["7x SwiftStrategy"]\n' +
+      '    CS["9x CodaStrategy"]\n' +
+      '    SS["9x SwiftStrategy"]\n' +
       '  end\n' +
       '  subgraph Parser["Parser Wrappers"]\n' +
       '    BIO[BeanIO]\n' +
@@ -923,6 +923,8 @@ const DIAGRAMS = [
       '    CBIO[CamelBeanIO]\n' +
       '    VEL[Velocity]\n' +
       '    SBF[SpringBatch]\n' +
+      '    SBFF[SpringBatch+FixedFormat4J]\n' +
+      '    SBVL[SpringBatch+FixedLength]\n' +
       '  end\n' +
       '  subgraph Domain["Domain Layer"]\n' +
       '    DDG[DomainDataGenerator]\n' +
@@ -933,7 +935,7 @@ const DIAGRAMS = [
       '  BC --> JS --> JOB\n' +
       '  JOB --> IR & IP & IW & BML\n' +
       '  IP --> SR --> CS & SS\n' +
-      '  CS & SS --> BIO & FF4J & VL & BINDY & CBIO & VEL & SBF\n' +
+      '  CS & SS --> BIO & FF4J & VL & BINDY & CBIO & VEL & SBF & SBFF & SBVL\n' +
       '  IR --> TR\n' +
       '  DDG --> AR & TR\n' +
       '  classDef api fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
@@ -944,7 +946,7 @@ const DIAGRAMS = [
       '  class DC,BC,BNC api\n' +
       '  class JS,JOB,IR,IP,IW,BML batch\n' +
       '  class SR,CS,SS strat\n' +
-      '  class BIO,FF4J,VL,BINDY,CBIO,VEL,SBF parser\n' +
+      '  class BIO,FF4J,VL,BINDY,CBIO,VEL,SBF,SBFF,SBVL parser\n' +
       '  class DDG,AR,TR domain'
   },
   {
