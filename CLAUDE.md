@@ -153,6 +153,10 @@ GET  /actuator/info              → app name, version, description
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 - **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
+- **Run All result rows** (`.ra-row`) are fixed-width flex columns: `.ra-row > * { flex: none }` stops any cell from
+  pushing its neighbours, `.ra-lib` is 200px (sized for `SPRING_BATCH_FIXEDLENGTH`, the longest `Library` value at
+  23 chars), and the file name keeps `flex: 1 1 auto; min-width: 0` so it ellipsises. **Adding a longer `Library`
+  enum value means widening `.ra-lib`** or the duration and file-name columns fall out of alignment
 - **No Maven profiles needed** — `mvn clean install` and `mvn spring-boot:run` work with no flags; only the `benchmark` profile exists (JMH)
 - **Line endings**: `.gitattributes` enforces LF for all source files; `.ps1`/`.bat` keep CRLF; `.ps1` files must use **ASCII-only** characters (no Unicode box-drawing) — PowerShell 5.x on Windows reads scripts as the system code page and misinterprets multibyte UTF-8
 - **Actuator health includes version**: `VersionHealthIndicator` in `config/` exposes `version`, `artifact`, `description` as a `version` component alongside `db`, `diskSpace`, `ping`

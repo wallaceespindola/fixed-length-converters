@@ -584,7 +584,9 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
 - **Dashboard** — health status, actuator info, quick-action buttons
 - **Data Generator** — trigger domain data generation with Low / Medium / High load buttons, display results
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
-  all 18 fileType × library combinations sequentially with live per-row progress.
+  all 18 fileType × library combinations sequentially with live per-row progress. Result rows are laid out as
+  fixed-width flex columns (status · file type · library · duration · file name); the library column is sized for
+  the longest `Library` value, `SPRING_BATCH_FIXEDLENGTH`.
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.

@@ -79,6 +79,9 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   saturated the CPU reported up to 75 % lower throughput on the allocation-heavy CODA paths; the
   fixedformat4j CODA lead is ~1.3× write / ~1.5× read (was quoted as 1.8× / 1.7× from a single run)
 - Stale `-Pskip-frontend` flag removed from the `FileGenerationBenchmark` javadoc — that profile no longer exists
+- **Run All column misalignment** — `SPRING_BATCH_FIXEDLENGTH` (23 chars) overflowed the 126px library column and
+  shifted the duration and file name of those rows. Columns are now `flex: none` with `.ra-lib` at 200px; verified
+  in a browser across all 18 rows (one distinct x-offset per column)
 - `DomainDataGeneratorTest` test failure caused by hardcoded account/transaction counts that no longer
   matched the updated `LoadProfile.LOW` values
 
