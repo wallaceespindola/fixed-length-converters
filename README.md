@@ -4,7 +4,7 @@
   <img src="resources/images/coda-logo.svg" alt="CODA Febelfin" height="60"/>
 </p>
 
-# Banking Fixed-Length File Generator & Parser Platform
+# Banking Fixed-Length File Benchmark Platform
 
 [![Build](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/build.yml/badge.svg)](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/build.yml)
 [![Test](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/test.yml/badge.svg)](https://github.com/wallaceespindola/fixed-length-converters/actions/workflows/test.yml)
@@ -94,7 +94,7 @@ ItemReader (H2) → ItemProcessor (StrategyResolver) → ItemWriter (output/)
 ```
 
 Each Spring Batch job is parameterised by `fileType` (CODA/SWIFT) and `library` (
-BEANIO/FIXFORMAT4J/FIXEDLENGTH/BINDY/CAMEL_BEANIO/VELOCITY/SPRING_BATCH/SPRING_BATCH_FF4J/SPRING_BATCH_FIXEDLENGTH). Jobs are **restartable** from the last
+BEANIO/FIXFORMAT4J/FIXEDLENGTH/BINDY/CAMEL_BEANIO/VELOCITY/SPRING_BATCH/SPRING_BATCH_FIXFORMAT4J/SPRING_BATCH_FIXEDLENGTH). Jobs are **restartable** from the last
 checkpoint.
 
 ### Strategy Pattern
@@ -111,7 +111,7 @@ interface:
 | `CodaCamelBeanIOStrategy`    | CODA        | Apache Camel BeanIO |
 | `CodaVelocityStrategy`       | CODA        | Apache Velocity     |
 | `CodaSpringBatchStrategy`    | CODA        | Spring Batch Native |
-| `CodaSpringBatchFf4jStrategy` | CODA        | Spring Batch + fixedformat4j annotations |
+| `CodaSpringBatchFixedFormat4JStrategy` | CODA        | Spring Batch + fixedformat4j annotations |
 | `CodaSpringBatchFixedLengthStrategy` | CODA | Spring Batch + fixedlength annotations |
 | `SwiftBeanIOStrategy`        | SWIFT MT940 | BeanIO              |
 | `SwiftFixedFormat4JStrategy` | SWIFT MT940 | fixedformat4j       |
@@ -120,7 +120,7 @@ interface:
 | `SwiftCamelBeanIOStrategy`   | SWIFT MT940 | Apache Camel BeanIO |
 | `SwiftVelocityStrategy`      | SWIFT MT940 | Apache Velocity     |
 | `SwiftSpringBatchStrategy`   | SWIFT MT940 | Spring Batch Native |
-| `SwiftSpringBatchFf4jStrategy` | SWIFT MT940 | Spring Batch + fixedformat4j annotations |
+| `SwiftSpringBatchFixedFormat4JStrategy` | SWIFT MT940 | Spring Batch + fixedformat4j annotations |
 | `SwiftSpringBatchFixedLengthStrategy` | SWIFT MT940 | Spring Batch + fixedlength annotations |
 
 `StrategyResolver` selects the correct implementation at runtime via Spring's dependency injection — no `if`/`switch`
@@ -312,7 +312,7 @@ median of 3 runs:
 | BeanIO | 5 228 | 2 818 | 11 373 | **14 499** |
 | Camel BeanIO | 4 942 | 2 889 | 11 416 | 14 267 |
 | Spring Batch native | 4 642 | 9 188 | 11 615 | 13 009 |
-| Spring Batch + ff4j | 4 320 | 8 656 | 11 510 | 14 217 |
+| Spring Batch + fixedformat4j | 4 320 | 8 656 | 11 510 | 14 217 |
 | Spring Batch + fixedlength | 4 218 | 8 956 | 11 497 | 14 117 |
 | Camel Bindy | 3 186 | 2 179 | 11 384 | 14 291 |
 
@@ -586,7 +586,7 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
   all 18 fileType × library combinations sequentially with live per-row progress. Result rows are laid out as
   fixed-width flex columns (status · file type · library · duration · file name); the library column is sized for
-  the longest `Library` value, `SPRING_BATCH_FIXEDLENGTH`.
+  the longest `Library` value, `SPRING_BATCH_FIXFORMAT4J`.
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.

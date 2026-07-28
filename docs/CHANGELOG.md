@@ -16,14 +16,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - `run.sh --skip-build` flag — skip Maven build and start from existing JAR
 - Separate `backend-err.log` for Spring Boot stderr in `run.sh`
 - `AGENTS.md` — project guidance file for Codex / OpenAI coding agents
-- **Two new formatter strategies** — `SPRING_BATCH_FF4J` and `SPRING_BATCH_FIXEDLENGTH`
+- **Two new formatter strategies** — `SPRING_BATCH_FIXFORMAT4J` and `SPRING_BATCH_FIXEDLENGTH`
   (18 strategies total, 9 per file type). Both use Spring Batch's `FormatterLineAggregator` /
   `FixedLengthTokenizer`, but the column layout is derived by reflection from the model annotations
   (`@Field` of fixedformat4j, `@FixedField` of fixedlength) instead of hand-written `Range(1,1), Range(2,4), ...`
   slicing — one source of truth for read path, write path and column widths
 - `AnnotatedLayout` — reflects annotated models into Spring Batch columns; validates offsets for
   gaps/overlaps and total record width (128 chars) at construction
-- `AnnotatedSpringBatchFormatter` base class plus `SpringBatchFf4jFormatter` and
+- `AnnotatedSpringBatchFormatter` base class plus `SpringBatchFixedFormat4JFormatter` and
   `SpringBatchFixedLengthFormatter` beans; four new strategy classes (CODA + SWIFT per approach)
 - `AnnotatedLayoutTest` — asserts both annotation-derived layouts match the hand-written ranges and
   produce byte-identical CODA output; total test count 118 → 149
@@ -45,6 +45,17 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Camel 4.20.0 → 4.21.0 references synced across docs and formatter Javadoc after Dependabot #29
 
 ### Changed
+- `Library.SPRING_BATCH_FF4J` renamed to **`SPRING_BATCH_FIXFORMAT4J`**, matching the existing `FIXFORMAT4J`
+  constant. Classes follow the codebase convention (`FixedFormat4J`): `SpringBatchFf4jFormatter` →
+  `SpringBatchFixedFormat4JFormatter`, `CodaSpringBatchFf4jStrategy` → `CodaSpringBatchFixedFormat4JStrategy`,
+  `SwiftSpringBatchFf4jStrategy` → `SwiftSpringBatchFixedFormat4JStrategy`; JMH fields and benchmark methods,
+  the frontend dropdown/`LIBS`/chart colours, all diagrams and every doc follow. **Breaking for API callers**
+  posting `{"library":"SPRING_BATCH_FF4J"}`
+- Product name is now **Banking Fixed-Length File Benchmark Platform** — UI title bar, browser title, footer,
+  OpenAPI title, actuator `info.app.description`, Makefile banner, README, PRD, design spec, architecture doc,
+  CLAUDE.md/AGENTS.md and both slide decks
+- `.ra-lib` note updated: `SPRING_BATCH_FIXFORMAT4J` (24 chars) is now the longest `Library` value; verified in
+  a browser that the 200px column still keeps all 18 rows aligned
 - **Load profiles rescaled** — LOW: 10 accounts / 100 txns / 5 statements (was 20/200/10);
   HIGH: 1 000 accounts / 10 000 txns / 500 statements (was 200/2 000/100)
 - `run.sh` banner switched from `╔══╗` box to open `════` style; port-conflict now exits with error;

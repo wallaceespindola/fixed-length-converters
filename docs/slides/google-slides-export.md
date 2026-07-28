@@ -41,7 +41,7 @@ gdrive files upload \
 
 | # | Slide |
 |---|-------|
-| 1 | Title — Banking Fixed-Length File Platform |
+| 1 | Title — Banking Fixed-Length File Benchmark Platform |
 | 2 | Problem Statement |
 | 3 | Architecture |
 | 4 | CODA Format — Belgian Banking Standard |

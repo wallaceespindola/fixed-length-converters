@@ -31,8 +31,8 @@ def group_by_library(data: list) -> dict:
     for entry in data:
         name = entry.get("benchmark", "")
         # Extract library name from benchmark class name
-        # Longest names first so "SpringBatchFf4j" is not swallowed by "SpringBatch"
-        for lib in ("SpringBatchFixedLength", "SpringBatchFf4j", "SpringBatch",
+        # Longest names first so "SpringBatchFixedFormat4J" is not swallowed by "SpringBatch"
+        for lib in ("SpringBatchFixedFormat4J", "SpringBatchFixedLength", "SpringBatch",
                     "CamelBeanIO", "FixedFormat4J", "FixedLength",
                     "BeanIO", "Bindy", "Velocity"):
             if lib.lower() in name.lower():

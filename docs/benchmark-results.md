@@ -69,7 +69,7 @@ risk class remains — `.vm` templates must be version-controlled and never user
 | **Camel BeanIO** | High | XML mapping files | Medium | ASF | Medium |
 | **Velocity** | N/A (write-only) | Templates | Low | ASF | Low (rendering only) |
 | **Spring Batch native** | Medium | Code (`Range` list) | Native | Broadcom/VMware | Low |
-| **Spring Batch + ff4j** | Medium | Annotations | Native | Broadcom + maintainer | Low |
+| **Spring Batch + fixedformat4j** | Medium | Annotations | Native | Broadcom + maintainer | Low |
 | **Spring Batch + fixedlength** | Medium | Annotations | Native | Broadcom + maintainer | Low |
 
 ---
@@ -103,7 +103,7 @@ Values are the **median of 3 full runs** (2026-07-27/28, Java 21, Apple Silicon)
 | BeanIO | 5 228 | 2 818 | 11 373 | **14 499** |
 | Camel BeanIO | 4 942 | 2 889 | 11 416 | 14 267 |
 | Spring Batch native | 4 642 | 9 188 | 11 615 | 13 009 |
-| Spring Batch + ff4j | 4 320 | 8 656 | 11 510 | 14 217 |
+| Spring Batch + fixedformat4j | 4 320 | 8 656 | 11 510 | 14 217 |
 | Spring Batch + fixedlength | 4 218 | 8 956 | 11 497 | 14 117 |
 | Camel Bindy | 3 186 | 2 179 | 11 384 | 14 291 |
 
@@ -137,7 +137,7 @@ chunk size 100, median of 4 warm runs:
 | fixedformat4j | ~68 000 | ~146 000 |
 | Spring Batch native | ~63 000 | ~71 000 |
 | Camel BeanIO | ~63 000 | ~143 000 |
-| Spring Batch + ff4j | ~59 000 | ~167 000 |
+| Spring Batch + fixedformat4j | ~59 000 | ~167 000 |
 | fixedlength | ~56 000 | ~143 000 |
 | Camel Bindy | ~29 000 | ~83 000 |
 | Velocity | ~18 000 | ~19 000 |

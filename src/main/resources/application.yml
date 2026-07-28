@@ -47,7 +47,7 @@ management:
 info:
   app:
     name: ${spring.application.name}
-    description: "Banking Fixed-Length File Generator & Parser Validation Platform"
+    description: "Banking Fixed-Length File Benchmark Platform"
     version: "@project.version@"
     author: "Wallace Espindola"
     contact: "wallace.espindola@gmail.com"

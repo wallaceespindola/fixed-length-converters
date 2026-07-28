@@ -1,7 +1,7 @@
 package com.wtechitsolutions.strategy;
 
 import com.wtechitsolutions.domain.Library;
-import com.wtechitsolutions.parser.SpringBatchFf4jFormatter;
+import com.wtechitsolutions.parser.SpringBatchFixedFormat4JFormatter;
 import com.wtechitsolutions.parser.model.CodaRecord;
 import org.springframework.stereotype.Service;
 
@@ -16,17 +16,17 @@ import java.util.List;
  * @author Wallace Espindola, wallace.espindola@gmail.com
  */
 @Service
-public class CodaSpringBatchFf4jStrategy extends AbstractCodaStrategy {
+public class CodaSpringBatchFixedFormat4JStrategy extends AbstractCodaStrategy {
 
-    private final SpringBatchFf4jFormatter formatter;
+    private final SpringBatchFixedFormat4JFormatter formatter;
 
-    public CodaSpringBatchFf4jStrategy(SpringBatchFf4jFormatter formatter) {
+    public CodaSpringBatchFixedFormat4JStrategy(SpringBatchFixedFormat4JFormatter formatter) {
         this.formatter = formatter;
     }
 
     @Override
     public Library getLibrary() {
-        return Library.SPRING_BATCH_FF4J;
+        return Library.SPRING_BATCH_FIXFORMAT4J;
     }
 
     @Override

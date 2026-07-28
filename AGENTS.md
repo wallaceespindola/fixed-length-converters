@@ -4,7 +4,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Project Overview
 
-**Banking Fixed-Length File Generator & Parser Validation Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 9 Java fixed-length formatter approaches (7 libraries + 2 Spring Batch hybrids driven by annotation-derived layouts) via the Strategy Pattern and Spring Batch.
+**Banking Fixed-Length File Benchmark Platform** — enterprise-grade experimentation platform for generating, parsing, and benchmarking CODA and SWIFT MT banking files using 9 Java fixed-length formatter approaches (7 libraries + 2 Spring Batch hybrids driven by annotation-derived layouts) via the Strategy Pattern and Spring Batch.
 
 **PRD:** `docs/PRD.md` (v3.0, authoritative) | **Design spec:** `docs/specs/design-spec.md` | **Implementation plan:** `docs/implementation-plan.md`
 **Library analysis:** `docs/benchmark-results.md` (health, adoption, bank suitability, JMH numbers) | **Slides:** `docs/slides/` (Marp `.md` + 22-slide PPTX)
@@ -76,7 +76,7 @@ src/main/java/com/wtechitsolutions/
 ├── parser/            9 formatter wrappers (annotation-based, template-based, or programmatic):
 │   │                   BeanIOFormatter, FixedFormat4JFormatter, FixedLengthFormatter, BindyFormatter,
 │   │                   CamelBeanIOFormatter, VelocityFormatter, SpringBatchFormatter,
-│   │                   SpringBatchFf4jFormatter, SpringBatchFixedLengthFormatter
+│   │                   SpringBatchFixedFormat4JFormatter, SpringBatchFixedLengthFormatter
 │   │                   (both extend AnnotatedSpringBatchFormatter; layout read via AnnotatedLayout)
 │   └── model/         Annotated model classes per library (CodaRecord, BeanIoCodaRecord, etc.)
 └── strategy/          FileGenerationStrategy interface, StrategyResolver, 18 implementations:
@@ -85,8 +85,8 @@ src/main/java/com/wtechitsolutions/
                         CodaCamelBeanIOStrategy, CodaVelocityStrategy, CodaSpringBatchStrategy
                         SwiftBeanIOStrategy, SwiftFixedFormat4JStrategy, SwiftFixedLengthStrategy, SwiftBindyStrategy
                         SwiftCamelBeanIOStrategy, SwiftVelocityStrategy, SwiftSpringBatchStrategy
-                        CodaSpringBatchFf4jStrategy, CodaSpringBatchFixedLengthStrategy
-                        SwiftSpringBatchFf4jStrategy, SwiftSpringBatchFixedLengthStrategy
+                        CodaSpringBatchFixedFormat4JStrategy, CodaSpringBatchFixedLengthStrategy
+                        SwiftSpringBatchFixedFormat4JStrategy, SwiftSpringBatchFixedLengthStrategy
 ```
 
 ### Core Flow
@@ -100,7 +100,7 @@ src/main/java/com/wtechitsolutions/
 
 `StrategyResolver` maps all `FileGenerationStrategy` beans by `strategyKey()` = `"FILETYPE_LIBRARY"`. Resolution is O(1) map lookup, no if/switch chains.
 
-### Annotation-Derived Layouts (SPRING_BATCH_FF4J / SPRING_BATCH_FIXEDLENGTH)
+### Annotation-Derived Layouts (SPRING_BATCH_FIXFORMAT4J / SPRING_BATCH_FIXEDLENGTH)
 
 - `AnnotatedLayout` reflects over a model's field annotations — fixedformat4j `@Field` or fixedlength
   `@FixedField` — and generates the Spring Batch `FixedLengthTokenizer` ranges **and** the
@@ -154,8 +154,8 @@ GET  /actuator/info              → app name, version, description
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 - **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
 - **Run All result rows** (`.ra-row`) are fixed-width flex columns: `.ra-row > * { flex: none }` stops any cell from
-  pushing its neighbours, `.ra-lib` is 200px (sized for `SPRING_BATCH_FIXEDLENGTH`, the longest `Library` value at
-  23 chars), and the file name keeps `flex: 1 1 auto; min-width: 0` so it ellipsises. **Adding a longer `Library`
+  pushing its neighbours, `.ra-lib` is 200px (sized for `SPRING_BATCH_FIXFORMAT4J`, the longest `Library` value at
+  24 chars), and the file name keeps `flex: 1 1 auto; min-width: 0` so it ellipsises. **Adding a longer `Library`
   enum value means widening `.ra-lib`** or the duration and file-name columns fall out of alignment
 - **No Maven profiles needed** — `mvn clean install` and `mvn spring-boot:run` work with no flags; only the `benchmark` profile exists (JMH)
 - **Line endings**: `.gitattributes` enforces LF for all source files; `.ps1`/`.bat` keep CRLF; `.ps1` files must use **ASCII-only** characters (no Unicode box-drawing) — PowerShell 5.x on Windows reads scripts as the system code page and misinterprets multibyte UTF-8

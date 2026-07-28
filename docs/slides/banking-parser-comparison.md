@@ -32,7 +32,7 @@ style: |
 
 <!-- _class: title -->
 
-# Banking Fixed-Length File Platform
+# Banking Fixed-Length File Benchmark Platform
 
 ## Generating, parsing and benchmarking CODA & SWIFT MT940 files
 ## across 9 Java formatter approaches via Strategy Pattern + Spring Batch
@@ -75,7 +75,7 @@ Web UI (HTML/CSS/JS)
                                       │
                                StrategyResolver  (O(1) map lookup)
                      /    |    |    |    |    |    |    |    \
-                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+ff4j  SB+VL
+                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+FF4J  SB+VL
                               ↓
                        18 FileGenerationStrategy implementations
                        (9 approaches × CODA + SWIFT)
@@ -141,7 +141,7 @@ Each field has an exact byte offset — annotations define the mapping.
 | **Camel BeanIO** | XML stream mapping via Camel dataformat | ✅ | ✅ | ✅ |
 | **Velocity** | `.vm` template files (write-only for CODA) | ✅ | — | ✅ |
 | **Spring Batch** | `FormatterLineAggregator` + `FixedLengthTokenizer` | ✅ | ✅ | ✅ |
-| **Spring Batch + ff4j** | Spring Batch components, layout from `@Field` | ✅ | ✅ | ✅ |
+| **Spring Batch + fixedformat4j** | Spring Batch components, layout from `@Field` | ✅ | ✅ | ✅ |
 | **Spring Batch + fixedlength** | Spring Batch components, layout from `@FixedField` | ✅ | ✅ | ✅ |
 
 All approaches share the same domain data and produce byte-comparable output files.
@@ -178,14 +178,14 @@ public interface FileGenerationStrategy {
     FileType getFileType();   // CODA | SWIFT
     Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH | BINDY
                               // CAMEL_BEANIO | VELOCITY | SPRING_BATCH
-                              // SPRING_BATCH_FF4J | SPRING_BATCH_FIXEDLENGTH
+                              // SPRING_BATCH_FIXFORMAT4J | SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }
 ```
 
 ```java
 // Resolution — O(1) map lookup, no if/switch chains
-FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FF4J);
+FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FIXFORMAT4J);
 String codaFile = s.generate(transactions, accounts);
 ```
 
@@ -276,7 +276,7 @@ but the risk class remains: `.vm` templates must be version-controlled and never
 | Camel BeanIO | High | XML mapping files | Medium | ASF | Auditable XML, heavy dependency path |
 | Velocity | N/A (write-only) | Templates | Low | ASF | Report rendering, never parsing |
 | Spring Batch native | Medium | **Code** (`Range` list) | **Native** | Broadcom/VMware | Safe default; layout duplicated by hand |
-| **Spring Batch + ff4j** | Medium | **Annotations** | **Native** | Broadcom + single maintainer | **Best overall fit for a bank** |
+| **Spring Batch + fixedformat4j** | Medium | **Annotations** | **Native** | Broadcom + single maintainer | **Best overall fit for a bank** |
 | **Spring Batch + fixedlength** | Medium | **Annotations** | **Native** | Broadcom + single maintainer | Same shape, smaller dependency |
 
 ---
@@ -291,7 +291,7 @@ but the risk class remains: `.vm` templates must be version-controlled and never
 | BeanIO | 5 228 | 2 818 | 11 373 | **14 499** |
 | Camel BeanIO | 4 942 | 2 889 | 11 416 | 14 267 |
 | Spring Batch native | 4 642 | 9 188 | 11 615 | 13 009 |
-| Spring Batch + ff4j | 4 320 | 8 656 | 11 510 | 14 217 |
+| Spring Batch + fixedformat4j | 4 320 | 8 656 | 11 510 | 14 217 |
 | Spring Batch + fixedlength | 4 218 | 8 956 | 11 497 | 14 117 |
 | Camel Bindy | 3 186 | 2 179 | 11 384 | 14 291 |
 
@@ -323,7 +323,7 @@ H2 in-memory, chunk size 100. Median of 4 warm runs, records/second:
 | fixedformat4j | ~68 000 | ~146 000 |
 | Spring Batch native | ~63 000 | ~71 000 |
 | Camel BeanIO | ~63 000 | ~143 000 |
-| Spring Batch + ff4j | ~59 000 | ~167 000 |
+| Spring Batch + fixedformat4j | ~59 000 | ~167 000 |
 | fixedlength | ~56 000 | ~143 000 |
 | Camel Bindy | ~29 000 | ~83 000 |
 | Velocity | ~18 000 | ~19 000 |
@@ -427,7 +427,7 @@ curl -X POST http://localhost:8080/api/domain/generate?loadProfile=HIGH
 # Step 2 — Run batch job (pick any approach)
 curl -X POST http://localhost:8080/api/batch/generate \
   -H "Content-Type: application/json" \
-  -d '{"fileType":"CODA","library":"SPRING_BATCH_FF4J"}'
+  -d '{"fileType":"CODA","library":"SPRING_BATCH_FIXFORMAT4J"}'
 
 # Step 3 — Export benchmark results
 curl http://localhost:8080/api/benchmark/export/csv -o results.csv

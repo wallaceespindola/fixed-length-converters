@@ -1,4 +1,4 @@
-# Banking Fixed-Length File Generator & Parser Validation Platform
+# Banking Fixed-Length File Benchmark Platform
 
 ## Product Requirements Document
 

@@ -25,7 +25,7 @@ class AnnotatedLayoutTest {
 
     private static final List<Integer> FIELD_LENGTHS = List.of(1, 3, 10, 37, 3, 16, 6, 6, 32, 3, 4, 7);
 
-    private final SpringBatchFf4jFormatter ff4j = new SpringBatchFf4jFormatter();
+    private final SpringBatchFixedFormat4JFormatter ff4j = new SpringBatchFixedFormat4JFormatter();
     private final SpringBatchFixedLengthFormatter fixedLength = new SpringBatchFixedLengthFormatter();
     private final SpringBatchFormatter hardCoded = new SpringBatchFormatter();
 

@@ -80,9 +80,9 @@ classDiagram
         #parseRecords(content) List~CodaRecord~
     }
 
-    class CodaSpringBatchFf4jStrategy {
-        -formatter SpringBatchFf4jFormatter
-        +getLibrary() Library.SPRING_BATCH_FF4J
+    class CodaSpringBatchFixedFormat4JStrategy {
+        -formatter SpringBatchFixedFormat4JFormatter
+        +getLibrary() Library.SPRING_BATCH_FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~CodaRecord~
     }
@@ -136,9 +136,9 @@ classDiagram
         #parseRecords(content) List~SwiftMtRecord~
     }
 
-    class SwiftSpringBatchFf4jStrategy {
-        -formatter SpringBatchFf4jFormatter
-        +getLibrary() Library.SPRING_BATCH_FF4J
+    class SwiftSpringBatchFixedFormat4JStrategy {
+        -formatter SpringBatchFixedFormat4JFormatter
+        +getLibrary() Library.SPRING_BATCH_FIXFORMAT4J
         #formatRecords(records) String
         #parseRecords(content) List~SwiftMtRecord~
     }
@@ -163,7 +163,7 @@ classDiagram
     AbstractCodaStrategy    <|--  CodaCamelBeanIOStrategy
     AbstractCodaStrategy    <|--  CodaVelocityStrategy
     AbstractCodaStrategy    <|--  CodaSpringBatchStrategy
-    AbstractCodaStrategy    <|--  CodaSpringBatchFf4jStrategy
+    AbstractCodaStrategy    <|--  CodaSpringBatchFixedFormat4JStrategy
     AbstractCodaStrategy    <|--  CodaSpringBatchFixedLengthStrategy
     AbstractSwiftStrategy   <|--  SwiftBeanIOStrategy
     AbstractSwiftStrategy   <|--  SwiftFixedFormat4JStrategy
@@ -172,7 +172,7 @@ classDiagram
     AbstractSwiftStrategy   <|--  SwiftCamelBeanIOStrategy
     AbstractSwiftStrategy   <|--  SwiftVelocityStrategy
     AbstractSwiftStrategy   <|--  SwiftSpringBatchStrategy
-    AbstractSwiftStrategy   <|--  SwiftSpringBatchFf4jStrategy
+    AbstractSwiftStrategy   <|--  SwiftSpringBatchFixedFormat4JStrategy
     AbstractSwiftStrategy   <|--  SwiftSpringBatchFixedLengthStrategy
     StrategyResolver        -->   FileGenerationStrategy
 
@@ -187,7 +187,7 @@ classDiagram
     style CodaCamelBeanIOStrategy  fill:#006064,stroke:#004d40,color:#fff
     style CodaVelocityStrategy     fill:#006064,stroke:#004d40,color:#fff
     style CodaSpringBatchStrategy  fill:#006064,stroke:#004d40,color:#fff
-    style CodaSpringBatchFf4jStrategy fill:#006064,stroke:#004d40,color:#fff
+    style CodaSpringBatchFixedFormat4JStrategy fill:#006064,stroke:#004d40,color:#fff
     style CodaSpringBatchFixedLengthStrategy fill:#006064,stroke:#004d40,color:#fff
     style SwiftBeanIOStrategy      fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SwiftFixedFormat4JStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
@@ -196,5 +196,5 @@ classDiagram
     style SwiftCamelBeanIOStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SwiftVelocityStrategy    fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SwiftSpringBatchStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
-    style SwiftSpringBatchFf4jStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
+    style SwiftSpringBatchFixedFormat4JStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff
     style SwiftSpringBatchFixedLengthStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff

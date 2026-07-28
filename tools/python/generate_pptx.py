@@ -169,7 +169,7 @@ def slide_title(prs):
 
     add_textbox(slide,
         Inches(0.8), Inches(1.0), W - Inches(1.6), Inches(1.4),
-        "Banking Fixed-Length File Platform",
+        "Banking Fixed-Length File Benchmark Platform",
         font_size=40, bold=True, color=WHITE, align=PP_ALIGN.CENTER)
 
     add_textbox(slide,
@@ -268,7 +268,7 @@ Web UI (HTML/CSS/JS)
                                       |
                                StrategyResolver  (O(1) map lookup)
                      /    |    |    |    |    |    |    |    \\
-                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+ff4j  SB+VL
+                BeanIO  ff4j  VL  Bindy CamelBIO Vel  SB  SB+FF4J  SB+VL
                               |
                        18 FileGenerationStrategy implementations
                        (9 approaches x CODA + SWIFT)"""
@@ -361,7 +361,7 @@ def slide_libraries(prs):
         ("Camel BeanIO",     "XML stream mapping via Camel dataformat",         "Yes",    "Yes",    "Yes"),
         ("Velocity",         ".vm template files (write-only for CODA)",        "Yes",    "—",      "Yes"),
         ("Spring Batch",     "FormatterLineAggregator + FixedLengthTokenizer",  "Yes",    "Yes",    "Yes"),
-        ("Spring Batch + ff4j",         "Spring Batch components, layout from @Field",      "Yes", "Yes", "Yes"),
+        ("Spring Batch + fixedformat4j",         "Spring Batch components, layout from @Field",      "Yes", "Yes", "Yes"),
         ("Spring Batch + fixedlength",  "Spring Batch components, layout from @FixedField", "Yes", "Yes", "Yes"),
     ]
     col_w = [Inches(2.9), Inches(5.0), Inches(1.3), Inches(1.3), Inches(1.3)]
@@ -385,7 +385,7 @@ public interface FileGenerationStrategy {
     FileType getFileType();   // CODA | SWIFT
     Library   getLibrary();   // BEANIO | FIXFORMAT4J | FIXEDLENGTH | BINDY
                               // CAMEL_BEANIO | VELOCITY | SPRING_BATCH
-                              // SPRING_BATCH_FF4J | SPRING_BATCH_FIXEDLENGTH
+                              // SPRING_BATCH_FIXFORMAT4J | SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }"""
     add_code_box(slide, Inches(0.4), Inches(0.95),
@@ -393,7 +393,7 @@ public interface FileGenerationStrategy {
 
     code2 = """\
 // Resolution — O(1) map lookup, no if/switch chains
-FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FF4J);
+FileGenerationStrategy s = resolver.resolve(FileType.CODA, Library.SPRING_BATCH_FIXFORMAT4J);
 String codaFile = s.generate(transactions, accounts);"""
     add_code_box(slide, Inches(0.4), Inches(3.6),
                  W - Inches(0.8), Inches(1.5), code2, font_size=13)
@@ -565,7 +565,7 @@ curl -X POST http://localhost:8080/api/domain/generate?loadProfile=HIGH
 # Step 2 -- Run batch job (pick any approach)
 curl -X POST http://localhost:8080/api/batch/generate \\
   -H "Content-Type: application/json" \\
-  -d '{"fileType":"CODA","library":"SPRING_BATCH_FF4J"}'
+  -d '{"fileType":"CODA","library":"SPRING_BATCH_FIXFORMAT4J"}'
 
 # Step 3 -- Export benchmark results
 curl http://localhost:8080/api/benchmark/export/csv -o results.csv"""
@@ -769,7 +769,7 @@ def slide_suitability(prs):
         ("Camel BeanIO",        "High",     "XML mappings",   "Medium",    "ASF",                   "Auditable XML, heavy dependency path"),
         ("Velocity",            "N/A",      "Templates",      "Low",       "ASF",                   "Report rendering, never parsing"),
         ("Spring Batch native", "Medium",   "Code (Range)",   "Native",    "Broadcom/VMware",       "Safe default; layout duplicated by hand"),
-        ("Spring Batch + ff4j", "Medium",   "Annotations",    "Native",    "Broadcom + maintainer", "Best overall fit for a bank"),
+        ("Spring Batch + fixedformat4j", "Medium",   "Annotations",    "Native",    "Broadcom + maintainer", "Best overall fit for a bank"),
         ("Spring Batch + f.l.", "Medium",   "Annotations",    "Native",    "Broadcom + maintainer", "Same shape, smaller dependency"),
     ]
     col_w = [Inches(2.4), Inches(1.0), Inches(1.5), Inches(1.0), Inches(2.3), W - Inches(9.0)]
@@ -789,7 +789,7 @@ def slide_perf_jmh(prs):
         ("BeanIO",                      "5 228",      "2 818",     "11 373",      "14 499"),
         ("Camel BeanIO",                "4 942",      "2 889",     "11 416",      "14 267"),
         ("Spring Batch native",         "4 642",      "9 188",     "11 615",      "13 009"),
-        ("Spring Batch + ff4j",         "4 320",      "8 656",     "11 510",      "14 217"),
+        ("Spring Batch + fixedformat4j",         "4 320",      "8 656",     "11 510",      "14 217"),
         ("Spring Batch + fixedlength",  "4 218",      "8 956",     "11 497",      "14 117"),
         ("Camel Bindy",                 "3 186",      "2 179",     "11 384",      "14 291"),
     ]
@@ -825,7 +825,7 @@ def slide_perf_pipeline(prs):
         ("fixedformat4j",              "~68 000",  "~146 000"),
         ("Spring Batch native",        "~63 000",  "~71 000"),
         ("Camel BeanIO",               "~63 000",  "~143 000"),
-        ("Spring Batch + ff4j",        "~59 000",  "~167 000"),
+        ("Spring Batch + fixedformat4j",        "~59 000",  "~167 000"),
         ("fixedlength",                "~56 000",  "~143 000"),
         ("Camel Bindy",                "~29 000",  "~83 000"),
         ("Velocity",                   "~18 000",  "~19 000"),

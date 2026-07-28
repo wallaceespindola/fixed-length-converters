@@ -14,9 +14,9 @@ import org.springframework.stereotype.Component;
  * @author Wallace Espindola, wallace.espindola@gmail.com
  */
 @Component
-public class SpringBatchFf4jFormatter extends AnnotatedSpringBatchFormatter {
+public class SpringBatchFixedFormat4JFormatter extends AnnotatedSpringBatchFormatter {
 
-    public SpringBatchFf4jFormatter() {
+    public SpringBatchFixedFormat4JFormatter() {
         super(AnnotatedLayout.fromFixedFormat4j(Ff4jCodaRecord.class));
     }
 }

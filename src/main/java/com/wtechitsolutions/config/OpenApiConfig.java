@@ -15,7 +15,7 @@ public class OpenApiConfig {
     public OpenAPI bankingPlatformOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Banking Fixed-Length File Generator & Parser Validation Platform")
+                        .title("Banking Fixed-Length File Benchmark Platform")
                         .description("""
                                 Enterprise banking file experimentation platform.
                                 Generates and parses CODA and SWIFT MT files using 4 parser libraries

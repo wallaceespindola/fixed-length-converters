@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Banking Fixed-Length File Platform</title>
+  <title>Banking Fixed-Length File Benchmark Platform</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"
           integrity="sha384-JUh163oCRItcbPme8pYnROHQMC6fNKTBWtRG3I3I0erJkzNgL7uxKlNwcrcFKeqF"
           crossorigin="anonymous"></script>
@@ -156,7 +156,7 @@
 <body data-theme="light">
 
 <header class="bar">
-  <span class="bar-title">Banking Fixed-Length File Platform</span>
+  <span class="bar-title">Banking Fixed-Length File Benchmark Platform</span>
   <button class="bar-btn" id="themeBtn" title="Toggle dark / light mode">🌙</button>
 </header>
 
@@ -238,7 +238,7 @@
               <option value="CAMEL_BEANIO">CAMEL_BEANIO</option>
               <option value="VELOCITY">VELOCITY</option>
               <option value="SPRING_BATCH">SPRING_BATCH</option>
-              <option value="SPRING_BATCH_FF4J">SPRING_BATCH_FF4J</option>
+              <option value="SPRING_BATCH_FIXFORMAT4J">SPRING_BATCH_FIXFORMAT4J</option>
               <option value="SPRING_BATCH_FIXEDLENGTH">SPRING_BATCH_FIXEDLENGTH</option>
             </select>
           </div>
@@ -305,7 +305,7 @@
     </div>
 
     <footer class="footer">
-      <span class="caption" id="footer-ver">Banking Fixed-Length File Platform</span>
+      <span class="caption" id="footer-ver">Banking Fixed-Length File Benchmark Platform</span>
       <div class="footer-links">
         <span class="caption">By <a href="https://github.com/wallaceespindola" target="_blank" rel="noopener">Wallace Espindola</a></span>
         <a class="caption" href="https://github.com/wallaceespindola/fixed-length-converters" target="_blank" rel="noopener">GitHub</a>
@@ -446,7 +446,7 @@ async function fetchDash() {
 
     const ver = b.version || a.version || '';
     const fv = document.getElementById('footer-ver');
-    setText(fv, 'Banking Fixed-Length File Platform' + (ver ? ' · v' + ver : ''));
+    setText(fv, 'Banking Fixed-Length File Benchmark Platform' + (ver ? ' · v' + ver : ''));
   } catch (_) {
     const chip = document.getElementById('health-chip');
     chip.className = 'chip c-err';
@@ -488,7 +488,7 @@ async function genData(profile) {
 // ── Batch Runner ───────────────────────────────────────────────────────────────
 const FTS  = ['CODA', 'SWIFT'];
 const LIBS = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY', 'CAMEL_BEANIO', 'VELOCITY', 'SPRING_BATCH',
-              'SPRING_BATCH_FF4J', 'SPRING_BATCH_FIXEDLENGTH'];
+              'SPRING_BATCH_FIXFORMAT4J', 'SPRING_BATCH_FIXEDLENGTH'];
 
 async function runSingle() {
   setDisabled(['btn-single', 'btn-all'], true);
@@ -674,7 +674,7 @@ async function fetchHistory() {
 const LIB_COLORS = {
   BEANIO: '#1976d2', FIXFORMAT4J: '#2e7d32', FIXEDLENGTH: '#e65100',
   BINDY: '#9c27b0', CAMEL_BEANIO: '#c0392b', VELOCITY: '#16a085', SPRING_BATCH: '#f39c12',
-  SPRING_BATCH_FF4J: '#8d6e63', SPRING_BATCH_FIXEDLENGTH: '#455a64',
+  SPRING_BATCH_FIXFORMAT4J: '#8d6e63', SPRING_BATCH_FIXEDLENGTH: '#455a64',
 };
 const charts = {};
 let benchTimer;
@@ -1014,7 +1014,7 @@ const DIAGRAMS = [
       '  AbstractCodaStrategy <|-- CodaCamelBeanIOStrategy\n' +
       '  AbstractCodaStrategy <|-- CodaVelocityStrategy\n' +
       '  AbstractCodaStrategy <|-- CodaSpringBatchStrategy\n' +
-      '  AbstractCodaStrategy <|-- CodaSpringBatchFf4jStrategy\n' +
+      '  AbstractCodaStrategy <|-- CodaSpringBatchFixedFormat4JStrategy\n' +
       '  AbstractCodaStrategy <|-- CodaSpringBatchFixedLengthStrategy\n' +
       '  AbstractSwiftStrategy <|-- SwiftBeanIOStrategy\n' +
       '  AbstractSwiftStrategy <|-- SwiftFixedFormat4JStrategy\n' +
@@ -1023,7 +1023,7 @@ const DIAGRAMS = [
       '  AbstractSwiftStrategy <|-- SwiftCamelBeanIOStrategy\n' +
       '  AbstractSwiftStrategy <|-- SwiftVelocityStrategy\n' +
       '  AbstractSwiftStrategy <|-- SwiftSpringBatchStrategy\n' +
-      '  AbstractSwiftStrategy <|-- SwiftSpringBatchFf4jStrategy\n' +
+      '  AbstractSwiftStrategy <|-- SwiftSpringBatchFixedFormat4JStrategy\n' +
       '  AbstractSwiftStrategy <|-- SwiftSpringBatchFixedLengthStrategy\n' +
       '  StrategyResolver --> FileGenerationStrategy\n' +
       '  style FileGenerationStrategy fill:#1565c0,stroke:#0d47a1,color:#fff\n' +
@@ -1037,7 +1037,7 @@ const DIAGRAMS = [
       '  style CodaCamelBeanIOStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
       '  style CodaVelocityStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
       '  style CodaSpringBatchStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
-      '  style CodaSpringBatchFf4jStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
+      '  style CodaSpringBatchFixedFormat4JStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
       '  style CodaSpringBatchFixedLengthStrategy fill:#006064,stroke:#004d40,color:#fff\n' +
       '  style SwiftBeanIOStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
       '  style SwiftFixedFormat4JStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
@@ -1046,7 +1046,7 @@ const DIAGRAMS = [
       '  style SwiftCamelBeanIOStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
       '  style SwiftVelocityStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
       '  style SwiftSpringBatchStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
-      '  style SwiftSpringBatchFf4jStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
+      '  style SwiftSpringBatchFixedFormat4JStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff\n' +
       '  style SwiftSpringBatchFixedLengthStrategy fill:#2e7d32,stroke:#1b5e20,color:#fff'
   },
   {

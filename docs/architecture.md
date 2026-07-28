@@ -1,6 +1,6 @@
 # System Architecture
 
-**Banking Fixed-Length File Generator & Parser Validation Platform**
+**Banking Fixed-Length File Benchmark Platform**
 
 ---
 
@@ -84,7 +84,7 @@ public interface FileGenerationStrategy {
     List<Transaction> parse(String fileContent);
     FileType getFileType();   // CODA or SWIFT
     Library getLibrary();     // BEANIO, FIXFORMAT4J, FIXEDLENGTH, BINDY, CAMEL_BEANIO, VELOCITY,
-                              // SPRING_BATCH, SPRING_BATCH_FF4J, SPRING_BATCH_FIXEDLENGTH
+                              // SPRING_BATCH, SPRING_BATCH_FIXFORMAT4J, SPRING_BATCH_FIXEDLENGTH
     default String strategyKey() { return getFileType() + "_" + getLibrary(); }
 }
 ```
@@ -110,7 +110,7 @@ Nine wrappers in `com.wtechitsolutions.parser`:
 | `CamelBeanIOFormatter` | Apache Camel BeanIO 4.21.0 | Camel BeanIO DataFormat with XML stream mapping |
 | `VelocityFormatter` | Apache Velocity 2.4.1 | `.vm` template files; `VelocityEngine` renders records to string |
 | `SpringBatchFormatter` | Spring Batch 5.x native | `LineAggregator` + `FixedLengthTokenizer` + `FieldSetMapper` applied directly per record (refactored away from `FlatFileItemWriter`/`FlatFileItemReader` to avoid transactional buffering issues in nested batch contexts) |
-| `SpringBatchFf4jFormatter` | Spring Batch 5.x + fixedformat4j 1.9.1 | Spring Batch components; tokenizer ranges and aggregator format string derived by reflection from `Ff4jCodaRecord`'s `@Field` annotations via `AnnotatedLayout` |
+| `SpringBatchFixedFormat4JFormatter` | Spring Batch 5.x + fixedformat4j 1.9.1 | Spring Batch components; tokenizer ranges and aggregator format string derived by reflection from `Ff4jCodaRecord`'s `@Field` annotations via `AnnotatedLayout` |
 | `SpringBatchFixedLengthFormatter` | Spring Batch 5.x + fixedlength 0.15 | Same, from `VlCodaRecord`'s `@FixedField` annotations |
 
 **Annotation-derived layouts:** `AnnotatedLayout` reads offsets, widths, alignment and padding characters off an

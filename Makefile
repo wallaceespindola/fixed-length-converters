@@ -4,7 +4,7 @@
 
 help: ## Display all available make commands with descriptions
 	@echo ""
-	@echo "Banking Fixed-Length File Generator & Parser Validation Platform"
+	@echo "Banking Fixed-Length File Benchmark Platform"
 	@echo "================================================================="
 	@echo ""
 	@awk 'BEGIN {FS = ":.*##"; printf "Usage: make \033[36m<target>\033[0m\n\nTargets:\n"} /^[a-zA-Z_-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 }' $(MAKEFILE_LIST)

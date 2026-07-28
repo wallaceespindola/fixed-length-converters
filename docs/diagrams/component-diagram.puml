@@ -78,7 +78,7 @@ package "Strategy Layer" #f3e5f5 {
     [CodaCamelBeanIOStrategy] <<strategy>>
     [CodaVelocityStrategy] <<strategy>>
     [CodaSpringBatchStrategy] <<strategy>>
-    [CodaSpringBatchFf4jStrategy] <<strategy>>
+    [CodaSpringBatchFixedFormat4JStrategy] <<strategy>>
     [CodaSpringBatchFixedLengthStrategy] <<strategy>>
     [SwiftBeanIOStrategy] <<strategy>>
     [SwiftFixedFormat4JStrategy] <<strategy>>
@@ -87,7 +87,7 @@ package "Strategy Layer" #f3e5f5 {
     [SwiftCamelBeanIOStrategy] <<strategy>>
     [SwiftVelocityStrategy] <<strategy>>
     [SwiftSpringBatchStrategy] <<strategy>>
-    [SwiftSpringBatchFf4jStrategy] <<strategy>>
+    [SwiftSpringBatchFixedFormat4JStrategy] <<strategy>>
     [SwiftSpringBatchFixedLengthStrategy] <<strategy>>
 }
 
@@ -99,7 +99,7 @@ package "Parser Wrappers" #e0f2f1 {
     [CamelBeanIOFormatter] <<parser>>
     [VelocityFormatter] <<parser>>
     [SpringBatchFormatter] <<parser>>
-    [SpringBatchFf4jFormatter] <<parser>>
+    [SpringBatchFixedFormat4JFormatter] <<parser>>
     [SpringBatchFixedLengthFormatter] <<parser>>
 }
 
