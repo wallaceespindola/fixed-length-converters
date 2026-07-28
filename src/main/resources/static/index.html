@@ -133,9 +133,12 @@
 
     .ra-row { display: flex; align-items: center; gap: 8px; font-family: monospace;
               font-size: .78rem; padding: 3px 0; }
+    /* Fixed columns never shrink, so the longest library name (SPRING_BATCH_FIXEDLENGTH)
+       cannot push the duration and file name out of alignment. */
+    .ra-row > * { flex: none; }
     .ra-type { min-width: 54px; }
-    .ra-lib  { min-width: 126px; }
-    .ra-dur  { min-width: 65px; color: var(--text-muted); }
+    .ra-lib  { min-width: 200px; }
+    .ra-dur  { min-width: 70px; text-align: right; color: var(--text-muted); }
 
     .preview { background: var(--hover); border-radius: 4px; padding: 10px; font-family: monospace;
                font-size: .72rem; overflow: auto; max-height: 340px; margin-top: 10px; }
@@ -605,7 +608,7 @@ function renderRA(combos) {
     }
     if (c.fileName) {
       const fn = document.createElement('span');
-      fn.style.cssText = 'color:var(--text-muted);overflow:hidden;text-overflow:ellipsis';
+      fn.style.cssText = 'color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0';
       setText(fn, c.fileName);
       row.appendChild(fn);
     }
