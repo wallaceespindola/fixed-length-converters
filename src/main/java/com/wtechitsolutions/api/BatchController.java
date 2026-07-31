@@ -3,6 +3,7 @@ package com.wtechitsolutions.api;
 import com.wtechitsolutions.api.dto.BatchHistoryResponse;
 import com.wtechitsolutions.api.dto.BatchJobRequest;
 import com.wtechitsolutions.api.dto.BatchJobResponse;
+import com.wtechitsolutions.api.dto.GeneratedFileResponse;
 import com.wtechitsolutions.batch.BatchJobService;
 import com.wtechitsolutions.domain.FileType;
 import com.wtechitsolutions.domain.Library;
@@ -15,16 +16,25 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.IOException;
+import java.io.UncheckedIOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.Comparator;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 @RestController
 @RequestMapping("/api/batch")
@@ -52,6 +62,61 @@ public class BatchController {
                 result.fileContent(),
                 result.fileName(),
                 Instant.now()));
+    }
+
+
+    /** Directory FileOutputItemWriter writes to; also the only directory files are served from. */
+    private static final Path OUTPUT_DIR = Path.of("output");
+    /** Only file names our writer produces — blocks path traversal (no separators, .txt only). */
+    private static final Pattern SAFE_FILE_NAME = Pattern.compile("[A-Za-z0-9._-]+\\.txt");
+
+    @GetMapping("/files")
+    @Operation(summary = "List generated banking files in the output directory, newest first")
+    public ResponseEntity<List<GeneratedFileResponse>> listFiles() {
+        if (!Files.isDirectory(OUTPUT_DIR)) {
+            return ResponseEntity.ok(List.of());
+        }
+        try (Stream<Path> paths = Files.list(OUTPUT_DIR)) {
+            List<GeneratedFileResponse> files = paths
+                    .filter(Files::isRegularFile)
+                    .filter(f -> SAFE_FILE_NAME.matcher(f.getFileName().toString()).matches())
+                    .map(f -> {
+                        try {
+                            return new GeneratedFileResponse(
+                                    f.getFileName().toString(),
+                                    Files.size(f),
+                                    Files.getLastModifiedTime(f).toInstant());
+                        } catch (IOException e) {
+                            throw new UncheckedIOException(e);
+                        }
+                    })
+                    .sorted(Comparator.comparing(GeneratedFileResponse::modifiedAt).reversed())
+                    .toList();
+            return ResponseEntity.ok(files);
+        } catch (IOException | UncheckedIOException e) {
+            log.error("Failed to list output files: {}", e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/files/{fileName}")
+    @Operation(summary = "Return the content of one generated file as plain text")
+    public ResponseEntity<String> fileContent(@PathVariable String fileName) {
+        if (!SAFE_FILE_NAME.matcher(fileName).matches()) {
+            return ResponseEntity.badRequest().body("Invalid file name");
+        }
+        Path file = OUTPUT_DIR.resolve(fileName).normalize();
+        if (!file.startsWith(OUTPUT_DIR) || !Files.isRegularFile(file)) {
+            return ResponseEntity.notFound().build();
+        }
+        try {
+            return ResponseEntity.ok()
+                    .header("Content-Type", "text/plain; charset=UTF-8")
+                    .body(Files.readString(file, StandardCharsets.UTF_8));
+        } catch (IOException e) {
+            log.error("Failed to read output file {}: {}", fileName, e.getMessage());
+            return ResponseEntity.internalServerError().build();
+        }
     }
 
     @GetMapping("/history")

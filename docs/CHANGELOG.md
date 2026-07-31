@@ -8,6 +8,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Files view** in the frontend — lists the generated banking files in `output/` (name, size, modified,
+  newest first) with click-to-preview; a "View Generated Files" shortcut sits on the Batch Runner.
+  Backed by `GET /api/batch/files` and `GET /api/batch/files/{name}`; file names are validated against
+  `[A-Za-z0-9._-]+\.txt` and resolved paths must stay inside `output/` (path-traversal guard, verified
+  with an encoded `../` probe returning 400)
 - **Clear Database button** in the Generate Data view, backed by `DELETE /api/domain/reset` — deletes accounts,
   transactions, statements and stored benchmark metrics so a benchmark can start from an empty database, and
   reports the deleted counts. Two-click confirm (arms for 5 s) instead of a blocking `window.confirm()`.

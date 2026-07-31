@@ -9,6 +9,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -16,6 +19,7 @@ import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(BatchController.class)
@@ -67,5 +71,35 @@ class BatchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.jobExecutionId").value(99))
                 .andExpect(jsonPath("$.fileName").value("SWIFT_BINDY.txt"));
+    }
+
+    @Test
+    void files_endpoint_lists_generated_files() throws Exception {
+        Path file = Path.of("output", "TEST_FILES_ENDPOINT_sample.txt");
+        Files.createDirectories(file.getParent());
+        Files.writeString(file, "0HEADER\n1MOVEMENT\n", StandardCharsets.UTF_8);
+        try {
+            mockMvc.perform(get("/api/batch/files"))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$[?(@.fileName == 'TEST_FILES_ENDPOINT_sample.txt')]").exists());
+
+            mockMvc.perform(get("/api/batch/files/TEST_FILES_ENDPOINT_sample.txt"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().string("0HEADER\n1MOVEMENT\n"));
+        } finally {
+            Files.deleteIfExists(file);
+        }
+    }
+
+    @Test
+    void files_endpoint_rejects_non_txt_names() throws Exception {
+        mockMvc.perform(get("/api/batch/files/evil.sh"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void files_endpoint_returns_404_for_missing_file() throws Exception {
+        mockMvc.perform(get("/api/batch/files/no-such-file-xyz.txt"))
+                .andExpect(status().isNotFound());
     }
 }

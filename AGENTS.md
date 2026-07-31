@@ -11,7 +11,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Implementation Status: COMPLETE
 
-All 152 tests pass. Application starts and runs end-to-end.
+All 155 tests pass. Application starts and runs end-to-end.
 
 Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required. Includes a Diagrams view with 7 live Mermaid diagrams rendered via Mermaid@11.15.0 CDN.
 
@@ -26,7 +26,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
-| Testing | JUnit 5 + Mockito, 152 tests |
+| Testing | JUnit 5 + Mockito, 155 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
@@ -34,7 +34,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 ## Build & Run Commands
 
 ```bash
-# Full pipeline (Java compile + 152 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 155 tests + JaCoCo + repackage + install)
 mvn clean install
 
 # Quick build (no tests)
@@ -135,6 +135,8 @@ POST /api/domain/generate        → generate + persist domain data; optional ?l
 DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics (Spring Batch job metadata kept)
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
+GET  /api/batch/files            → list generated files in output/ (newest first)
+GET  /api/batch/files/{name}     → file content; name validated ([A-Za-z0-9._-]+\.txt, no separators) against path traversal
 GET  /api/benchmark/results      → all benchmark metrics
 GET  /api/benchmark/export/csv   → CSV export
 GET  /api/benchmark/export/markdown → Markdown export

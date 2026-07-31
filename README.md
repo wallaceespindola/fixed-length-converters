@@ -375,7 +375,7 @@ Verify with: `make --version`
 Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
-# Full pipeline — Java compile + 152 tests + JaCoCo coverage + install
+# Full pipeline — Java compile + 155 tests + JaCoCo coverage + install
 mvn clean install
 
 # Compile and package (skip tests)
@@ -463,6 +463,8 @@ python tools/python/report_generator.py target/jmh-result.json docs/jmh-report.m
 | `DELETE` | `/api/domain/reset`            | Delete all generated data and stored benchmark results for a fresh start |
 | `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                |
 | `GET`  | `/api/batch/history`             | Last 50 batch job executions                                  |
+| `GET` | `/api/batch/files`               | List generated files in `output/`, newest first |
+| `GET` | `/api/batch/files/{name}`        | Content of one generated file (plain text) |
 | `GET`  | `/api/benchmark/results`         | All benchmark metrics                                         |
 | `GET`  | `/api/benchmark/export/csv`      | Export as CSV                                                 |
 | `GET`  | `/api/benchmark/export/markdown` | Export as Markdown                                            |
@@ -590,6 +592,8 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
   all 18 fileType × library combinations sequentially with live per-row progress. Result rows are laid out as
   fixed-width flex columns (status · file type · library · duration · file name); the library column is sized for
   the longest `Library` value, `SPRING_BATCH_FIXFORMAT4J`.
+- **Files** — browse the generated banking files in `output/` (name, size, modified) and preview any file
+  in place; also reachable via the "View Generated Files" button on the Batch Runner
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.

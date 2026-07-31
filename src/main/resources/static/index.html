@@ -168,6 +168,7 @@
     <button class="nav-btn active" data-view="dashboard"><span class="nav-ic">📊</span>Dashboard</button>
     <button class="nav-btn" data-view="generate"><span class="nav-ic">🗄️</span>Generate Data</button>
     <button class="nav-btn" data-view="batch"><span class="nav-ic">▶️</span>Batch Runner</button>
+    <button class="nav-btn" data-view="files"><span class="nav-ic">📄</span>Files</button>
     <button class="nav-btn" data-view="history"><span class="nav-ic">🕒</span>History</button>
     <button class="nav-btn" data-view="benchmark"><span class="nav-ic">📈</span>Benchmark</button>
     <button class="nav-btn" data-view="diagrams"><span class="nav-ic">🔀</span>Diagrams</button>
@@ -250,6 +251,7 @@
           <div class="btn-row">
             <button class="btn btn-p btn-lg" id="btn-single" onclick="runSingle()">Generate File</button>
             <button class="btn btn-o btn-lg" id="btn-all"    onclick="runAll()">Run All Combinations (18)</button>
+            <button class="btn btn-o btn-lg" onclick="go('files')">View Generated Files</button>
           </div>
         </div>
         <div id="batch-alert" class="hidden alert"></div>
@@ -269,7 +271,30 @@
       </div>
 
       <!-- History -->
-      <div class="view" id="v-history">
+            <!-- Generated Files -->
+      <div class="view" id="v-files">
+        <h1>Generated Files</h1>
+        <p class="subtitle">Banking files written to the output/ directory by batch runs. Click a row to preview.</p>
+        <div class="btn-row">
+          <button class="btn btn-o" onclick="loadFiles()">Refresh</button>
+        </div>
+        <div id="files-alert" class="hidden alert"></div>
+        <div class="card" style="margin-bottom:14px">
+          <div class="tbl-wrap">
+            <table id="files-table">
+              <thead><tr><th>File</th><th>Size</th><th>Modified</th><th></th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+          <p id="files-empty" class="caption hidden" style="margin-top:8px">No generated files yet — run a batch job first.</p>
+        </div>
+        <div id="file-preview-wrap" class="hidden card">
+          <div class="card-title">Preview — <span id="file-preview-name"></span></div>
+          <pre id="file-preview" class="preview"></pre>
+        </div>
+      </div>
+
+<div class="view" id="v-history">
         <h1>Batch History</h1>
         <p class="subtitle">Last 50 Spring Batch job executions. Auto-refreshes every 15 s.</p>
         <div id="hist-alert" class="hidden alert"></div>
@@ -338,8 +363,8 @@ themeBtn.onclick = () => {
 };
 
 // ── Router ───────────────────────────────────────────────────────────────────
-const VIEWS = ['dashboard', 'generate', 'batch', 'history', 'benchmark', 'diagrams'];
-const onEnter = { dashboard: loadDash, history: loadHistory, benchmark: loadBench, diagrams: loadDiagrams };
+const VIEWS = ['dashboard', 'generate', 'batch', 'files', 'history', 'benchmark', 'diagrams'];
+const onEnter = { dashboard: loadDash, files: loadFiles, history: loadHistory, benchmark: loadBench, diagrams: loadDiagrams };
 
 function go(name) {
   if (!VIEWS.includes(name)) name = 'dashboard';
@@ -528,6 +553,55 @@ async function resetDb() {
   } finally {
     setDisabled(['btn-low', 'btn-medium', 'btn-high', 'btn-reset'], false);
   }
+}
+
+// ── Generated Files ────────────────────────────────────────────────────────────
+async function loadFiles() {
+  clearAlert('files-alert');
+  try {
+    const files = await api('GET', '/api/batch/files');
+    const tbody = document.querySelector('#files-table tbody');
+    tbody.textContent = '';
+    document.getElementById('files-empty').classList.toggle('hidden', files.length > 0);
+    files.forEach(f => {
+      const tr = document.createElement('tr');
+      tr.style.cursor = 'pointer';
+      const name = document.createElement('td');
+      setText(name, f.fileName);
+      const size = document.createElement('td');
+      setText(size, fmtBytes(f.sizeBytes));
+      const mod = document.createElement('td');
+      setText(mod, fmt(f.modifiedAt));
+      const act = document.createElement('td');
+      const btn = document.createElement('button');
+      btn.className = 'btn btn-o';
+      setText(btn, 'View');
+      act.appendChild(btn);
+      tr.append(name, size, mod, act);
+      tr.onclick = () => viewFile(f.fileName);
+      tbody.appendChild(tr);
+    });
+  } catch (e) {
+    setAlert('files-alert', e.message, 'err');
+  }
+}
+
+async function viewFile(fileName) {
+  clearAlert('files-alert');
+  try {
+    const content = await api('GET', '/api/batch/files/' + encodeURIComponent(fileName));
+    setText(document.getElementById('file-preview-name'), fileName);
+    setText(document.getElementById('file-preview'), content);
+    document.getElementById('file-preview-wrap').classList.remove('hidden');
+  } catch (e) {
+    setAlert('files-alert', e.message, 'err');
+  }
+}
+
+function fmtBytes(n) {
+  if (n < 1024) return n + ' B';
+  if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+  return (n / 1024 / 1024).toFixed(1) + ' MB';
 }
 
 // ── Batch Runner ───────────────────────────────────────────────────────────────
