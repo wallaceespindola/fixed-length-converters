@@ -8,6 +8,10 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **Clear Database button** in the Generate Data view, backed by `DELETE /api/domain/reset` — deletes accounts,
+  transactions, statements and stored benchmark metrics so a benchmark can start from an empty database, and
+  reports the deleted counts. Two-click confirm (arms for 5 s) instead of a blocking `window.confirm()`.
+  Spring Batch job-execution metadata is deliberately kept, so Batch History survives a reset
 - **Diagrams view** — 7th nav tab in the frontend SPA rendering live Mermaid@11.15.0 diagrams:
   system architecture, component diagram, batch sequence, strategy class hierarchy,
   benchmark flow, database schema, and deployment topology

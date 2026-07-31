@@ -11,6 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -62,5 +63,21 @@ class DomainDataGeneratorTest {
         long id2 = generator.generate().operationId();
 
         assertThat(id2).isGreaterThan(id1);
+    }
+
+    @Test
+    void reset_deletes_every_repository_and_reports_prior_counts() {
+        when(accountRepository.count()).thenReturn(10L);
+        when(transactionRepository.count()).thenReturn(100L);
+        when(statementRepository.count()).thenReturn(5L);
+
+        DomainDataGenerator.ResetResult result = generator.reset();
+
+        assertThat(result.accounts()).isEqualTo(10L);
+        assertThat(result.transactions()).isEqualTo(100L);
+        assertThat(result.statements()).isEqualTo(5L);
+        verify(accountRepository).deleteAll();
+        verify(transactionRepository).deleteAll();
+        verify(statementRepository).deleteAll();
     }
 }

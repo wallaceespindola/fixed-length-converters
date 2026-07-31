@@ -44,6 +44,18 @@ public class BenchmarkService {
         return repository.findTop50ByOrderByTimestampDesc();
     }
 
+    /**
+     * Deletes every stored benchmark metric row.
+     *
+     * @return the number of rows removed
+     */
+    public long deleteAll() {
+        long count = repository.count();
+        repository.deleteAll();
+        log.info("Deleted {} benchmark metric rows", count);
+        return count;
+    }
+
     public String exportAsCsv() {
         List<BenchmarkMetrics> metrics = repository.findAll();
         StringBuilder csv = new StringBuilder(

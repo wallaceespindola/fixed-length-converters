@@ -11,7 +11,7 @@ This file provides guidance to Codex (Codex.ai/code) when working with code in t
 
 ## Implementation Status: COMPLETE
 
-All 149 tests pass. Application starts and runs end-to-end.
+All 152 tests pass. Application starts and runs end-to-end.
 
 Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required. Includes a Diagrams view with 7 live Mermaid diagrams rendered via Mermaid@11.15.0 CDN.
 
@@ -26,7 +26,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
-| Testing | JUnit 5 + Mockito, 149 tests |
+| Testing | JUnit 5 + Mockito, 152 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
@@ -34,7 +34,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 ## Build & Run Commands
 
 ```bash
-# Full pipeline (Java compile + 149 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 152 tests + JaCoCo + repackage + install)
 mvn clean install
 
 # Quick build (no tests)
@@ -132,6 +132,7 @@ src/main/java/com/wtechitsolutions/
 
 ```
 POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|MEDIUM|HIGH
+DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics (Spring Batch job metadata kept)
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
 GET  /api/benchmark/results      → all benchmark metrics
@@ -152,6 +153,8 @@ GET  /actuator/info              → app name, version, description
 - **Output files** written to `/output/` directory (gitignored)
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
+- **Clear Database** button (Generate Data view) calls `DELETE /api/domain/reset`; it is a two-click confirm
+  (`.btn-d.armed`, 5 s timeout) rather than `window.confirm()`, so it never blocks headless browser automation
 - **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
 - **Run All result rows** (`.ra-row`) are fixed-width flex columns: `.ra-row > * { flex: none }` stops any cell from
   pushing its neighbours, `.ra-lib` is 200px (sized for `SPRING_BATCH_FIXFORMAT4J`, the longest `Library` value at
@@ -184,7 +187,7 @@ GET  /actuator/info              → app name, version, description
 | Integration | `CodaStrategyTest` | Each CODA library: 128-char lines, header/trailer |
 | Integration | `SwiftStrategyTest` | All 9 SWIFT libraries: MT940 tag assertions |
 | Integration | `SymmetryTest` | Round-trip: generate→parse preserves amount+type |
-| Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate |
+| Web | `DomainControllerTest` | MockMvc: POST /api/domain/generate, DELETE /api/domain/reset |
 | Web | `BatchControllerTest` | MockMvc: POST /api/batch/generate, GET /api/batch/history |
 | Integration | `ActuatorTest` | TestRestTemplate: /actuator/health, /actuator/info |
 | Integration | `SwaggerAvailabilityTest` | TestRestTemplate (dev profile): Swagger UI + OpenAPI spec |

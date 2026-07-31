@@ -65,6 +65,28 @@ public class DomainDataGenerator {
         return new GenerationResult(operationId, accounts.size(), transactions.size(), statements.size());
     }
 
+    /**
+     * Deletes every generated domain row (statements, transactions, accounts) so a benchmark can start
+     * from an empty database. Order matters only for readability here — the entities carry no FK
+     * constraints between them — but it mirrors the dependency direction.
+     *
+     * @return counts of the rows removed
+     */
+    @Transactional
+    public ResetResult reset() {
+        long statements = statementRepository.count();
+        long transactions = transactionRepository.count();
+        long accounts = accountRepository.count();
+
+        statementRepository.deleteAll();
+        transactionRepository.deleteAll();
+        accountRepository.deleteAll();
+
+        log.info("Reset domain data: deleted {} accounts, {} transactions, {} statements",
+                accounts, transactions, statements);
+        return new ResetResult(accounts, transactions, statements);
+    }
+
     private Account buildAccount(int idx, long opId) {
         String accountNum = String.format("BE%018d", opId * 100L + idx);
         return Account.builder()
@@ -105,4 +127,6 @@ public class DomainDataGenerator {
     }
 
     public record GenerationResult(long operationId, int accounts, int transactions, int statements) {}
+
+    public record ResetResult(long accounts, long transactions, long statements) {}
 }

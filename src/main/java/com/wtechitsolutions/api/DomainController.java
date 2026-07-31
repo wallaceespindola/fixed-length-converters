@@ -1,6 +1,8 @@
 package com.wtechitsolutions.api;
 
 import com.wtechitsolutions.api.dto.GenerateDomainResponse;
+import com.wtechitsolutions.api.dto.ResetDatabaseResponse;
+import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.DomainDataGenerator;
 import com.wtechitsolutions.domain.LoadProfile;
 import io.swagger.v3.oas.annotations.Operation;
@@ -8,6 +10,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -23,9 +26,11 @@ public class DomainController {
     private static final Logger log = LoggerFactory.getLogger(DomainController.class);
 
     private final DomainDataGenerator generator;
+    private final BenchmarkService benchmarkService;
 
-    public DomainController(DomainDataGenerator generator) {
+    public DomainController(DomainDataGenerator generator, BenchmarkService benchmarkService) {
         this.generator = generator;
+        this.benchmarkService = benchmarkService;
     }
 
     @PostMapping("/generate")
@@ -39,6 +44,23 @@ public class DomainController {
                 result.operationId(),
                 result.accounts(),
                 result.transactions(),
+                Instant.now()));
+    }
+
+    @DeleteMapping("/reset")
+    @Operation(summary = "Delete all generated domain data and benchmark results",
+            description = "Wipes accounts, transactions, statements and stored benchmark metrics so a new "
+                    + "benchmark can start from an empty database. Spring Batch job-execution metadata "
+                    + "(visible under Batch History) is kept.")
+    public ResponseEntity<ResetDatabaseResponse> reset() {
+        log.info("Resetting database: deleting domain data and benchmark results");
+        DomainDataGenerator.ResetResult domain = generator.reset();
+        long benchmarks = benchmarkService.deleteAll();
+        return ResponseEntity.ok(new ResetDatabaseResponse(
+                domain.accounts(),
+                domain.transactions(),
+                domain.statements(),
+                benchmarks,
                 Instant.now()));
     }
 }

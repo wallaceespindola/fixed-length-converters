@@ -95,6 +95,9 @@
     .btn-p:hover:not(:disabled) { background: var(--primary-hover); }
     .btn-o { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
     .btn-o:hover:not(:disabled) { background: rgba(230,81,0,.07); }
+    .btn-d { background: none; border: 1.5px solid #c62828; color: #c62828; }
+    .btn-d:hover:not(:disabled) { background: rgba(198,40,40,.08); }
+    .btn-d.armed { background: #c62828; color: #fff; }
     .btn-lg { padding: 9px 18px; font-size: 1rem; }
     .btn:disabled { opacity: .55; cursor: not-allowed; }
     .btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
@@ -207,8 +210,10 @@
           <button class="btn btn-p btn-lg" id="btn-low"    onclick="genData('LOW')">Low Load (10 accounts, 100 txns)</button>
           <button class="btn btn-p btn-lg" id="btn-medium" onclick="genData('MEDIUM')">Medium Load (100 accounts, 1 000 txns)</button>
           <button class="btn btn-o btn-lg" id="btn-high"   onclick="genData('HIGH')">High Load (1 000 accounts, 10 000 txns)</button>
+          <button class="btn btn-d btn-lg" id="btn-reset"  onclick="resetDb()">Clear Database</button>
         </div>
         <p class="caption">Low: 10 accounts · 100 transactions · 5 statements.&nbsp;&nbsp;Medium: 100 accounts · 1 000 transactions · 50 statements.&nbsp;&nbsp;High: 1 000 accounts · 10 000 transactions · 500 statements.</p>
+        <p class="caption">Clear Database deletes all accounts, transactions, statements and stored benchmark results — click twice to confirm. Spring Batch job history is kept.</p>
         <div id="gen-alert" class="hidden alert"></div>
         <div id="gen-result" class="hidden card" style="margin-top:16px;max-width:460px">
           <div class="card-title">Generation Result</div>
@@ -482,6 +487,46 @@ async function genData(profile) {
   } finally {
     setDisabled(['btn-low', 'btn-medium', 'btn-high'], false);
     btn.textContent = origText;
+  }
+}
+
+// Two-step confirm: the first click arms the button, a second click within 5 s wipes the data.
+// Avoids a blocking window.confirm() while still requiring a deliberate second action.
+let resetArmed = false;
+let resetTimer;
+
+async function resetDb() {
+  const btn = document.getElementById('btn-reset');
+  clearAlert('gen-alert');
+
+  if (!resetArmed) {
+    resetArmed = true;
+    btn.classList.add('armed');
+    setText(btn, 'Confirm — delete all data');
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(() => {
+      resetArmed = false;
+      btn.classList.remove('armed');
+      setText(btn, 'Clear Database');
+    }, 5000);
+    return;
+  }
+
+  clearTimeout(resetTimer);
+  resetArmed = false;
+  btn.classList.remove('armed');
+  setText(btn, 'Clear Database');
+  setDisabled(['btn-low', 'btn-medium', 'btn-high', 'btn-reset'], true);
+  try {
+    const d = await api('DELETE', '/api/domain/reset');
+    document.getElementById('gen-result').classList.add('hidden');
+    setAlert('gen-alert',
+      'Database cleared — ' + d.accountsDeleted + ' accounts, ' + d.transactionsDeleted + ' transactions, ' +
+      d.statementsDeleted + ' statements, ' + d.benchmarkResultsDeleted + ' benchmark results deleted.', 'info');
+  } catch (e) {
+    setAlert('gen-alert', e.message, 'err');
+  } finally {
+    setDisabled(['btn-low', 'btn-medium', 'btn-high', 'btn-reset'], false);
   }
 }
 

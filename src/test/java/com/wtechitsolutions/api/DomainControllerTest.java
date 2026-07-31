@@ -1,5 +1,6 @@
 package com.wtechitsolutions.api;
 
+import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.DomainDataGenerator;
 import com.wtechitsolutions.domain.LoadProfile;
 import org.junit.jupiter.api.Test;
@@ -9,7 +10,9 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -22,6 +25,9 @@ class DomainControllerTest {
 
     @MockitoBean
     DomainDataGenerator generator;
+
+    @MockitoBean
+    BenchmarkService benchmarkService;
 
     @Test
     void generate_returns_200_with_expected_fields() throws Exception {
@@ -59,5 +65,33 @@ class DomainControllerTest {
                 .andExpect(jsonPath("$.operationId").value(3003))
                 .andExpect(jsonPath("$.accountsGenerated").value(200))
                 .andExpect(jsonPath("$.transactionsGenerated").value(2000));
+    }
+
+    @Test
+    void reset_deletes_domain_data_and_benchmark_results() throws Exception {
+        when(generator.reset()).thenReturn(new DomainDataGenerator.ResetResult(10, 100, 5));
+        when(benchmarkService.deleteAll()).thenReturn(18L);
+
+        mockMvc.perform(delete("/api/domain/reset"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountsDeleted").value(10))
+                .andExpect(jsonPath("$.transactionsDeleted").value(100))
+                .andExpect(jsonPath("$.statementsDeleted").value(5))
+                .andExpect(jsonPath("$.benchmarkResultsDeleted").value(18))
+                .andExpect(jsonPath("$.timestamp").exists());
+
+        verify(generator).reset();
+        verify(benchmarkService).deleteAll();
+    }
+
+    @Test
+    void reset_on_an_empty_database_reports_zero() throws Exception {
+        when(generator.reset()).thenReturn(new DomainDataGenerator.ResetResult(0, 0, 0));
+        when(benchmarkService.deleteAll()).thenReturn(0L);
+
+        mockMvc.perform(delete("/api/domain/reset"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accountsDeleted").value(0))
+                .andExpect(jsonPath("$.benchmarkResultsDeleted").value(0));
     }
 }

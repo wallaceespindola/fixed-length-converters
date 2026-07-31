@@ -375,7 +375,7 @@ Verify with: `make --version`
 Each command is shown with `# with make` and `# direct` alternatives.
 
 ```bash
-# Full pipeline — Java compile + 149 tests + JaCoCo coverage + install
+# Full pipeline — Java compile + 152 tests + JaCoCo coverage + install
 mvn clean install
 
 # Compile and package (skip tests)
@@ -460,6 +460,7 @@ python tools/python/report_generator.py target/jmh-result.json docs/jmh-report.m
 | Method | Endpoint                         | Description                                                   |
 |--------|----------------------------------|---------------------------------------------------------------|
 | `POST` | `/api/domain/generate`           | Generate domain data in H2; optional `?loadProfile=LOW\|MEDIUM\|HIGH` |
+| `DELETE` | `/api/domain/reset`            | Delete all generated data and stored benchmark results for a fresh start |
 | `POST` | `/api/batch/generate`            | Trigger Spring Batch job `{fileType, library}`                |
 | `GET`  | `/api/batch/history`             | Last 50 batch job executions                                  |
 | `GET`  | `/api/benchmark/results`         | All benchmark metrics                                         |
@@ -583,6 +584,8 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
 
 - **Dashboard** — health status, actuator info, quick-action buttons
 - **Data Generator** — trigger domain data generation with Low / Medium / High load buttons, display results
+  and a **Clear Database** button (click twice to confirm) that wipes accounts, transactions, statements and
+  stored benchmark results so a benchmark can start from scratch
 - **Batch Runner** — select FileType + Library, submit, preview generated file. A "Run All Combinations" button fires
   all 18 fileType × library combinations sequentially with live per-row progress. Result rows are laid out as
   fixed-width flex columns (status · file type · library · duration · file name); the library column is sized for
