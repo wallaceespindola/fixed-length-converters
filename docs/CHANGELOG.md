@@ -8,6 +8,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Added
+- **File preview modal** — the View button in the Files table opens the file in a centered popup
+  (Close button, Esc key, or click-outside to dismiss); clicking the row still fills the inline preview
 - **Files view** in the frontend — lists the generated banking files in `output/` (name, size, modified,
   newest first) with click-to-preview; a "View Generated Files" shortcut sits on the Batch Runner.
   Backed by `GET /api/batch/files` and `GET /api/batch/files/{name}`; file names are validated against

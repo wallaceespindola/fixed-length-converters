@@ -146,6 +146,16 @@
     .preview { background: var(--hover); border-radius: 4px; padding: 10px; font-family: monospace;
                font-size: .72rem; overflow: auto; max-height: 340px; margin-top: 10px; }
 
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,.5); z-index: 300;
+                     display: flex; align-items: center; justify-content: center; padding: 24px; }
+    .modal { background: var(--surface); color: var(--text); border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,.35);
+             width: min(1100px, 100%); max-height: 90vh; display: flex; flex-direction: column; }
+    .modal-head { display: flex; align-items: center; justify-content: space-between; gap: 12px;
+                  padding: 12px 16px; border-bottom: 1px solid var(--border); }
+    .modal-title { font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .modal-body { padding: 12px 16px; overflow: auto; }
+    .modal-body .preview { max-height: none; margin-top: 0; }
+
     .chart-box { position: relative; height: 290px; }
 
     .hidden { display: none !important; }
@@ -291,6 +301,17 @@
         <div id="file-preview-wrap" class="hidden card">
           <div class="card-title">Preview — <span id="file-preview-name"></span></div>
           <pre id="file-preview" class="preview"></pre>
+        </div>
+      </div>
+
+      <!-- File preview modal (opened by the View button) -->
+      <div id="file-modal" class="modal-overlay hidden" onclick="if (event.target === this) closeFileModal()">
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="file-modal-name">
+          <div class="modal-head">
+            <span class="modal-title" id="file-modal-name"></span>
+            <button class="btn btn-o" onclick="closeFileModal()">Close</button>
+          </div>
+          <div class="modal-body"><pre id="file-modal-content" class="preview"></pre></div>
         </div>
       </div>
 
@@ -576,6 +597,7 @@ async function loadFiles() {
       const btn = document.createElement('button');
       btn.className = 'btn btn-o';
       setText(btn, 'View');
+      btn.onclick = (ev) => { ev.stopPropagation(); viewFileModal(f.fileName); };
       act.appendChild(btn);
       tr.append(name, size, mod, act);
       tr.onclick = () => viewFile(f.fileName);
@@ -597,6 +619,26 @@ async function viewFile(fileName) {
     setAlert('files-alert', e.message, 'err');
   }
 }
+
+async function viewFileModal(fileName) {
+  clearAlert('files-alert');
+  try {
+    const content = await api('GET', '/api/batch/files/' + encodeURIComponent(fileName));
+    setText(document.getElementById('file-modal-name'), fileName);
+    setText(document.getElementById('file-modal-content'), content);
+    document.getElementById('file-modal').classList.remove('hidden');
+  } catch (e) {
+    setAlert('files-alert', e.message, 'err');
+  }
+}
+
+function closeFileModal() {
+  document.getElementById('file-modal').classList.add('hidden');
+}
+
+document.addEventListener('keydown', (ev) => {
+  if (ev.key === 'Escape') closeFileModal();
+});
 
 function fmtBytes(n) {
   if (n < 1024) return n + ' B';

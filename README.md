@@ -592,8 +592,9 @@ The vanilla HTML/CSS/JS single-page UI (served directly by Spring Boot from `src
   all 18 fileType × library combinations sequentially with live per-row progress. Result rows are laid out as
   fixed-width flex columns (status · file type · library · duration · file name); the library column is sized for
   the longest `Library` value, `SPRING_BATCH_FIXFORMAT4J`.
-- **Files** — browse the generated banking files in `output/` (name, size, modified) and preview any file
-  in place; also reachable via the "View Generated Files" button on the Batch Runner
+- **Files** — browse the generated banking files in `output/` (name, size, modified); clicking a row previews
+  in place, the View button opens the file in a popup (Esc / click-outside to close); also reachable via the
+  "View Generated Files" button on the Batch Runner
 - **Batch History** — table of all job executions with auto-refresh every 15 s
 - **Benchmark Dashboard** — bar charts and line charts via Chart.js, throughput comparison, library summary,
   CSV/JSON/Markdown export. Charts auto-sort by avg throughput (best to worst) on every refresh.
