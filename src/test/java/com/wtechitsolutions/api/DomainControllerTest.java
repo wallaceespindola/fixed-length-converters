@@ -1,5 +1,6 @@
 package com.wtechitsolutions.api;
 
+import com.wtechitsolutions.batch.OutputCleaner;
 import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.DomainDataGenerator;
 import com.wtechitsolutions.domain.LoadProfile;
@@ -28,6 +29,9 @@ class DomainControllerTest {
 
     @MockitoBean
     BenchmarkService benchmarkService;
+
+    @MockitoBean
+    OutputCleaner outputCleaner;
 
     @Test
     void generate_returns_200_with_expected_fields() throws Exception {
@@ -71,6 +75,7 @@ class DomainControllerTest {
     void reset_deletes_domain_data_and_benchmark_results() throws Exception {
         when(generator.reset()).thenReturn(new DomainDataGenerator.ResetResult(10, 100, 5));
         when(benchmarkService.deleteAll()).thenReturn(18L);
+        when(outputCleaner.clean()).thenReturn(7L);
 
         mockMvc.perform(delete("/api/domain/reset"))
                 .andExpect(status().isOk())
@@ -78,10 +83,12 @@ class DomainControllerTest {
                 .andExpect(jsonPath("$.transactionsDeleted").value(100))
                 .andExpect(jsonPath("$.statementsDeleted").value(5))
                 .andExpect(jsonPath("$.benchmarkResultsDeleted").value(18))
+                .andExpect(jsonPath("$.filesDeleted").value(7))
                 .andExpect(jsonPath("$.timestamp").exists());
 
         verify(generator).reset();
         verify(benchmarkService).deleteAll();
+        verify(outputCleaner).clean();
     }
 
     @Test

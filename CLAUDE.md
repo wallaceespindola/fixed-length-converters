@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Implementation Status: COMPLETE
 
-All 155 tests pass. Application starts and runs end-to-end.
+All 156 tests pass. Application starts and runs end-to-end.
 
 Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required.
 
@@ -26,7 +26,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
-| Testing | JUnit 5 + Mockito, 155 tests |
+| Testing | JUnit 5 + Mockito, 156 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
@@ -34,7 +34,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 ## Build & Run Commands
 
 ```bash
-# Full pipeline (Java compile + 155 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 156 tests + JaCoCo + repackage + install)
 mvn clean install
 
 # Quick build (no tests)
@@ -132,7 +132,7 @@ src/main/java/com/wtechitsolutions/
 
 ```
 POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|MEDIUM|HIGH
-DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics (Spring Batch job metadata kept)
+DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics + output/*.txt files (Spring Batch job metadata kept)
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
 GET  /api/batch/files            → list generated files in output/ (newest first)
@@ -152,7 +152,8 @@ GET  /actuator/info              → app name, version, description
 - **Swagger enabled in `dev` profile only** — default profile has springdoc disabled
 - **All parser formatters are annotation-based** — NO XML mapping files anywhere (except Camel BeanIO which uses XML stream mapping)
 - **BeanIO FieldBuilder.at() is 0-based** — confirmed from library source; annotation @Field(at=X) may differ
-- **Output files** written to `/output/` directory (gitignored)
+- **Output files** written to `/output/` directory (gitignored); `OutputCleaner` (batch/) deletes `output/*.txt`
+  on every application startup (`ApplicationReadyEvent`) and during `DELETE /api/domain/reset`
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 - **Clear Database** button (Generate Data view) calls `DELETE /api/domain/reset`; it is a two-click confirm

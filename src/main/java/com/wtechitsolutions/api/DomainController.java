@@ -2,6 +2,7 @@ package com.wtechitsolutions.api;
 
 import com.wtechitsolutions.api.dto.GenerateDomainResponse;
 import com.wtechitsolutions.api.dto.ResetDatabaseResponse;
+import com.wtechitsolutions.batch.OutputCleaner;
 import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.DomainDataGenerator;
 import com.wtechitsolutions.domain.LoadProfile;
@@ -27,10 +28,13 @@ public class DomainController {
 
     private final DomainDataGenerator generator;
     private final BenchmarkService benchmarkService;
+    private final OutputCleaner outputCleaner;
 
-    public DomainController(DomainDataGenerator generator, BenchmarkService benchmarkService) {
+    public DomainController(DomainDataGenerator generator, BenchmarkService benchmarkService,
+                            OutputCleaner outputCleaner) {
         this.generator = generator;
         this.benchmarkService = benchmarkService;
+        this.outputCleaner = outputCleaner;
     }
 
     @PostMapping("/generate")
@@ -48,19 +52,21 @@ public class DomainController {
     }
 
     @DeleteMapping("/reset")
-    @Operation(summary = "Delete all generated domain data and benchmark results",
-            description = "Wipes accounts, transactions, statements and stored benchmark metrics so a new "
-                    + "benchmark can start from an empty database. Spring Batch job-execution metadata "
-                    + "(visible under Batch History) is kept.")
+    @Operation(summary = "Delete all generated domain data, benchmark results and output files",
+            description = "Wipes accounts, transactions, statements, stored benchmark metrics and the "
+                    + "generated files in the output/ directory so a new benchmark can start from a clean "
+                    + "slate. Spring Batch job-execution metadata (visible under Batch History) is kept.")
     public ResponseEntity<ResetDatabaseResponse> reset() {
-        log.info("Resetting database: deleting domain data and benchmark results");
+        log.info("Resetting database: deleting domain data, benchmark results and output files");
         DomainDataGenerator.ResetResult domain = generator.reset();
         long benchmarks = benchmarkService.deleteAll();
+        long files = outputCleaner.clean();
         return ResponseEntity.ok(new ResetDatabaseResponse(
                 domain.accounts(),
                 domain.transactions(),
                 domain.statements(),
                 benchmarks,
+                files,
                 Instant.now()));
     }
 }

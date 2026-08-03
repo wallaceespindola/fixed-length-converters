@@ -568,7 +568,8 @@ async function resetDb() {
     document.getElementById('gen-result').classList.add('hidden');
     setAlert('gen-alert',
       'Database cleared — ' + d.accountsDeleted + ' accounts, ' + d.transactionsDeleted + ' transactions, ' +
-      d.statementsDeleted + ' statements, ' + d.benchmarkResultsDeleted + ' benchmark results deleted.', 'info');
+      d.statementsDeleted + ' statements, ' + d.benchmarkResultsDeleted + ' benchmark results, ' +
+      d.filesDeleted + ' generated files deleted.', 'info');
   } catch (e) {
     setAlert('gen-alert', e.message, 'err');
   } finally {

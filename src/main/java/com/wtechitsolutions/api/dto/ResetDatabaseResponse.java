@@ -11,5 +11,6 @@ public record ResetDatabaseResponse(
         long transactionsDeleted,
         long statementsDeleted,
         long benchmarkResultsDeleted,
+        long filesDeleted,
         Instant timestamp) {
 }
