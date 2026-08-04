@@ -132,7 +132,7 @@ src/main/java/com/wtechitsolutions/
 
 ```
 POST /api/domain/generate        → generate + persist domain data; optional ?loadProfile=LOW|MEDIUM|HIGH
-DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics + output/*.txt files (Spring Batch job metadata kept)
+DELETE /api/domain/reset         → wipe accounts/transactions/statements + BenchmarkMetrics + Spring Batch job metadata + output/*.txt files
 POST /api/batch/generate         → trigger job; body: {"fileType":"CODA","library":"BEANIO"}
 GET  /api/batch/history          → last 50 job executions
 GET  /api/batch/files            → list generated files in output/ (newest first)
@@ -157,7 +157,10 @@ GET  /actuator/info              → app name, version, description
 - **Generated files are reproducible**: same domain data + params → same output
 - **Test coverage**: JaCoCo enforced at 40% minimum (mvn verify)
 - **Clear Database** button (Generate Data view) calls `DELETE /api/domain/reset`; it is a two-click confirm
-  (`.btn-d.armed`, 5 s timeout) rather than `window.confirm()`, so it never blocks headless browser automation
+  (`.btn-d.armed`, 5 s timeout) rather than `window.confirm()`, so it never blocks headless browser automation.
+  Reset wipes everything: domain rows, BenchmarkMetrics, Spring Batch job metadata
+  (`BatchJobService.clearJobMetadata()` via `JobRepository.deleteJobInstance`) and `output/*.txt`; the frontend
+  `clearStaleViews()` also hides Run All rows, single-run result and file previews
 - **Frontend** is a single vanilla HTML/CSS/JS file (`src/main/resources/static/index.html`); edit directly — no Node.js, no npm, no build step required
 - **Run All result rows** (`.ra-row`) are fixed-width flex columns: `.ra-row > * { flex: none }` stops any cell from
   pushing its neighbours, `.ra-lib` is 200px (sized for `SPRING_BATCH_FIXFORMAT4J`, the longest `Library` value at

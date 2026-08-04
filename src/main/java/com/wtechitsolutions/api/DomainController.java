@@ -2,6 +2,7 @@ package com.wtechitsolutions.api;
 
 import com.wtechitsolutions.api.dto.GenerateDomainResponse;
 import com.wtechitsolutions.api.dto.ResetDatabaseResponse;
+import com.wtechitsolutions.batch.BatchJobService;
 import com.wtechitsolutions.batch.OutputCleaner;
 import com.wtechitsolutions.benchmark.BenchmarkService;
 import com.wtechitsolutions.domain.DomainDataGenerator;
@@ -29,12 +30,14 @@ public class DomainController {
     private final DomainDataGenerator generator;
     private final BenchmarkService benchmarkService;
     private final OutputCleaner outputCleaner;
+    private final BatchJobService batchJobService;
 
     public DomainController(DomainDataGenerator generator, BenchmarkService benchmarkService,
-                            OutputCleaner outputCleaner) {
+                            OutputCleaner outputCleaner, BatchJobService batchJobService) {
         this.generator = generator;
         this.benchmarkService = benchmarkService;
         this.outputCleaner = outputCleaner;
+        this.batchJobService = batchJobService;
     }
 
     @PostMapping("/generate")
@@ -52,20 +55,22 @@ public class DomainController {
     }
 
     @DeleteMapping("/reset")
-    @Operation(summary = "Delete all generated domain data, benchmark results and output files",
-            description = "Wipes accounts, transactions, statements, stored benchmark metrics and the "
-                    + "generated files in the output/ directory so a new benchmark can start from a clean "
-                    + "slate. Spring Batch job-execution metadata (visible under Batch History) is kept.")
+    @Operation(summary = "Delete all generated domain data, benchmark results, batch history and output files",
+            description = "Wipes accounts, transactions, statements, stored benchmark metrics, Spring Batch "
+                    + "job-execution metadata (Batch History) and the generated files in the output/ "
+                    + "directory so a new benchmark can start from a clean slate.")
     public ResponseEntity<ResetDatabaseResponse> reset() {
-        log.info("Resetting database: deleting domain data, benchmark results and output files");
+        log.info("Resetting database: deleting domain data, benchmark results, batch history and output files");
         DomainDataGenerator.ResetResult domain = generator.reset();
         long benchmarks = benchmarkService.deleteAll();
+        long jobExecutions = batchJobService.clearJobMetadata();
         long files = outputCleaner.clean();
         return ResponseEntity.ok(new ResetDatabaseResponse(
                 domain.accounts(),
                 domain.transactions(),
                 domain.statements(),
                 benchmarks,
+                jobExecutions,
                 files,
                 Instant.now()));
     }

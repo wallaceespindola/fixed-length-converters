@@ -8,8 +8,10 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -26,11 +28,14 @@ public class BatchJobService {
     private final Job bankingFileGenerationJob;
     private final JobLauncher jobLauncher;
     private final JobExplorer jobExplorer;
+    private final JobRepository jobRepository;
 
-    public BatchJobService(Job bankingFileGenerationJob, JobLauncher jobLauncher, JobExplorer jobExplorer) {
+    public BatchJobService(Job bankingFileGenerationJob, JobLauncher jobLauncher, JobExplorer jobExplorer,
+                           JobRepository jobRepository) {
         this.bankingFileGenerationJob = bankingFileGenerationJob;
         this.jobLauncher = jobLauncher;
         this.jobExplorer = jobExplorer;
+        this.jobRepository = jobRepository;
     }
 
     public BatchJobResult launch(FileType fileType, Library library) {
@@ -63,6 +68,26 @@ public class BatchJobService {
                         (JobExecution ex) -> ex.getStartTime() != null ? ex.getStartTime() : LocalDateTime.MIN,
                         Comparator.reverseOrder()))
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Deletes every job instance (and its executions, steps and contexts) of the banking file
+     * generation job so the Batch History view starts empty after a Clear Database.
+     *
+     * @return number of job executions removed
+     */
+    public long clearJobMetadata() {
+        long executions = 0;
+        List<JobInstance> instances;
+        do {
+            instances = jobExplorer.findJobInstancesByJobName("bankingFileGenerationJob", 0, 100);
+            for (JobInstance instance : instances) {
+                executions += jobExplorer.getJobExecutions(instance).size();
+                jobRepository.deleteJobInstance(instance);
+            }
+        } while (!instances.isEmpty());
+        log.info("Cleared Spring Batch metadata: {} job executions deleted", executions);
+        return executions;
     }
 
     private static String extractContext(JobExecution execution, String key) {
