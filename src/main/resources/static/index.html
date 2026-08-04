@@ -95,6 +95,7 @@
     .btn-p:hover:not(:disabled) { background: var(--primary-hover); }
     .btn-o { background: none; border: 1.5px solid var(--primary); color: var(--primary); }
     .btn-o:hover:not(:disabled) { background: rgba(230,81,0,.07); }
+    .btn-sm { padding: 2px 10px; font-size: .75rem; }
     .btn-d { background: none; border: 1.5px solid #c62828; color: #c62828; }
     .btn-d:hover:not(:disabled) { background: rgba(198,40,40,.08); }
     .btn-d.armed { background: #c62828; color: #fff; }
@@ -224,7 +225,7 @@
           <button class="btn btn-d btn-lg" id="btn-reset"  onclick="resetDb()">Clear Database</button>
         </div>
         <p class="caption">Low: 10 accounts · 100 transactions · 5 statements.&nbsp;&nbsp;Medium: 100 accounts · 1 000 transactions · 50 statements.&nbsp;&nbsp;High: 1 000 accounts · 10 000 transactions · 500 statements.</p>
-        <p class="caption">Clear Database deletes all accounts, transactions, statements and stored benchmark results — click twice to confirm. Spring Batch job history is kept.</p>
+        <p class="caption">Clear Database deletes all accounts, transactions, statements, stored benchmark results, batch history and generated output files — click twice to confirm.</p>
         <div id="gen-alert" class="hidden alert"></div>
         <div id="gen-result" class="hidden card" style="margin-top:16px;max-width:460px">
           <div class="card-title">Generation Result</div>
@@ -566,15 +567,27 @@ async function resetDb() {
   try {
     const d = await api('DELETE', '/api/domain/reset');
     document.getElementById('gen-result').classList.add('hidden');
+    clearStaleViews();
     setAlert('gen-alert',
       'Database cleared — ' + d.accountsDeleted + ' accounts, ' + d.transactionsDeleted + ' transactions, ' +
       d.statementsDeleted + ' statements, ' + d.benchmarkResultsDeleted + ' benchmark results, ' +
-      d.filesDeleted + ' generated files deleted.', 'info');
+      d.jobExecutionsDeleted + ' batch executions, ' + d.filesDeleted + ' generated files deleted.', 'info');
   } catch (e) {
     setAlert('gen-alert', e.message, 'err');
   } finally {
     setDisabled(['btn-low', 'btn-medium', 'btn-high', 'btn-reset'], false);
   }
+}
+
+// Hides client-side leftovers from before the reset: Run All rows, single-run
+// result, file previews. Server-backed lists (files, history) reload on view enter.
+function clearStaleViews() {
+  document.getElementById('ra-section').classList.add('hidden');
+  document.getElementById('ra-rows').textContent = '';
+  document.getElementById('batch-result').classList.add('hidden');
+  document.getElementById('batch-preview-wrap').classList.add('hidden');
+  document.getElementById('file-preview-wrap').classList.add('hidden');
+  closeFileModal();
 }
 
 // ── Generated Files ────────────────────────────────────────────────────────────
@@ -621,15 +634,16 @@ async function viewFile(fileName) {
   }
 }
 
-async function viewFileModal(fileName) {
-  clearAlert('files-alert');
+async function viewFileModal(fileName, alertId) {
+  alertId = alertId || 'files-alert';
+  clearAlert(alertId);
   try {
     const content = await api('GET', '/api/batch/files/' + encodeURIComponent(fileName));
     setText(document.getElementById('file-modal-name'), fileName);
     setText(document.getElementById('file-modal-content'), content);
     document.getElementById('file-modal').classList.remove('hidden');
   } catch (e) {
-    setAlert('files-alert', e.message, 'err');
+    setAlert(alertId, e.message, 'err');
   }
 }
 
@@ -669,10 +683,20 @@ async function runSingle() {
       library:  document.getElementById('sel-lib').value,
     });
     const tbody = document.querySelector('#batch-table tbody');
+    const fileCell = document.createElement('span');
+    setText(fileCell, d.fileName || '—');
+    if (d.fileName) {
+      const vb = document.createElement('button');
+      vb.className = 'btn btn-o btn-sm';
+      vb.style.marginLeft = '10px';
+      setText(vb, 'View');
+      vb.onclick = () => viewFileModal(d.fileName, 'batch-alert');
+      fileCell.appendChild(vb);
+    }
     fillTable(tbody, [
       ['Job ID',    d.jobExecutionId],
       ['Status',    makeChip(d.status)],
-      ['File',      d.fileName],
+      ['File',      fileCell],
       ['Timestamp', fmt(d.timestamp)],
     ]);
     const pw = document.getElementById('batch-preview-wrap');
@@ -773,6 +797,11 @@ function renderRA(combos) {
       fn.style.cssText = 'color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;flex:1 1 auto;min-width:0';
       setText(fn, c.fileName);
       row.appendChild(fn);
+      const view = document.createElement('button');
+      view.className = 'btn btn-o btn-sm';
+      setText(view, 'View');
+      view.onclick = () => viewFileModal(c.fileName, 'batch-alert');
+      row.appendChild(view);
     }
     if (c.err) {
       const er = document.createElement('span');
