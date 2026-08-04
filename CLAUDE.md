@@ -11,7 +11,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Implementation Status: COMPLETE
 
-All 156 tests pass. Application starts and runs end-to-end.
+All 158 tests pass. Application starts and runs end-to-end.
 
 Frontend uses an orange color theme (`#e65100`; throughput chart bars also orange). Single `index.html` served from `src/main/resources/static/` — no Node.js or npm required.
 
@@ -26,7 +26,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 | Database | H2 In-Memory |
 | API Docs | OpenAPI V3 + Swagger (dev profile only) |
 | Build | Maven 3.9.x — no profiles required |
-| Testing | JUnit 5 + Mockito, 156 tests |
+| Testing | JUnit 5 + Mockito, 158 tests |
 | Libraries | BeanIO 3.2.1, fixedformat4j 1.9.1, fixedlength 0.15, Camel Bindy 4.21.0, Camel BeanIO 4.21.0, Velocity 2.4.1, Spring Batch 5.x |
 | Frontend | Vanilla HTML/CSS/JS (`src/main/resources/static/index.html`), Chart.js via CDN |
 | CI/CD | GitHub Actions (build, test, benchmark, codeql, release) |
@@ -34,7 +34,7 @@ Frontend uses an orange color theme (`#e65100`; throughput chart bars also orang
 ## Build & Run Commands
 
 ```bash
-# Full pipeline (Java compile + 156 tests + JaCoCo + repackage + install)
+# Full pipeline (Java compile + 158 tests + JaCoCo + repackage + install)
 mvn clean install
 
 # Quick build (no tests)
@@ -92,7 +92,9 @@ src/main/java/com/wtechitsolutions/
 ### Core Flow
 
 1. `POST /api/domain/generate` → `DomainDataGenerator` seeds H2; supports `?loadProfile=LOW` (default: 10 accounts, 100 transactions, 5 statements), `?loadProfile=MEDIUM` (100 accounts, 1 000 transactions, 50 statements), or `?loadProfile=HIGH` (1 000 accounts, 10 000 transactions, 500 statements)
-2. `POST /api/batch/generate` → `BatchJobService.launch(fileType, library)` → Spring Batch job
+2. `POST /api/batch/generate` → `BatchJobService.launch(fileType, library)` → runs one discarded
+   warm-up conversion on synthetic data (classloading/library-init/JIT stay out of the measured numbers),
+   then launches the Spring Batch job
 3. Spring Batch: `DomainEntityItemReader` (H2) → `FileGenerationItemProcessor` (StrategyResolver) → `FileOutputItemWriter` (writes to `/output/`)
 4. `BatchMetricsListener.afterJob()` → saves `BenchmarkMetrics` row
 
