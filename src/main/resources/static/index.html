@@ -157,6 +157,17 @@
     .modal-body { padding: 12px 16px; overflow: auto; }
     .modal-body .preview { max-height: none; margin-top: 0; }
     .modal-sm { width: min(520px, 100%); }
+    .lib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap: 14px; }
+    .lib-key { font-family: monospace; font-size: .75rem; color: var(--text-muted); }
+    .lib-meta { font-size: .78rem; color: var(--text-muted); margin: 6px 0 8px; line-height: 1.5; }
+    .lib-desc { font-size: .84rem; line-height: 1.55; margin-bottom: 10px; }
+    .lib-verdict { font-size: .8rem; line-height: 1.5; border-left: 3px solid var(--primary);
+                   padding: 6px 10px; background: var(--hover); border-radius: 0 4px 4px 0; }
+    .lib-verdict b { color: var(--primary); }
+    .lib-links { display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center;
+                 font-size: .75rem; color: var(--text-muted); margin-top: 4px; }
+    .lib-links a { color: var(--primary); text-decoration: none; font-weight: 600; }
+    .lib-links a:hover { text-decoration: underline; }
     .combo-grid { display: flex; gap: 32px; flex-wrap: wrap; }
     .combo-head { font-weight: 600; margin-bottom: 6px; }
     .combo-item { display: block; font-family: monospace; font-size: .8rem; padding: 3px 0; cursor: pointer; }
@@ -186,6 +197,7 @@
     <button class="nav-btn" data-view="files"><span class="nav-ic">📄</span>Files</button>
     <button class="nav-btn" data-view="history"><span class="nav-ic">🕒</span>History</button>
     <button class="nav-btn" data-view="benchmark"><span class="nav-ic">📈</span>Benchmark</button>
+    <button class="nav-btn" data-view="libraries"><span class="nav-ic">📚</span>Libraries</button>
     <button class="nav-btn" data-view="diagrams"><span class="nav-ic">🔀</span>Diagrams</button>
   </nav>
 
@@ -376,6 +388,132 @@
         </div>
       </div>
 
+      <!-- Libraries -->
+      <div class="view" id="v-libraries">
+        <h1>Libraries &amp; Approaches</h1>
+        <p class="subtitle">The 9 fixed-length formatter approaches benchmarked by this platform — 7 libraries plus 2 Spring Batch hybrids. Facts verified 2026-07-27; JMH numbers are machine-specific (see docs/benchmark-results.md).</p>
+        <div class="lib-grid">
+
+          <div class="card">
+            <div class="card-title">BeanIO 3.2.1</div>
+            <div class="lib-key">BEANIO · com.github.beanio:beanio</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/com.github.beanio/beanio" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/beanio/beanio" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 68 · released 2025-02-07 · last repo activity 2025-02-07</span>
+            </div>
+            <div class="lib-meta">Programmatic stream builder (0-based positions) · 430 KB, self-contained · Community fork of the 2014 org.beanio line · Apache-2.0</div>
+            <div class="lib-desc">Declares record layouts through a fluent builder API. Strongest grammar support of the pack: record groups, repeating segments and multi-record files are first-class, which suits CODA's header/movement/trailer structure.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> good for complex CODA grammars — accept community-only support and key-person risk.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">fixedformat4j 1.9.1</div>
+            <div class="lib-key">FIXFORMAT4J · com.ancientprogramming.fixedformat4j:fixedformat4j</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/com.ancientprogramming.fixedformat4j/fixedformat4j" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/jeyben/fixedformat4j" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 52 · released 2026-06-17 · last repo activity 2026-07-25</span>
+            </div>
+            <div class="lib-meta">Annotation-driven (@Record/@Field) · 125 KB, no transitive deps · Single maintainer, actively releasing · Apache-2.0</div>
+            <div class="lib-desc">Smallest annotation-driven option: field offsets, lengths, padding and alignment live on the model class. Flat records only — no record groups. Fastest CODA write and read in the JMH runs.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> strong for simple fixed layouts outside Spring Batch.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">fixedlength 0.15</div>
+            <div class="lib-key">FIXEDLENGTH · name.velikodniy.vitaliy:fixedlength</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/name.velikodniy.vitaliy/fixedlength" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/g0ddest/fixedlength" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 23 · released 2026-02-26 · last repo activity 2026-02-26</span>
+            </div>
+            <div class="lib-meta">Annotation-driven (@FixedField) · 33 KB, no transitive deps · Single maintainer, 0.x versioning · Apache-2.0</div>
+            <div class="lib-desc">The tiniest dependency in the comparison. Annotations declare offset, length, padding and alignment (right-align by default). The 0.x version number signals no API-stability guarantee yet.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> prototyping, not core payments.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Apache Camel Bindy 4.21.0</div>
+            <div class="lib-key">BINDY · org.apache.camel:camel-bindy</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/org.apache.camel/camel-bindy" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/apache/camel" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 6 273 · released 2026-06-27 · repo activity daily</span>
+            </div>
+            <div class="lib-meta">Annotation-driven (@FixedLengthRecord/@DataField) · 171 KB own jar + heavy transitives (icu4j 14 MB, 45 Camel artifacts) · Apache Software Foundation, LTS releases</div>
+            <div class="lib-desc">Camel's fixed-length data format. Annotations resemble fixedformat4j's but default to right-alignment (text fields here carry explicit align="L"). Designed to live inside Camel routes; usable standalone at the cost of the Camel dependency tree.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> only when Camel already runs in production.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Apache Camel BeanIO 4.21.0</div>
+            <div class="lib-key">CAMEL_BEANIO · org.apache.camel:camel-beanio</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/org.apache.camel/camel-beanio" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/apache/camel" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 6 273 · released 2026-06-27 · repo activity daily</span>
+            </div>
+            <div class="lib-meta">XML stream mappings · 27 KB + Camel core + BeanIO 2.x · Apache Software Foundation · the only non-annotation mapping in this platform</div>
+            <div class="lib-desc">Wraps the older BeanIO 2.x engine behind Camel's data-format API with layouts in XML mapping files — auditable by non-developers, but two ecosystems (Camel + BeanIO) sit on one code path.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> auditable XML mappings, heavy dependency path.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Apache Velocity 2.4.1</div>
+            <div class="lib-key">VELOCITY · org.apache.velocity:velocity-engine-core</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/org.apache.velocity/velocity-engine-core" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/apache/velocity-engine" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 413 · released 2024-10-14 · last repo activity 2026-06-14</span>
+            </div>
+            <div class="lib-meta">Template-based (.vm) · 503 KB + commons-lang3, slf4j · Apache Software Foundation · templates are executable code (CVE-2020-13936 risk class; pinned 2.4.1 not affected)</div>
+            <div class="lib-desc">Write-only: templates render records with printf-style padding, parsing is hand-written. Layout lives in the template file, not the code — flexible for statement/report rendering, but nothing validates widths at compile time.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> report/statement rendering only — never for parsing.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Spring Batch native 5.2.2</div>
+            <div class="lib-key">SPRING_BATCH · org.springframework.batch:spring-batch-core</div>
+            <div class="lib-links">
+              <a href="https://mvnrepository.com/artifact/org.springframework.batch/spring-batch-core" target="_blank" rel="noopener">Maven Central</a>
+              <a href="https://github.com/spring-projects/spring-batch" target="_blank" rel="noopener">GitHub</a>
+              <span>★ 2 947 · latest 6.0.4 released 2026-06-10 (5.2.2 pinned by Boot 3.4.5) · last repo activity 2026-07-23</span>
+            </div>
+            <div class="lib-meta">Programmatic (FixedLengthTokenizer + FormatterLineAggregator) · 0 KB extra, already on the classpath · Broadcom/VMware, commercial support available</div>
+            <div class="lib-desc">Uses only what the batch runtime ships: a hand-written Range list for reading and a printf format string for writing. No new dependency, but the layout is duplicated by hand in two places.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> safe default when no new dependency is allowed.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Spring Batch + fixedformat4j</div>
+            <div class="lib-key">SPRING_BATCH_FIXFORMAT4J · hybrid (AnnotatedLayout)</div>
+            <div class="lib-links">
+              <a href="https://github.com/spring-projects/spring-batch" target="_blank" rel="noopener">Spring Batch GitHub</a>
+              <a href="https://github.com/jeyben/fixedformat4j" target="_blank" rel="noopener">fixedformat4j GitHub</a>
+              <span>annotations: fixedformat4j 1.9.1 · runtime: Spring Batch 5.2.2</span>
+            </div>
+            <div class="lib-meta">Annotation-derived layout, Spring Batch runtime · reflection runs once at bean construction, never per record · byte-identical output to the hand-sliced native strategy</div>
+            <div class="lib-desc">AnnotatedLayout reflects over fixedformat4j @Field annotations and generates the tokenizer Ranges and the aggregator format string — the layout is declared once, on the model, and validated at startup (gaps/overlaps throw, total width must be 128).</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> <b>best overall fit</b> — batch-native runtime, layout declared once in annotations, no extra runtime dependency.</div>
+          </div>
+
+          <div class="card">
+            <div class="card-title">Spring Batch + fixedlength</div>
+            <div class="lib-key">SPRING_BATCH_FIXEDLENGTH · hybrid (AnnotatedLayout)</div>
+            <div class="lib-links">
+              <a href="https://github.com/spring-projects/spring-batch" target="_blank" rel="noopener">Spring Batch GitHub</a>
+              <a href="https://github.com/g0ddest/fixedlength" target="_blank" rel="noopener">fixedlength GitHub</a>
+              <span>annotations: fixedlength 0.15 · runtime: Spring Batch 5.2.2</span>
+            </div>
+            <div class="lib-meta">Annotation-derived layout from @FixedField, Spring Batch runtime · 33 KB dependency · same startup validation and byte-identical output guarantee as the fixedformat4j hybrid</div>
+            <div class="lib-desc">Same shape as the fixedformat4j hybrid but reading fixedlength's @FixedField annotations (explicit align = LEFT on text fields, since the library defaults to right-align). The annotations are the single source of truth for the layout.</div>
+            <div class="lib-verdict"><b>Bank verdict:</b> same shape as the best fit, 33 KB dependency — accept 0.x versioning.</div>
+          </div>
+
+        </div>
+      </div>
+
       <!-- Diagrams (content injected dynamically by loadDiagrams) -->
       <div class="view" id="v-diagrams"></div>
 
@@ -410,7 +548,7 @@ themeBtn.onclick = () => {
 };
 
 // ── Router ───────────────────────────────────────────────────────────────────
-const VIEWS = ['dashboard', 'generate', 'batch', 'files', 'history', 'benchmark', 'diagrams'];
+const VIEWS = ['dashboard', 'generate', 'batch', 'files', 'history', 'benchmark', 'libraries', 'diagrams'];
 const onEnter = { dashboard: loadDash, files: loadFiles, history: loadHistory, benchmark: loadBench, diagrams: loadDiagrams };
 
 function go(name) {
