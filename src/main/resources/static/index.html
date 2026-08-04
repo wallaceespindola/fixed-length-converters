@@ -156,6 +156,10 @@
     .modal-title { font-weight: 600; font-size: .95rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .modal-body { padding: 12px 16px; overflow: auto; }
     .modal-body .preview { max-height: none; margin-top: 0; }
+    .modal-sm { width: min(520px, 100%); }
+    .combo-grid { display: flex; gap: 32px; flex-wrap: wrap; }
+    .combo-head { font-weight: 600; margin-bottom: 6px; }
+    .combo-item { display: block; font-family: monospace; font-size: .8rem; padding: 3px 0; cursor: pointer; }
 
     .chart-box { position: relative; height: 290px; }
 
@@ -262,12 +266,13 @@
           <div class="btn-row">
             <button class="btn btn-p btn-lg" id="btn-single" onclick="runSingle()">Generate File</button>
             <button class="btn btn-o btn-lg" id="btn-all"    onclick="runAll()">Run All Combinations (18)</button>
+            <button class="btn btn-o btn-lg" id="btn-sel"    onclick="openComboModal()">Run Selected Combinations…</button>
             <button class="btn btn-o btn-lg" onclick="go('files')">View Generated Files</button>
           </div>
         </div>
         <div id="batch-alert" class="hidden alert"></div>
         <div id="ra-section" class="hidden card" style="margin-bottom:14px">
-          <div class="card-title">Run All — <span id="ra-ctr">0/18</span> completed</div>
+          <div class="card-title">Batch Run — <span id="ra-ctr">0/18</span> completed</div>
           <div class="prog-track"><div class="prog-fill" id="ra-prog" style="width:0%"></div></div>
           <div id="ra-rows"></div>
         </div>
@@ -302,6 +307,26 @@
         <div id="file-preview-wrap" class="hidden card">
           <div class="card-title">Preview — <span id="file-preview-name"></span></div>
           <pre id="file-preview" class="preview"></pre>
+        </div>
+      </div>
+
+      <!-- Combination picker modal (opened by Run Selected Combinations) -->
+      <div id="combo-modal" class="modal-overlay hidden" onclick="if (event.target === this) closeComboModal()">
+        <div class="modal modal-sm" role="dialog" aria-modal="true" aria-labelledby="combo-modal-title">
+          <div class="modal-head">
+            <span class="modal-title" id="combo-modal-title">Run Selected Combinations</span>
+            <button class="btn btn-o" onclick="closeComboModal()">Close</button>
+          </div>
+          <div class="modal-body">
+            <div class="btn-row" style="margin-bottom:10px">
+              <button class="btn btn-o btn-sm" onclick="setAllCombos(true)">Select All</button>
+              <button class="btn btn-o btn-sm" onclick="setAllCombos(false)">Select None</button>
+            </div>
+            <div id="combo-list" class="combo-grid"></div>
+            <div class="btn-row" style="margin-top:14px">
+              <button class="btn btn-p" id="combo-run-btn" onclick="runSelected()">Run 18 Selected</button>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -652,7 +677,7 @@ function closeFileModal() {
 }
 
 document.addEventListener('keydown', (ev) => {
-  if (ev.key === 'Escape') closeFileModal();
+  if (ev.key === 'Escape') { closeFileModal(); closeComboModal(); }
 });
 
 function fmtBytes(n) {
@@ -667,7 +692,7 @@ const LIBS = ['BEANIO', 'FIXFORMAT4J', 'FIXEDLENGTH', 'BINDY', 'CAMEL_BEANIO', '
               'SPRING_BATCH_FIXFORMAT4J', 'SPRING_BATCH_FIXEDLENGTH'];
 
 async function runSingle() {
-  setDisabled(['btn-single', 'btn-all'], true);
+  setDisabled(['btn-single', 'btn-all', 'btn-sel'], true);
   clearAlert('batch-alert');
   document.getElementById('batch-result').classList.add('hidden');
   const btn = document.getElementById('btn-single');
@@ -714,27 +739,31 @@ async function runSingle() {
   } catch (e) {
     setAlert('batch-alert', e.message, 'err');
   } finally {
-    setDisabled(['btn-single', 'btn-all'], false);
+    setDisabled(['btn-single', 'btn-all', 'btn-sel'], false);
     btn.textContent = origText;
   }
 }
 
 let raBusy = false;
-async function runAll() {
-  if (raBusy) return;
+function runAll() {
+  runCombos(FTS.flatMap(ft => LIBS.map(lib => ({ ft, lib }))), 'btn-all', 'Running all…');
+}
+
+async function runCombos(selection, btnId, runningText) {
+  if (raBusy || !selection.length) return;
   raBusy = true;
-  setDisabled(['btn-single', 'btn-all'], true);
+  setDisabled(['btn-single', 'btn-all', 'btn-sel'], true);
   clearAlert('batch-alert');
   document.getElementById('batch-result').classList.add('hidden');
-  const btn = document.getElementById('btn-all');
+  const btn = document.getElementById(btnId);
   const origText = btn.textContent;
   btn.textContent = '';
   const sp = document.createElement('span');
   sp.className = 'spin spin-d';
   btn.appendChild(sp);
-  btn.appendChild(document.createTextNode(' Running all…'));
+  btn.appendChild(document.createTextNode(' ' + runningText));
 
-  const combos = FTS.flatMap(ft => LIBS.map(lib => ({ ft, lib, status: 'PENDING', ms: undefined, fileName: '', err: '' })));
+  const combos = selection.map(s => ({ ft: s.ft, lib: s.lib, status: 'PENDING', ms: undefined, fileName: '', err: '' }));
   document.getElementById('ra-section').classList.remove('hidden');
   renderRA(combos);
 
@@ -754,8 +783,64 @@ async function runAll() {
     renderRA(combos);
   }
   raBusy = false;
-  setDisabled(['btn-single', 'btn-all'], false);
+  setDisabled(['btn-single', 'btn-all', 'btn-sel'], false);
   btn.textContent = origText;
+}
+
+// ── Run Selected Combinations ──────────────────────────────────────────────────
+function openComboModal() {
+  const wrap = document.getElementById('combo-list');
+  wrap.textContent = '';
+  FTS.forEach(ft => {
+    const col = document.createElement('div');
+    const head = document.createElement('div');
+    head.className = 'combo-head';
+    setText(head, ft);
+    col.appendChild(head);
+    LIBS.forEach(lib => {
+      const label = document.createElement('label');
+      label.className = 'combo-item';
+      const cb = document.createElement('input');
+      cb.type = 'checkbox';
+      cb.checked = true;
+      cb.dataset.ft = ft;
+      cb.dataset.lib = lib;
+      cb.onchange = updateComboCount;
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(' ' + lib));
+      col.appendChild(label);
+    });
+    wrap.appendChild(col);
+  });
+  updateComboCount();
+  document.getElementById('combo-modal').classList.remove('hidden');
+}
+
+function comboBoxes() {
+  return Array.from(document.querySelectorAll('#combo-list input[type=checkbox]'));
+}
+
+function setAllCombos(checked) {
+  comboBoxes().forEach(cb => { cb.checked = checked; });
+  updateComboCount();
+}
+
+function updateComboCount() {
+  const n = comboBoxes().filter(cb => cb.checked).length;
+  const btn = document.getElementById('combo-run-btn');
+  setText(btn, 'Run ' + n + ' Selected');
+  btn.disabled = n === 0;
+}
+
+function closeComboModal() {
+  document.getElementById('combo-modal').classList.add('hidden');
+}
+
+function runSelected() {
+  const selection = comboBoxes().filter(cb => cb.checked)
+    .map(cb => ({ ft: cb.dataset.ft, lib: cb.dataset.lib }));
+  closeComboModal();
+  runCombos(selection, 'btn-sel', 'Running selected…');
 }
 
 function renderRA(combos) {
