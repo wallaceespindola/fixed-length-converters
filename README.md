@@ -21,6 +21,27 @@ Enterprise-grade banking file experimentation and benchmarking platform. Generat
 
 ---
 
+## Table of Contents
+
+- [Overview](#overview)
+- [Architecture](#architecture)
+- [Supported Banking Standards](#supported-banking-standards)
+- [Formatter Comparison & Analysis](#formatter-comparison--analysis)
+- [Some screenshots](#some-screenshots)
+- [Quick Start](#quick-start)
+- [REST API](#rest-api)
+- [Swagger UI](#swagger-ui)
+- [Spring Actuator](#spring-actuator)
+- [Testing Strategy](#testing-strategy)
+- [Frontend](#frontend)
+- [Repository Structure](#repository-structure)
+- [Presentation](#presentation)
+- [Links](#links)
+- [Author](#author)
+- [License](#license)
+
+---
+
 ## Overview
 
 This platform is a technical laboratory for evaluating Java fixed-length parser frameworks across correctness,
