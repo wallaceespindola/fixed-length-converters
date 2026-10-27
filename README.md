@@ -12,7 +12,7 @@
 [![Java](https://img.shields.io/badge/Java-21-orange)](https://adoptium.net/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.4.5-brightgreen)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE)
-[![CODA](https://img.shields.io/badge/CODA-Febelfin-004A97)](https://www.febelfin.be/en/payments-standards/coda)
+[![CODA](https://img.shields.io/badge/CODA-Febelfin-004A97)](https://febelfin.be/en/publications/2023/febelfin-banking-standards-for-online-banking)
 [![SWIFT MT940](https://img.shields.io/badge/SWIFT-MT940-003087)](https://www.swift.com/standards/data-standards/mt)
 
 Enterprise-grade banking file experimentation and benchmarking platform. Generates, parses, and benchmarks **CODA** and
@@ -154,7 +154,7 @@ chains.
 ### CODA — Belgian/European Bank Statement Format
 
 **CODA** (COded DAily statement) is the official electronic bank statement format defined and maintained by
-[Febelfin](https://www.febelfin.be/en/payments-standards/coda) — the Federation of Belgian Financial Sector
+[Febelfin](https://febelfin.be/en/publications/2023/febelfin-banking-standards-for-online-banking) — the Federation of Belgian Financial Sector
 Institutions. It is the dominant machine-readable statement format used by Belgian corporate banking.
 
 **Technical format:** fixed-width ASCII records of exactly **128 characters** per line, with structured record types:
@@ -677,14 +677,14 @@ python3 tools/python/generate_pptx.py
 
 ### Banking Standards — Official References
 
-- [Febelfin CODA Specification](https://www.febelfin.be/en/payments-standards/coda) — official versioned CODA spec (Febelfin)
+- [Febelfin CODA Specification](https://febelfin.be/en/publications/2023/febelfin-banking-standards-for-online-banking) — official versioned CODA spec (Febelfin)
 - [SWIFT MT940 — Customer Statement Message](https://www.swift.com/standards/data-standards/mt) — official SWIFT MT standards page
 - [SWIFT Standards — MT Message Reference](https://www2.swift.com/knowledgecentre/publications/us9m_20230720/2.0?topic=mt940.htm) — MT940 field-level reference
 - [SWIFT ISO 20022 Migration Programme](https://www.swift.com/standards/iso-20022) — coexistence timeline and MX migration guide
 - [camt.053 — Bank-to-Customer Statement (ISO 20022)](https://www.iso20022.org/catalogue-messages/iso-20022-messages-archive?search=camt.053) — MT940 successor format
 - [European Payments Council — SEPA Standards](https://www.europeanpaymentscouncil.eu/what-we-do/enabling-technology/standards) — SEPA payment scheme technical specs
 - [Isabel Group — Belgian Interbank File Exchange](https://www.isabel.eu/) — platform distributing CODA files to Belgian corporates
-- [ECB Payment Statistics](https://www.ecb.europa.eu/stats/payment_and_exchange_rates/payment_statistics/html/index.en.html) — European Central Bank payment infrastructure data
+- [ECB Payment Statistics](https://www.ecb.europa.eu/stats/payment_statistics/html/index.en.html) — European Central Bank payment infrastructure data
 
 ### Parser Libraries
 
