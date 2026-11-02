@@ -47,7 +47,7 @@
         <camel.version>4.23.0</camel.version>
         <velocity.version>2.4.1</velocity.version>
         <jmh.version>1.37</jmh.version>
-        <jacoco.version>0.8.15</jacoco.version>
+        <jacoco.version>0.8.16</jacoco.version>
 
     </properties>
 
